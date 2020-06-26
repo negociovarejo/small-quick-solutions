@@ -1,0 +1,84 @@
+Pedido
+
+ id                      | integer                | not null Vorgabewert nextval('pedido_id_seq'::regclass)
+ id_loja                 | integer                | 
+ id_fornecedor           | integer                | not null
+ id_tipofretepedido      | integer                | not null
+ datacompra              | date                   | not null
+ dataentrega             | date                   | 
+ valortotal              | numeric(11,2)          | not null
+ id_situacaopedido       | integer                | not null
+ observacao              | character varying(550) | 
+ desconto                | numeric(11,2)          | not null
+ id_comprador            | integer                | 
+ id_divisaofornecedor    | integer                | 
+ id_precotacaofornecedor | integer                | 
+ valordesconto           | numeric(11,2)          | not null
+ email                   | boolean                | not null Vorgabewert false
+ id_tipoatendidopedido   | integer                | not null
+ enviado                 | boolean                | not null Vorgabewert false
+
+ 
+ PedidoItem
+ id                    | integer       | not null Vorgabewert nextval('pedidoitem_id_seq'::regclass)
+ id_loja               | integer       | not null
+ id_pedido             | integer       | not null
+ id_produto            | integer       | not null
+ quantidade            | numeric(12,3) | not null
+ qtdembalagem          | integer       | not null
+ custocompra           | numeric(13,4) | not null
+ dataentrega           | date          | not null
+ desconto              | numeric(11,2) | not null
+ valortotal            | numeric(11,2) | not null
+ quantidadeatendida    | numeric(12,3) | not null
+ id_tipopedido         | integer       | not null
+ custofinal            | numeric(13,4) | not null Vorgabewert 0
+ id_tipoatendidopedido | integer       | not null
+
+
+FornecedorPrazo
+ id                   | integer | not null Vorgabewert nextval('fornecedorprazo_id_seq'::regclass)
+ id_fornecedor        | integer | not null
+ id_loja              | integer | not null
+ id_divisaofornecedor | integer | not null
+ prazoentrega         | integer | not null
+ prazovisita          | integer | not null
+ prazoseguranca       | integer | not null
+
+
+select * from tipofretepedido;
+ id |   descricao   
+----+---------------
+  0 | CIF (PAGO) *****
+  1 | FOB (A PAGAR)
+
+ select * from situacaopedido;
+ id | descricao  
+----+------------
+  0 | DIGITANDO
+  1 | DIGITADO
+  2 | FINALIZADO *****
+
+select * from divisaofornecedor;
+ id | descricao 
+----+-----------
+  0 | DIV 0
+  1 | DIV 1 *****
+  2 | DIV 2
+  3 | DIV 3
+  4 | DIV 4
+  5 | DIV 5
+
+select * from tipoatendidopedido;
+ id |     descricao     
+----+-------------------
+  0 | NAO ENTREGUE *****
+  1 | ENTREGA CANCELADA
+  2 | ENTREGA PARCIAL
+  3 | ENTREGA TOTAL
+
+select * from tipopedido;
+ id |  descricao  
+----+-------------
+  0 | COMPRA *****
+  1 | BONIFICACAO

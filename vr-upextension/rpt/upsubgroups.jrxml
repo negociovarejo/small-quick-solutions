@@ -1,0 +1,460 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<jasperReport xmlns="http://jasperreports.sourceforge.net/jasperreports" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://jasperreports.sourceforge.net/jasperreports http://jasperreports.sourceforge.net/xsd/jasperreport.xsd" name="upsubgroups" language="groovy" pageWidth="842" pageHeight="595" orientation="Landscape" columnWidth="802" leftMargin="20" rightMargin="20" topMargin="20" bottomMargin="20" uuid="3166b0fb-fa47-4d98-8396-486a87019e92">
+	<property name="ireport.zoom" value="2.479338842975295"/>
+	<property name="ireport.x" value="53"/>
+	<property name="ireport.y" value="63"/>
+	<parameter name="subtitle" class="java.lang.String"/>
+	<parameter name="SUBREPORT_DIR" class="java.lang.String" isForPrompting="false">
+		<defaultValueExpression><![CDATA["/up/extension/rpt/"]]></defaultValueExpression>
+	</parameter>
+	<parameter name="cost" class="java.lang.String"/>
+	<parameter name="icms" class="java.lang.String"/>
+	<parameter name="pisCofins" class="java.lang.String"/>
+	<parameter name="profit" class="java.lang.String"/>
+	<parameter name="revenue" class="java.lang.String"/>
+	<parameter name="profitMargin" class="java.lang.String"/>
+	<parameter name="revenueMargin" class="java.lang.String"/>
+	<parameter name="marginOverCost" class="java.lang.String"/>
+	<parameter name="marginOverRevenue" class="java.lang.String"/>
+	<field name="description" class="java.lang.String"/>
+	<field name="quantity" class="java.lang.String"/>
+	<field name="cost" class="java.lang.String"/>
+	<field name="icms" class="java.lang.String"/>
+	<field name="pisCofins" class="java.lang.String"/>
+	<field name="profit" class="java.lang.String"/>
+	<field name="revenue" class="java.lang.String"/>
+	<field name="profitMargin" class="java.lang.String"/>
+	<field name="revenueMargin" class="java.lang.String"/>
+	<field name="marginOverCost" class="java.lang.String"/>
+	<field name="marginOverRevenue" class="java.lang.String"/>
+	<field name="products" class="java.util.List"/>
+	<background>
+		<band splitType="Stretch"/>
+	</background>
+	<title>
+		<band height="44" splitType="Stretch">
+			<rectangle radius="4">
+				<reportElement x="0" y="0" width="802" height="44" uuid="81ed0487-15f1-447f-9529-cb5027a5d335"/>
+			</rectangle>
+			<staticText>
+				<reportElement x="10" y="7" width="227" height="15" uuid="99ed9165-f999-426b-8570-a5d288e6dec7"/>
+				<textElement>
+					<font size="9" isBold="true"/>
+				</textElement>
+				<text><![CDATA[RELATÓRIO DE GERENCIAMENTO CATEGORIA]]></text>
+			</staticText>
+			<staticText>
+				<reportElement x="717" y="7" width="26" height="20" uuid="fd3cf35d-be7a-417a-8727-2cbb6fae4c4f"/>
+				<textElement>
+					<font size="9"/>
+				</textElement>
+				<text><![CDATA[DATA]]></text>
+			</staticText>
+			<textField>
+				<reportElement x="10" y="27" width="661" height="13" uuid="35729d3f-38df-4c4a-8f66-e2c18872087d"/>
+				<textElement textAlignment="Left">
+					<font size="8"/>
+				</textElement>
+				<textFieldExpression><![CDATA[$P{subtitle}]]></textFieldExpression>
+			</textField>
+			<textField pattern="dd/MM/yyyy">
+				<reportElement x="743" y="7" width="100" height="20" uuid="5714919c-537a-49a3-85f6-d8245dcb1572"/>
+				<textElement>
+					<font size="9"/>
+				</textElement>
+				<textFieldExpression><![CDATA[new java.util.Date()]]></textFieldExpression>
+			</textField>
+		</band>
+	</title>
+	<columnHeader>
+		<band height="36" splitType="Stretch">
+			<staticText>
+				<reportElement x="233" y="13" width="55" height="22" uuid="97c4bd66-b984-427c-8d2f-80a654f7c0a0"/>
+				<textElement textAlignment="Right">
+					<font size="9" isBold="true"/>
+				</textElement>
+				<text><![CDATA[         QTDE.]]></text>
+			</staticText>
+			<staticText>
+				<reportElement x="292" y="14" width="55" height="21" uuid="3fd097b9-f13f-4a9b-a16b-668e3ba90393"/>
+				<textElement textAlignment="Right">
+					<font size="9" isBold="true"/>
+				</textElement>
+				<text><![CDATA[VALOR CUSTO]]></text>
+			</staticText>
+			<staticText>
+				<reportElement x="351" y="14" width="55" height="21" uuid="df707dc1-e125-454f-9426-11d7eee09d4d"/>
+				<textElement textAlignment="Right">
+					<font size="9" isBold="true"/>
+				</textElement>
+				<text><![CDATA[VALOR VENDA]]></text>
+			</staticText>
+			<staticText>
+				<reportElement x="410" y="14" width="42" height="21" uuid="72c4578c-6d7a-4b91-9416-284a07389375"/>
+				<textElement textAlignment="Right">
+					<font size="9" isBold="true"/>
+				</textElement>
+				<text><![CDATA[      ICMS]]></text>
+			</staticText>
+			<staticText>
+				<reportElement x="456" y="14" width="30" height="21" uuid="62b07ac4-0062-4143-9dd6-aa1f2f04203f"/>
+				<textElement textAlignment="Right">
+					<font size="9" isBold="true"/>
+				</textElement>
+				<text><![CDATA[     PIS]]></text>
+			</staticText>
+			<staticText>
+				<reportElement x="490" y="14" width="55" height="21" uuid="c640aa3d-dac9-4413-8497-af811bd32db8"/>
+				<textElement textAlignment="Right">
+					<font size="9" isBold="true"/>
+				</textElement>
+				<text><![CDATA[MARGEM BRUTA]]></text>
+			</staticText>
+			<staticText>
+				<reportElement x="658" y="13" width="47" height="21" uuid="1d1fd9af-2fd5-42cb-9c14-da545d9d1209"/>
+				<textElement textAlignment="Right">
+					<font size="9" isBold="true"/>
+				</textElement>
+				<text><![CDATA[      LUCRO]]></text>
+			</staticText>
+			<staticText>
+				<reportElement x="549" y="14" width="46" height="21" uuid="75a358a9-ed24-4989-ba08-ca56f3126235"/>
+				<textElement textAlignment="Right">
+					<font size="9" isBold="true"/>
+				</textElement>
+				<text><![CDATA[MRG SB CUSTO]]></text>
+			</staticText>
+			<staticText>
+				<reportElement x="756" y="13" width="42" height="21" uuid="a5c114f1-166a-4a6b-b872-b9ad2feb1ac7"/>
+				<textElement textAlignment="Right">
+					<font size="9" isBold="true"/>
+				</textElement>
+				<text><![CDATA[PART.  CATEG]]></text>
+			</staticText>
+			<staticText>
+				<reportElement x="709" y="13" width="43" height="22" uuid="24162af2-33c4-4f7c-8525-5f659811c699"/>
+				<textElement>
+					<font size="9" isBold="true"/>
+				</textElement>
+				<text><![CDATA[PART. VENDA]]></text>
+			</staticText>
+			<staticText>
+				<reportElement x="599" y="13" width="55" height="22" uuid="fbc292e2-bda0-4bcb-8c60-b4eff5497f09"/>
+				<textElement textAlignment="Right">
+					<font size="9" isBold="true"/>
+				</textElement>
+				<text><![CDATA[MRG SB VENDA]]></text>
+			</staticText>
+			<staticText>
+				<reportElement x="0" y="24" width="233" height="11" uuid="26750ed5-4795-4bd0-959d-a89c920dd794"/>
+				<textElement>
+					<font size="9" isBold="true"/>
+				</textElement>
+				<text><![CDATA[DESCRIÇÃO]]></text>
+			</staticText>
+			<line>
+				<reportElement x="0" y="35" width="802" height="1" uuid="1a807263-b6b4-4a5c-9417-20f1f294884a"/>
+			</line>
+		</band>
+	</columnHeader>
+	<detail>
+		<band height="32" splitType="Stretch">
+			<subreport isUsingCache="true">
+				<reportElement x="0" y="22" width="802" height="10" uuid="a5cff97b-73cb-4542-b7f4-88071c4e42f6"/>
+				<dataSourceExpression><![CDATA[new net.sf.jasperreports.engine.data.JRBeanCollectionDataSource($F{products})]]></dataSourceExpression>
+				<subreportExpression><![CDATA[$P{SUBREPORT_DIR} + "upproducts.jasper"]]></subreportExpression>
+			</subreport>
+			<frame>
+				<reportElement mode="Opaque" x="0" y="0" width="802" height="22" backcolor="#D6D6D6" uuid="125f6845-5a71-40b1-94bc-bf30acbe18e3"/>
+				<textField>
+					<reportElement x="5" y="5" width="793" height="13" uuid="6bad4a59-b19e-4b95-adce-58c07ffab4c7"/>
+					<textElement>
+						<font isBold="true"/>
+					</textElement>
+					<textFieldExpression><![CDATA[$F{description}]]></textFieldExpression>
+				</textField>
+			</frame>
+		</band>
+		<band height="15">
+			<textField>
+				<reportElement x="599" y="0" width="55" height="12" uuid="a0158eba-3489-4a4d-9c88-586a6618c5be"/>
+				<textElement textAlignment="Right">
+					<font size="9" isBold="true"/>
+				</textElement>
+				<textFieldExpression><![CDATA[$F{marginOverRevenue}]]></textFieldExpression>
+			</textField>
+			<textField>
+				<reportElement x="410" y="0" width="42" height="12" uuid="c0bc34ab-6ce0-41aa-baf8-42b6f8ab89b6"/>
+				<textElement textAlignment="Right">
+					<font size="9" isBold="true"/>
+				</textElement>
+				<textFieldExpression><![CDATA[$F{icms}]]></textFieldExpression>
+			</textField>
+			<textField>
+				<reportElement x="456" y="0" width="30" height="12" uuid="7577c5fb-b542-425f-9038-7e515585168b"/>
+				<textElement textAlignment="Right">
+					<font size="9" isBold="true"/>
+				</textElement>
+				<textFieldExpression><![CDATA[$F{pisCofins}]]></textFieldExpression>
+			</textField>
+			<textField>
+				<reportElement x="549" y="0" width="46" height="12" uuid="570573a6-f488-427d-93b5-067ab6cd8cd8"/>
+				<textElement textAlignment="Right">
+					<font size="9" isBold="true"/>
+				</textElement>
+				<textFieldExpression><![CDATA[$F{marginOverCost}]]></textFieldExpression>
+			</textField>
+			<textField>
+				<reportElement x="658" y="0" width="47" height="12" uuid="c1d554ad-b7eb-4f92-a08d-e4de5507e22d"/>
+				<textElement textAlignment="Right">
+					<font size="9" isBold="true"/>
+				</textElement>
+				<textFieldExpression><![CDATA[$F{profit}]]></textFieldExpression>
+			</textField>
+			<textField>
+				<reportElement x="292" y="0" width="55" height="12" uuid="71378971-d802-462d-95e6-4593699f315b"/>
+				<textElement textAlignment="Right">
+					<font size="9" isBold="true"/>
+				</textElement>
+				<textFieldExpression><![CDATA[$F{cost}]]></textFieldExpression>
+			</textField>
+			<textField>
+				<reportElement x="351" y="0" width="55" height="12" uuid="22d3c5c7-950c-421a-a99f-f61d130103e8"/>
+				<textElement textAlignment="Right">
+					<font size="9" isBold="true"/>
+				</textElement>
+				<textFieldExpression><![CDATA[$F{revenue}]]></textFieldExpression>
+			</textField>
+			<textField>
+				<reportElement x="233" y="0" width="55" height="12" uuid="f90e1745-cd62-4397-b262-e0f7f18377cf"/>
+				<textElement textAlignment="Right">
+					<font size="9" isBold="true"/>
+				</textElement>
+				<textFieldExpression><![CDATA[$F{quantity}]]></textFieldExpression>
+			</textField>
+			<staticText>
+				<reportElement x="0" y="0" width="233" height="12" uuid="e947435f-3712-46d0-a2c5-3c63aa364e95"/>
+				<textElement>
+					<font size="9" isBold="true"/>
+				</textElement>
+				<text><![CDATA[Total por SubGrupo:]]></text>
+			</staticText>
+			<textField>
+				<reportElement x="490" y="0" width="55" height="12" uuid="a1db5ba3-a907-496c-b6c4-57af4221b6c9"/>
+				<textElement textAlignment="Right">
+					<font size="9" isBold="true"/>
+				</textElement>
+				<textFieldExpression><![CDATA[$F{revenueMargin}]]></textFieldExpression>
+			</textField>
+		</band>
+	</detail>
+	<pageFooter>
+		<band height="17">
+			<textField>
+				<reportElement x="731" y="4" width="25" height="13" uuid="a5146d7c-bc88-4a00-93cb-67d3d8ef61da"/>
+				<textElement textAlignment="Center">
+					<font size="8"/>
+				</textElement>
+				<textFieldExpression><![CDATA[$V{PAGE_NUMBER}]]></textFieldExpression>
+			</textField>
+			<staticText>
+				<reportElement x="700" y="4" width="31" height="13" uuid="2d1d6ce0-f432-4a52-9b1b-7ffd396828c9"/>
+				<textElement>
+					<font size="8"/>
+				</textElement>
+				<text><![CDATA[PÁGINA]]></text>
+			</staticText>
+			<staticText>
+				<reportElement x="756" y="4" width="17" height="13" uuid="4bfa1242-bf4b-4f63-a450-867f9338fee6"/>
+				<textElement textAlignment="Center">
+					<font size="8"/>
+				</textElement>
+				<text><![CDATA[DE]]></text>
+			</staticText>
+			<textField evaluationTime="Report">
+				<reportElement x="773" y="4" width="25" height="13" uuid="bcdabc62-68c1-4df1-8f93-180a77cb2ac2"/>
+				<textElement textAlignment="Center">
+					<font size="8"/>
+				</textElement>
+				<textFieldExpression><![CDATA[$V{PAGE_NUMBER}]]></textFieldExpression>
+			</textField>
+			<staticText>
+				<reportElement x="0" y="4" width="140" height="13" uuid="baaa93a5-c74d-4311-aa82-174709e36a7c"/>
+				<textElement>
+					<font size="8"/>
+				</textElement>
+				<text><![CDATA[VR SOFTWARE FORTALEZA]]></text>
+			</staticText>
+			<line>
+				<reportElement x="0" y="3" width="802" height="1" uuid="fdd4593b-5bcf-4b1d-87a7-b5c894a23e0b"/>
+			</line>
+		</band>
+	</pageFooter>
+	<lastPageFooter>
+		<band height="50">
+			<textField>
+				<reportElement x="301" y="19" width="76" height="12" uuid="eeab9021-6303-4c8f-a1bd-69f4375d18a5"/>
+				<textElement textAlignment="Right">
+					<font size="9" isBold="false"/>
+				</textElement>
+				<textFieldExpression><![CDATA[$P{revenue}]]></textFieldExpression>
+			</textField>
+			<textField>
+				<reportElement x="224" y="19" width="68" height="12" uuid="814baea4-3b02-498a-b969-af26e9e4da74"/>
+				<textElement textAlignment="Right">
+					<font size="9" isBold="false"/>
+				</textElement>
+				<textFieldExpression><![CDATA[$P{cost}]]></textFieldExpression>
+			</textField>
+			<textField>
+				<reportElement x="570" y="19" width="70" height="12" uuid="b71bcb57-ff83-4f0b-bd7c-59d4b468f247"/>
+				<textElement textAlignment="Right">
+					<font size="9" isBold="false"/>
+				</textElement>
+				<textFieldExpression><![CDATA[$P{marginOverCost}]]></textFieldExpression>
+			</textField>
+			<textField>
+				<reportElement x="388" y="19" width="44" height="12" uuid="f95a96d5-db8d-4d52-bd3e-56afdf054372"/>
+				<textElement textAlignment="Right">
+					<font size="9" isBold="false"/>
+				</textElement>
+				<textFieldExpression><![CDATA[$P{icms}]]></textFieldExpression>
+			</textField>
+			<textField>
+				<reportElement x="444" y="19" width="34" height="12" uuid="9f45db48-3078-4b5c-940b-6ab9895860eb"/>
+				<textElement textAlignment="Right">
+					<font size="9" isBold="false"/>
+				</textElement>
+				<textFieldExpression><![CDATA[$P{pisCofins}]]></textFieldExpression>
+			</textField>
+			<textField>
+				<reportElement x="736" y="19" width="61" height="12" uuid="af8d0937-021a-4f04-ada2-ba3322a181d1"/>
+				<textElement textAlignment="Right">
+					<font size="9" isBold="false"/>
+				</textElement>
+				<textFieldExpression><![CDATA[$P{profit}]]></textFieldExpression>
+			</textField>
+			<staticText>
+				<reportElement x="1" y="19" width="198" height="12" uuid="711cfa25-b1bb-48e4-a079-dd57164f8d0c"/>
+				<textElement>
+					<font size="9" isBold="true"/>
+				</textElement>
+				<text><![CDATA[TOTAL GERAL:]]></text>
+			</staticText>
+			<textField>
+				<reportElement x="486" y="19" width="74" height="12" uuid="9daa35b3-ab09-42d8-b16b-5fa8340ccd54"/>
+				<textElement textAlignment="Right">
+					<font size="9" isBold="false"/>
+				</textElement>
+				<textFieldExpression><![CDATA[$P{revenueMargin}]]></textFieldExpression>
+			</textField>
+			<textField>
+				<reportElement x="649" y="19" width="78" height="12" uuid="f152501b-e38a-4fb1-90bb-e245689f4c24"/>
+				<textElement textAlignment="Right">
+					<font size="9" isBold="false"/>
+				</textElement>
+				<textFieldExpression><![CDATA[$P{marginOverRevenue}]]></textFieldExpression>
+			</textField>
+			<line>
+				<reportElement x="0" y="0" width="802" height="1" uuid="da6d2ef9-1d26-4353-80b0-6da561423d04"/>
+			</line>
+			<textField>
+				<reportElement x="731" y="37" width="25" height="13" uuid="0a9ef987-72dc-4a25-865d-f9932196fbeb"/>
+				<textElement textAlignment="Center">
+					<font size="8"/>
+				</textElement>
+				<textFieldExpression><![CDATA[$V{PAGE_NUMBER}]]></textFieldExpression>
+			</textField>
+			<staticText>
+				<reportElement x="700" y="37" width="31" height="13" uuid="f06969ba-5402-4365-9107-93cf7ecce331"/>
+				<textElement>
+					<font size="8"/>
+				</textElement>
+				<text><![CDATA[PÁGINA]]></text>
+			</staticText>
+			<staticText>
+				<reportElement x="756" y="37" width="17" height="13" uuid="fa6f8a7a-9ecc-42d9-a6a0-cd3b17409fc7"/>
+				<textElement textAlignment="Center">
+					<font size="8"/>
+				</textElement>
+				<text><![CDATA[DE]]></text>
+			</staticText>
+			<textField evaluationTime="Report">
+				<reportElement x="773" y="37" width="25" height="13" uuid="90b11cc1-642c-47dd-b881-7222cb3be2e9"/>
+				<textElement textAlignment="Center">
+					<font size="8"/>
+				</textElement>
+				<textFieldExpression><![CDATA[$V{PAGE_NUMBER}]]></textFieldExpression>
+			</textField>
+			<staticText>
+				<reportElement x="0" y="37" width="140" height="13" uuid="4027c015-b366-494f-99b1-2b6381773b1c"/>
+				<textElement>
+					<font size="8"/>
+				</textElement>
+				<text><![CDATA[VR SOFTWARE FORTALEZA]]></text>
+			</staticText>
+			<line>
+				<reportElement x="0" y="34" width="802" height="1" uuid="70d8d769-681f-4b69-ae4d-4d90de4333ca"/>
+			</line>
+			<staticText>
+				<reportElement x="224" y="3" width="68" height="12" uuid="06dc9ce0-7103-4430-a216-29f6e20eb8b0"/>
+				<textElement textAlignment="Right">
+					<font size="9" isBold="true"/>
+				</textElement>
+				<text><![CDATA[Valor custo]]></text>
+			</staticText>
+			<staticText>
+				<reportElement x="388" y="3" width="43" height="12" uuid="ee82235c-9e10-4c42-a5bd-72ba7e7e0e1e"/>
+				<textElement textAlignment="Right">
+					<font size="9" isBold="true"/>
+				</textElement>
+				<text><![CDATA[ICMS]]></text>
+			</staticText>
+			<staticText>
+				<reportElement x="487" y="3" width="74" height="12" uuid="f90bade3-a9ad-4ec9-b1cf-7c0ab8612ca5"/>
+				<textElement textAlignment="Right">
+					<font size="9" isBold="true"/>
+				</textElement>
+				<text><![CDATA[Margem Bruta]]></text>
+			</staticText>
+			<staticText>
+				<reportElement x="649" y="3" width="78" height="12" uuid="d7e659d6-af9f-47cd-b956-161a1e25fef7"/>
+				<textElement textAlignment="Right">
+					<font size="9" isBold="true"/>
+				</textElement>
+				<text><![CDATA[Mrg Sb Venda]]></text>
+			</staticText>
+			<staticText>
+				<reportElement x="736" y="3" width="61" height="12" uuid="28046b92-1a64-4b83-9bcd-85d18a726905"/>
+				<textElement textAlignment="Right">
+					<font size="9" isBold="true"/>
+				</textElement>
+				<text><![CDATA[Lucro]]></text>
+			</staticText>
+			<staticText>
+				<reportElement x="570" y="3" width="70" height="12" uuid="429637c4-1d4d-4278-84be-328ffd7cedfd"/>
+				<textElement textAlignment="Right">
+					<font size="9" isBold="true"/>
+				</textElement>
+				<text><![CDATA[Mrg Sb Custo]]></text>
+			</staticText>
+			<staticText>
+				<reportElement x="444" y="3" width="34" height="12" uuid="7674314b-cc0c-4394-84c8-541dc79dec96"/>
+				<textElement textAlignment="Right">
+					<font size="9" isBold="true"/>
+				</textElement>
+				<text><![CDATA[PIS]]></text>
+			</staticText>
+			<staticText>
+				<reportElement x="301" y="3" width="76" height="12" uuid="3f0cf7d4-afad-4e4c-ac82-048e6e095b7a"/>
+				<textElement textAlignment="Right">
+					<font size="9" isBold="true"/>
+				</textElement>
+				<text><![CDATA[Valor Venda]]></text>
+			</staticText>
+			<line>
+				<reportElement x="0" y="15" width="802" height="1" uuid="efe46d81-3fc2-4eeb-b878-67c7b46fcbba"/>
+			</line>
+		</band>
+	</lastPageFooter>
+</jasperReport>

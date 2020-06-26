@@ -1,0 +1,110 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<jasperReport xmlns="http://jasperreports.sourceforge.net/jasperreports" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://jasperreports.sourceforge.net/jasperreports http://jasperreports.sourceforge.net/xsd/jasperreport.xsd" name="upproducts" language="groovy" pageWidth="802" pageHeight="595" orientation="Landscape" columnWidth="802" leftMargin="0" rightMargin="0" topMargin="0" bottomMargin="0" uuid="e61c3cdf-6273-4cf7-a69d-84914b62b1ca">
+	<property name="ireport.zoom" value="1.771561000000005"/>
+	<property name="ireport.x" value="0"/>
+	<property name="ireport.y" value="0"/>
+	<field name="description" class="java.lang.String"/>
+	<field name="quantity" class="java.lang.String"/>
+	<field name="cost" class="java.lang.String"/>
+	<field name="icms" class="java.lang.String"/>
+	<field name="pisCofins" class="java.lang.String"/>
+	<field name="profit" class="java.lang.String"/>
+	<field name="revenue" class="java.lang.String"/>
+	<field name="profitMargin" class="java.lang.String"/>
+	<field name="revenueMargin" class="java.lang.String"/>
+	<field name="marginOverCost" class="java.lang.String"/>
+	<field name="marginOverRevenue" class="java.lang.String"/>
+	<field name="partRevenue" class="java.lang.String"/>
+	<field name="partCategory" class="java.lang.String"/>
+	<background>
+		<band splitType="Stretch"/>
+	</background>
+	<detail>
+		<band height="15" splitType="Stretch">
+			<textField>
+				<reportElement x="0" y="0" width="233" height="15" uuid="d8121905-e9e3-4c93-8a01-c913ec98a049"/>
+				<textElement>
+					<font size="9"/>
+				</textElement>
+				<textFieldExpression><![CDATA[$F{description}]]></textFieldExpression>
+			</textField>
+			<textField>
+				<reportElement x="233" y="0" width="55" height="15" uuid="752ea2f9-7eb5-4bb2-823c-ba8e9a9a201f"/>
+				<textElement textAlignment="Right">
+					<font size="9"/>
+				</textElement>
+				<textFieldExpression><![CDATA[$F{quantity}]]></textFieldExpression>
+			</textField>
+			<textField>
+				<reportElement x="292" y="0" width="55" height="15" uuid="5199d7b8-46bc-46ca-af93-a4e5b43eda1b"/>
+				<textElement textAlignment="Right">
+					<font size="9"/>
+				</textElement>
+				<textFieldExpression><![CDATA[$F{cost}]]></textFieldExpression>
+			</textField>
+			<textField>
+				<reportElement x="410" y="0" width="42" height="15" uuid="dc5a7277-f4ad-4b8f-ab01-c895a399bfd2"/>
+				<textElement textAlignment="Right">
+					<font size="9"/>
+				</textElement>
+				<textFieldExpression><![CDATA[$F{icms}]]></textFieldExpression>
+			</textField>
+			<textField>
+				<reportElement x="456" y="0" width="30" height="15" uuid="2c36ecb6-cb27-4da1-8f34-86325eb560ba"/>
+				<textElement textAlignment="Right">
+					<font size="9"/>
+				</textElement>
+				<textFieldExpression><![CDATA[$F{pisCofins}]]></textFieldExpression>
+			</textField>
+			<textField>
+				<reportElement x="658" y="0" width="47" height="15" uuid="01da2351-7013-44df-bbaf-0cc172d46387"/>
+				<textElement textAlignment="Right">
+					<font size="9"/>
+				</textElement>
+				<textFieldExpression><![CDATA[$F{profit}]]></textFieldExpression>
+			</textField>
+			<textField>
+				<reportElement x="351" y="0" width="55" height="15" uuid="87ca8c34-1f77-43b8-8a6a-777d3f050c30"/>
+				<textElement textAlignment="Right">
+					<font size="9"/>
+				</textElement>
+				<textFieldExpression><![CDATA[$F{revenue}]]></textFieldExpression>
+			</textField>
+			<textField>
+				<reportElement x="490" y="0" width="55" height="15" uuid="e99c7f0c-021a-4cf8-9ccd-2a4f2a2a3bbc"/>
+				<textElement textAlignment="Right">
+					<font size="9"/>
+				</textElement>
+				<textFieldExpression><![CDATA[$F{revenueMargin}]]></textFieldExpression>
+			</textField>
+			<textField>
+				<reportElement x="549" y="0" width="46" height="15" uuid="a91055ec-2af6-4db9-a195-3da2476a1a89"/>
+				<textElement textAlignment="Right">
+					<font size="9"/>
+				</textElement>
+				<textFieldExpression><![CDATA[$F{marginOverCost}]]></textFieldExpression>
+			</textField>
+			<textField>
+				<reportElement x="599" y="0" width="55" height="15" uuid="dccca940-e41c-4610-b7c3-a095acbf04d8"/>
+				<textElement textAlignment="Right">
+					<font size="9"/>
+				</textElement>
+				<textFieldExpression><![CDATA[$F{marginOverRevenue}]]></textFieldExpression>
+			</textField>
+			<textField>
+				<reportElement x="705" y="0" width="46" height="15" uuid="3a031771-82be-4948-ad98-cba97cd86cc3"/>
+				<textElement textAlignment="Right">
+					<font size="9"/>
+				</textElement>
+				<textFieldExpression><![CDATA[$F{partRevenue}]]></textFieldExpression>
+			</textField>
+			<textField>
+				<reportElement x="756" y="0" width="46" height="15" uuid="090f9fe2-0112-4597-a541-3059a90aaab2"/>
+				<textElement textAlignment="Right">
+					<font size="9"/>
+				</textElement>
+				<textFieldExpression><![CDATA[$F{partCategory}]]></textFieldExpression>
+			</textField>
+		</band>
+	</detail>
+</jasperReport>
