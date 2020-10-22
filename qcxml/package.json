@@ -1,0 +1,15 @@
+{
+  "name": "qcxml",
+  "version": "1.0.0",
+  "description": "",
+  "main": "ProductMerger.js",
+  "dependencies": {
+    "xmlreader": "^0.2.3"
+  },
+  "devDependencies": {},
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "author": "",
+  "license": "ISC"
+}
