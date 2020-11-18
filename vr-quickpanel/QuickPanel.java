@@ -2,7 +2,6 @@ import java.util.List;
 import java.util.ArrayList;
 import java.util.Scanner;
 import java.io.InputStream;
-import java.io.InputStream;
 import javax.swing.JOptionPane;
 
 public class QuickPanel {

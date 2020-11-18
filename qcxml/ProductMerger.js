@@ -1,7 +1,7 @@
 const xmlreader = require('xmlreader');
 const fs = require('fs');
 const path = require('path');
-const { spawnSync, spawn } = require("child_process");
+const { spawnSync } = require("child_process");
  
 if (process.argv.length !== 3) {
     console.log('Usage: node ProductMerger.js <folder>');
