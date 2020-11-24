@@ -65,11 +65,11 @@ public class Fortes158 {
       oExportacao.tipoData = 2;
       oExportacao.dataInicio = "08/11/2020";
       oExportacao.dataTermino = "08/11/2020";
-      // oExportacao.participantes = true;
-      // oExportacao.produto = true;
+      oExportacao.participantes = true;
+      oExportacao.produto = true;
       // oExportacao.notaServico = true;
       oExportacao.notaEntrada = true;
-      oExportacao.notaSaida = true;
+      // oExportacao.notaSaida = true;
       // oExportacao.cupomFiscal = true;
       // oExportacao.conhecimentoTransporteCarga = true;
       // oExportacao.inventario = true;
