@@ -216,7 +216,8 @@ public class Fortes158DAO {
       oPAR.campo15 = "N";
       oPAR.campo16 = "";
       oPAR.campo17 = Texto.substring(rst.getString("endereco"), 0, 60);
-      oPAR.campo18 = Texto.substring(rst.getString("numero"), 0, 6);
+      String number = rst.getString("numero");
+      oPAR.campo18 = Texto.substring(number.chars().allMatch(Character::isDigit) ? number : "0", 0, 6);
       oPAR.campo19 = Texto.substring(rst.getString("complemento"), 0, 20);
       oPAR.campo20 = "";
       oPAR.campo21 = Texto.substring(rst.getString("bairro"), 0, 50);
@@ -618,7 +619,8 @@ public class Fortes158DAO {
       sql.append("SUM(ROUND(((ei.valorbasecalculo + ei.valorisento + ei.valoroutras + (CASE WHEN e.aplicaicmsipi = FALSE THEN ei.valoripi ELSE 0 END) - ei.valordesconto) * ((100 - tpc.reduzidocredito) / 100)) * tpc.valorcofins / 100, 2)) AS valorcofins,");
     } 
     sql.append(" f.id_estado AS estadoFornecedor, estabelecimentote.id_tipocrt AS id_tipocrt_loja, e.modelo, e.id_situacaonfe,");
-    sql.append(" e.id_tipoentradasaida, e.id_notasaida, e.valorfcpst, e.id_tiponota, f.id_tipoempresa");
+    sql.append(" e.id_tipoentradasaida, e.id_notasaida, e.valorfcpst, e.id_tiponota, f.id_tipoempresa, ");
+    sql.append(" e.valortotalbruto, e.valorcontabil, e.valordescontofiscal, e.id_indicadorpagamento");
     sql.append(" FROM escrita AS e");
     sql.append(" INNER JOIN escritaitem AS ei ON ei.id_escrita = e.id");
     sql.append(" INNER JOIN fornecedor AS f ON f.id = e.id_fornecedor");
@@ -686,17 +688,17 @@ public class Fortes158DAO {
       oNFM.campo23 = "";
       oNFM.campo24 = "";
       oNFM.campo25 = "";
-      oNFM.campo26 = (rst.getInt("id_situacaonfe") != SituacaoNfe.CANCELADA.getId()) ? Format.decimal2(rst.getDouble("valortotal")).replace(".", "").replace(",", ".") : "";
+      oNFM.campo26 = (rst.getInt("id_situacaonfe") != SituacaoNfe.CANCELADA.getId()) ? rst.getString("valortotalbruto") : "";
       oNFM.campo27 = Format.decimal2(rst.getDouble("valorfrete")).replace(".", "").replace(",", ".");
       oNFM.campo28 = "";
-      oNFM.campo29 = Format.decimal2(rst.getDouble("valoroutrasdespesas")).replace(".", "").replace(",", ".");
+      oNFM.campo29 = rst.getString("valoroutrasdespesas");
       oNFM.campo30 = "";
       oNFM.campo31 = "";
       oNFM.campo32 = (rst.getInt("id_situacaonfe") == SituacaoNfe.CANCELADA.getId() || rst.getInt("id_situacaonfe") == SituacaoNfe.INUTILIZADA.getId()) ? "" : Format.decimal2(rst.getDouble("valoripi")).replace(".", "").replace(",", ".");
       oNFM.campo33 = Format.decimal2(rst.getDouble("valoricmssubstituicao")).replace(".", "").replace(",", ".");
       oNFM.campo34 = "0.00";
-      oNFM.campo35 = Format.decimal2(rst.getDouble("valordesconto")).replace(".", "").replace(",", ".");
-      oNFM.campo36 = (rst.getInt("id_situacaonfe") != SituacaoNfe.CANCELADA.getId()) ? Format.decimal2(rst.getDouble("valortotal")).replace(".", "").replace(",", ".") : "";
+      oNFM.campo35 = rst.getString("valordescontofiscal");
+      oNFM.campo36 = (rst.getInt("id_situacaonfe") != SituacaoNfe.CANCELADA.getId()) ? rst.getString("valorcontabil") : "";
       oNFM.campo37 = Format.number(rst.getInt("qtditem"), 10);
       oNFM.campo38 = "";
       oNFM.campo39 = "";
@@ -715,8 +717,25 @@ public class Fortes158DAO {
           oNFM.campo48 = "R";
         } else {
           oNFM.campo48 = "N";
+        }
+
+        int paymentIndicator = rst.getInt("id_indicadorpagamento");
+
+        switch (paymentIndicator) {
+          case 0:
+            oNFM.campo49 = "V";
+            break;
+          case 1:
+            oNFM.campo49 = "P";
+            break;
+          case 2:
+            oNFM.campo49 = "V";
+            break;
+          case 9:
+            oNFM.campo49 = "N";
+            break;
         } 
-        oNFM.campo49 = "N";
+        
         oNFM.campo50 = "";
         oNFM.campo51 = "";
         if (this.oFortesDAO.isFornecedorDistribuidor(i_exportacao.idLoja)) {
@@ -1267,7 +1286,8 @@ public class Fortes158DAO {
       sql.append("SUM(ROUND(((ei.valorbasecalculo + ei.valorisento + ei.valoroutras + (CASE WHEN e.aplicaicmsipi = FALSE THEN ei.valoripi ELSE 0 END) - ei.valordesconto) * ((100 - tpc.reduzidocredito) / 100)) * tpc.valorpis / 100, 2)) AS valorpis,");
       sql.append("SUM(ROUND(((ei.valorbasecalculo + ei.valorisento + ei.valoroutras + (CASE WHEN e.aplicaicmsipi = FALSE THEN ei.valoripi ELSE 0 END) - ei.valordesconto) * ((100 - tpc.reduzidocredito) / 100)) * tpc.valorcofins / 100, 2)) AS valorcofins");
     } 
-    sql.append(" , estabelecimentote.id_tipocrt AS id_tipocrt_loja, e.modelo, e.valorfcpst");
+    sql.append(" , estabelecimentote.id_tipocrt AS id_tipocrt_loja, e.modelo, e.valorfcpst,");
+    sql.append(" e.valortotalbruto, e.valordescontofiscal, e.id_indicadorpagamento, e.valorcontabil");
     sql.append(" FROM escrita AS e");
     sql.append(" INNER JOIN escritaitem AS ei ON ei.id_escrita = e.id");
     sql.append(" LEFT JOIN fornecedor AS f ON f.id = e.id_fornecedor");
@@ -1342,8 +1362,8 @@ public class Fortes158DAO {
       } else {
         oNFM.campo14 = Format.data(Format.dataGUI(rst.getDate("data")), "dd/MM/yyyy", "yyyyMMdd");
         oNFM.campo15 = Format.number(rst.getInt("id_fornecedor"), 9);
-        oNFM.campo26 = Format.decimal2(rst.getDouble("valortotal")).replace(".", "").replace(",", ".");
-        oNFM.campo36 = Format.decimal2(rst.getDouble("valortotal")).replace(".", "").replace(",", ".");
+        oNFM.campo26 = Format.decimal2(rst.getDouble("valortotalbruto")).replace(".", "").replace(",", ".");
+        oNFM.campo36 = Format.decimal2(rst.getDouble("valorcontabil")).replace(".", "").replace(",", ".");
         oNFM.campo37 = Format.number(rst.getInt("qtditem"), 10);
         if (rst.getInt("id_tipofretenotafiscal") == TipoFreteNotaFiscal.DESTINATARIO.getId()) {
           oNFM.campo48 = "D";
@@ -1379,7 +1399,7 @@ public class Fortes158DAO {
       oNFM.campo32 = Format.decimal2(rst.getDouble("valoripi")).replace(".", "").replace(",", ".");
       oNFM.campo33 = "0.00";
       oNFM.campo34 = "0.00";
-      oNFM.campo35 = Format.decimal2(rst.getDouble("valordesconto")).replace(".", "").replace(",", ".");
+      oNFM.campo35 = Format.decimal2(rst.getDouble("valordescontofiscal")).replace(".", "").replace(",", ".");
       oNFM.campo38 = "";
       oNFM.campo39 = "";
       oNFM.campo40 = "";
@@ -1391,7 +1411,24 @@ public class Fortes158DAO {
         oNFM.campo45 = "";
         oNFM.campo46 = "";
         oNFM.campo47 = "";
-        oNFM.campo49 = "";
+
+        int paymentIndicator = rst.getInt("id_indicadorpagamento");
+
+        switch (paymentIndicator) {
+          case 0:
+            oNFM.campo49 = "V";
+            break;
+          case 1:
+            oNFM.campo49 = "P";
+            break;
+          case 2:
+            oNFM.campo49 = "V";
+            break;
+          case 9:
+            oNFM.campo49 = "N";
+            break;
+        } 
+
         oNFM.campo50 = "";
         oNFM.campo51 = "";
         oNFM.campo54 = "";
