@@ -1,0 +1,13 @@
+Venda Período:
+
+OK - caso a seleção não esteja no campo Produto, fechar o popup
+OK - com o popup aberto com itens, se fechar a janela de traz (venda), o popup continua aberto e se clicar em um item retorna "component must be showing on the screen to determine its location"
+- com itens no popup, se clicar na lupa (F9) mas não consultar nenhum produto e voltar, o campo Produto não exibe a quantidade de itens
+- aumentar campo Produto para exibir "100 ITENS" por exemplo
+- o scroll do mouse está fechando o popup
+
+Filtro da Consulta de Pagamento Fornecedor:
+
+- idem venda período
+- ao adicionar itens com o Enter, está pulando para o próximo filtro Tipo Pagamento, só é possível adicionar várias vezes utilizando a tecla Tab
+- não está filtrando corretamente com os tipos selecionados
