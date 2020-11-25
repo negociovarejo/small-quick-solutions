@@ -63,8 +63,8 @@ public class Fortes158 {
       ExportarFortesVO oExportacao = new ExportarFortesVO();
       oExportacao.caminho = "/home/derickfelix/Development/small-quick-solutions/vr-export-fortes/output/";
       oExportacao.tipoData = 2;
-      oExportacao.dataInicio = "08/11/2020";
-      oExportacao.dataTermino = "08/11/2020";
+      oExportacao.dataInicio = "01/10/2020";
+      oExportacao.dataTermino = "31/10/2020";
       oExportacao.participantes = true;
       oExportacao.produto = true;
       // oExportacao.notaServico = true;
