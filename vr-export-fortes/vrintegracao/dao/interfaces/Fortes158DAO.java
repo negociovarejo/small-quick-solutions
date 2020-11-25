@@ -31,6 +31,7 @@ import vrintegracao.vo.TipoIncidencia;
 import vrintegracao.vo.TipoSimNao;
 import vrintegracao.vo.TipoTransacao;
 import vrintegracao.vo.cadastro.FornecedorVO;
+import vrintegracao.vo.cadastro.LojaVO;
 import vrintegracao.vo.cadastro.SituacaoCadastro;
 import vrintegracao.vo.cadastro.SituacaoTributaria;
 import vrintegracao.vo.cadastro.TipoInscricao;
@@ -57,6 +58,7 @@ import vrintegracao.vo.interfaces.fortes.FortesIESVO;
 import vrintegracao.vo.interfaces.fortes.FortesIIVVO;
 import vrintegracao.vo.interfaces.fortes.FortesINMVO;
 import vrintegracao.vo.interfaces.fortes.FortesNFMVO;
+import vrintegracao.vo.interfaces.fortes.FortesNSCVO;
 import vrintegracao.vo.interfaces.fortes.FortesNOPVO;
 import vrintegracao.vo.interfaces.fortes.FortesOCCVO;
 import vrintegracao.vo.interfaces.fortes.FortesOUMVO;
@@ -146,8 +148,12 @@ public class Fortes158DAO {
         exportarNaturezaOperacao(i_exportacao, arquivo);
         exportarProduto(i_exportacao, arquivo);
       } 
-      if (i_exportacao.notaServico)
+      if (i_exportacao.notaServico) {
         exportarNotaServico(i_exportacao, arquivo); 
+        // exportarComunicacao(i_exportacao, arquivo); 
+        // exportarTelaComunicacao(i_exportacao, arquivo); 
+      }
+
       if (i_exportacao.notaEntrada)
         exportarNotaFiscalEntrada(i_exportacao, arquivo); 
       if (i_exportacao.notaSaida)
@@ -650,6 +656,94 @@ public class Fortes158DAO {
     stm.close();
   }
   
+  private void exportarComunicacao(ExportarFortesVO i_exportacao, Arquivo i_arquivo) throws Exception {
+    VRStatement stm = null;
+    ResultSet rst = null;
+    StringBuilder sql = null;
+    stm = VRStatement.createStatement();
+    ProgressBar.setStatus("Exportando Comunicação...");
+    LojaVO lojaVO = ((LojaDAO) VRInstance.criar(LojaDAO.class)).carregar(i_exportacao.idLoja);
+    FornecedorVO oFornecedor = ((FornecedorDAO) VRInstance.criar(FornecedorDAO.class)).carregar(lojaVO.idFornecedor);
+    sql = new StringBuilder();
+    sql.append("SELECT");
+    sql.append(" e.id_tipoentradasaida, e.serie, e.numeronota, e.dataemissao,");
+    sql.append(" e.data, e.id_fornecedor, ei.cfop, sum(ei.valortotal) as valortotal,");
+    sql.append(" e.valorbasecalculo, sum(a.porcentagem) as porcentagem,");
+    sql.append(" sum(ei.valoricms) as valoricms, sum(ei.valorisento) as valorisento,");
+    sql.append(" sum(ei.valoroutras) as valoroutras, count(ei.id) as qtditem,");
+    sql.append(" e.observacao, e.id_indicadorpagamento, ei.situacaotributaria, a.csosn ");
+    sql.append("FROM escrita e");
+    sql.append(" INNER JOIN escritaitem ei ON ei.id_escrita = e.id");
+    sql.append(" INNER JOIN aliquota a ON ei.id_aliquota = a.id ");
+    sql.append("WHERE");
+    if (i_exportacao.tipoData == TipoData.ENTRADA.getId()) {
+      sql.append(" e.data BETWEEN '" + Format.dataBanco(i_exportacao.dataInicio) + "' AND '" + Format.dataBanco(i_exportacao.dataTermino) + "'");
+    } else if (i_exportacao.tipoData == TipoData.EMISSAO.getId()) {
+      sql.append(" e.dataemissao BETWEEN '" + Format.dataBanco(i_exportacao.dataInicio) + "' AND '" + Format.dataBanco(i_exportacao.dataTermino) + "'");
+    }
+
+    sql.append(" AND e.modelo = '21'");
+    sql.append("GROUP BY");
+    sql.append(" e.id_tipoentradasaida, e.serie, e.numeronota, e.dataemissao,");
+    sql.append(" e.data, e.id_fornecedor, e.valorbasecalculo, e.observacao,");
+    sql.append(" e.id_indicadorpagamento, a.csosn, ei.cfop, ei.situacaotributaria");
+    
+    rst = stm.executeQuery(sql.toString());
+    while (rst.next()) {
+      FortesNSCVO oNsc = new FortesNSCVO();
+      oNsc.campo1 = "NSC";
+      oNsc.campo2 = Format.number(this.oFortesDAO.getCodigoEstabelecimento(i_exportacao.idLoja), 4);
+      oNsc.campo3 = rst.getString("id_tipoentradasaida");
+      oNsc.campo5 = Format.number(rst.getString("serie"), 3);
+      oNsc.campo7 = Format.number(rst.getInt("numeronota"), 9);
+      oNsc.campo9 = Format.data(Format.dataGUI(rst.getDate("dataemissao")), "dd/MM/yyyy", "yyyyMMdd");
+      oNsc.campo11 = Format.data(Format.dataGUI(rst.getDate("data")), "dd/MM/yyyy", "yyyyMMdd");
+      oNsc.campo12 = Format.number(rst.getString("id_fornecedor"), 9);
+      oNsc.campo13 = rst.getString("cfop").replace(".", "").replace(",", "");
+      oNsc.campo14 = FormatDecimal2(rst.getDouble("valortotal")).replace(".", "").replace(",", ".");
+      oNsc.campo15 = FormatDecimal2(rst.getDouble("valorbasecalculo")).replace(".", "").replace(",", ".");
+      oNsc.campo16 = FormatDecimal2(rst.getDouble("porcentagem")).replace(".", "").replace(",", ".");
+      oNsc.campo17 = FormatDecimal2(rst.getDouble("valoricms")).replace(".", "").replace(",", ".");
+      oNsc.campo18 = FormatDecimal2(rst.getDouble("valorisento")).replace(".", "").replace(",", ".");
+      oNsc.campo19 = FormatDecimal2(rst.getDouble("valoroutras")).replace(".", "").replace(",", ".");
+      oNsc.campo21 = Format.number(rst.getInt("qtditem"), 4);
+      oNsc.campo35 = rst.getString("observacao");
+        
+      int paymentIndicator = rst.getInt("id_indicadorpagamento");
+
+      switch (paymentIndicator) {
+        case 0:
+          oNsc.campo38 = "V";
+          break;
+        case 1:
+          oNsc.campo38 = "P";
+          break;
+        case 2:
+          oNsc.campo38 = "V";
+          break;
+        case 9:
+          oNsc.campo38 = "N";
+          break;
+        default:
+          oNsc.campo38 = "V";
+          break;
+      } 
+
+      oNsc.campo39 = rst.getString("situacaotributaria");
+      
+      if (oFornecedor.idTipoEmpresa == TipoEmpresa.EPP_SIMPLES.getId() || oFornecedor.idTipoEmpresa == TipoEmpresa.ME_SIMPLES.getId()) {
+        oNsc.campo40 = rst.getString("csosn");
+      }
+    
+      oNsc.campo41 = "";
+      oNsc.campo42 = "";
+
+      i_exportacao.qtdRegistro++;
+      i_arquivo.write(oNsc.getStringLayout158());
+    } 
+    stm.close();
+  }
+  
   private void exportarNotaFiscalEntrada(ExportarFortesVO i_exportacao, Arquivo i_arquivo) throws Exception {
     VRStatement stm = null;
     VRStatement stmProduto = null;
@@ -667,7 +761,7 @@ public class Fortes158DAO {
     ProgressBar.setStatus("Exportando Nota Fiscal (Entrada)...");
     FornecedorVO oFornecedor = ((FornecedorDAO) VRInstance.criar(FornecedorDAO.class)).carregar((((LojaDAO) VRInstance.criar(LojaDAO.class)).carregar(i_exportacao.idLoja)).idFornecedor);
     sql = new StringBuilder();
-    sql.append("SELECT e.id, e.id_fornecedor, e.dataemissao, e.numeronota, te.id_tipocrt,");
+    sql.append("SELECT e.id, e.id_fornecedor, e.id_fornecedorprodutorrural, e.dataemissao, e.numeronota, te.id_tipocrt,");
     sql.append("SUM(ei.valorbasecalculo + ei.valorisento + ei.valoroutras - ei.valordesconto + ei.valoracrescimo) AS valortotal, e.serie, e.chavenfe, e.especie, e.data,");
     sql.append("e.valorfrete, e.valoroutrasdespesas, e.modelo, e.valoripi, e.valorbasesubstituicao, (e.valoricmssubstituicao + COALESCE(e.valorfcpst, 0)) AS valoricmssubstituicao, e.valordesconto, COUNT(ei.id) AS qtditem,");
     sql.append("e.id_tipofretenotafiscal, e.observacao, f.id_tipofornecedor, ");
