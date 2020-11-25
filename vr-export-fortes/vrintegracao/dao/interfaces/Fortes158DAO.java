@@ -73,7 +73,6 @@ import vrintegracao.vo.interfaces.fortes.FortesTRAVO;
 import vrintegracao.vo.interfaces.fortes.FortesUNDVO;
 
 public class Fortes158DAO {
-  private static DecimalFormat df2 = new DecimalFormat("#.##");
   private final FortesDAO oFortesDAO = (FortesDAO)VRInstance.criar(FortesDAO.class);
 
   private final ParametroContabilidadeDAO oParametroContabilidadeDAO = (ParametroContabilidadeDAO)VRInstance.criar(ParametroContabilidadeDAO.class);
@@ -81,18 +80,38 @@ public class Fortes158DAO {
 
   public static String FormatDecimal2(double i_valor)
 	{
+    return FormatDecimal(i_valor, 2);
+	}
+
+  public static String FormatDecimal3(double i_valor)
+	{
+    return FormatDecimal(i_valor, 3);
+	}
+
+  public static String FormatDecimal(double i_valor, int decimals)
+	{
+    String format = "#.";
+    for (int i = 0; i < decimals; ++i) {
+      format += "#";
+    }
+
+    DecimalFormat df2 = new DecimalFormat(format);
 		String value = df2.format(i_valor);
 		
 		if (value.contains(".")) {
 			String sub = value.substring(value.indexOf("."));
 			
-			while (sub.length() < 3) {
+			while (sub.length() < decimals + 1) {
 				sub += "0";
 			}
 			
 			value = value.substring(0, value.indexOf(".")) + sub;
 		} else {
-			value += ".00";
+			value += ".";
+
+      for (int i = 0; i < decimals; ++i) {
+        value += "0";
+      }
 		}
 		
 		return value.replace(".", ",").replace("�", "0");
@@ -116,6 +135,9 @@ public class Fortes158DAO {
       i_exportacao.qtdRegistro++;
       arquivo.write(this.oCAB.getString());
       i_exportacao.idLoja = idLoja.intValue();
+
+      updateEscritaModelo();
+
       if (i_exportacao.participantes)
         exportarParticipantes(i_exportacao, arquivo); 
       if (i_exportacao.produto) {
@@ -130,8 +152,8 @@ public class Fortes158DAO {
         exportarNotaFiscalEntrada(i_exportacao, arquivo); 
       if (i_exportacao.notaSaida)
         exportarNotaFiscalSaida(i_exportacao, arquivo); 
-      if (i_exportacao.cupomFiscal)
-        exportarCupomFiscal(i_exportacao, arquivo); 
+      // if (i_exportacao.cupomFiscal)
+      //   exportarCupomFiscal(i_exportacao, arquivo); 
       if (i_exportacao.cupomFiscalEletronico)
         exportarCupomFiscalEletronico(i_exportacao, arquivo); 
       if (i_exportacao.conhecimentoTransporteCarga)
@@ -151,6 +173,18 @@ public class Fortes158DAO {
       arquivo.close();
       ((LogTransacaoDAO)VRInstance.criar(LogTransacaoDAO.class)).gerar(Formulario.INTERFACE_EXPORTACAO_FORTES, TipoTransacao.EXPORTACAO, 0L, "", idLoja.intValue());
     } 
+  }
+
+  private void updateEscritaModelo() throws Exception
+  {
+    VRStatement stm = VRStatement.createStatement();
+    StringBuilder sql = null;
+    sql = new StringBuilder();
+    sql.append("update escrita set modelo = '59' where id_estado = 23 and modelo = '2D'");
+    stm.execute(sql.toString());
+    sql = new StringBuilder();
+    sql.append("update escrita set modelo = '65' where (id_estado = 18 or id_estado = 19 or id_estado = 24) and modelo = '2D'");
+    stm.execute(sql.toString());
   }
   
   private void exportarParticipantes(ExportarFortesVO i_exportacao, Arquivo i_arquivo) throws Exception {
@@ -1945,343 +1979,344 @@ public class Fortes158DAO {
     stm.close();
   }
   
-  private void exportarCupomFiscal(ExportarFortesVO i_exportacao, Arquivo i_arquivo) throws Exception {
-    VRStatement stm = null;
-    VRStatement stmCupom = null;
-    VRStatement stmProduto = null;
-    VRStatement stmImposto = null;
-    VRStatement stmFinalizadora = null;
-    ResultSet rst = null;
-    ResultSet rstCupom = null;
-    ResultSet rstProduto = null;
-    ResultSet rstImposto = null;
-    ResultSet rstFinalizadora = null;
-    StringBuilder sql = null;
-    stm = VRStatement.createStatement();
-    stmCupom = VRStatement.createStatement();
-    stmProduto = VRStatement.createStatement();
-    stmImposto = VRStatement.createStatement();
-    stmFinalizadora = VRStatement.createStatement();
-    int idTipoEmpresa = ((LojaDAO)VRInstance.criar(LojaDAO.class)).getIdTipoEmpresa(i_exportacao.idLoja);
-    ProgressBar.setStatus("Exportando Cupom Fiscal...");
-    sql = new StringBuilder();
-    sql.append(" SELECT data, ecf, contadorinicial, contadorfinal, reducao, contadorreinicio, SUM(valorcontabil) AS valorcontabil, gtfinal, gtinicial, SUM(valorcancelamento) AS valorcancelamento, ");
-    sql.append(" valordesconto, SUM(valoricmssubstituicao) AS valoricmssubstituicao, SUM(valorisento)  AS valorisento, SUM(valoroutras) AS valoroutras, ");
-    sql.append(" SUM(valoracrescimo) AS valoracrescimo, SUM(valortotal) AS valortotal, SUM(valorcancelado) AS valorcancelado, id_tipocrt_loja FROM( ");
-    sql.append("SELECT mr.data, e.ecf, mr.contadorinicial, mr.contadorfinal, mr.reducao, mr.contadorreinicio, SUM(i.valorbasecalculo + i.valorisento + i.valoroutras + i.valorcancelado - i.valordesconto) AS valorcontabil, mr.gtfinal, mr.gtinicial, SUM(e.valorcancelamento) AS valorcancelamento,");
-    sql.append(" mr.desconto AS valordesconto, CASE WHEN i.situacaotributaria IN ('10','30','60','70') THEN 0 ELSE SUM(i.valoroutras) END AS valoricmssubstituicao,SUM(i.valorisento) AS valorisento,");
-    sql.append(" CASE WHEN i.situacaotributaria IN ('10','30','60','70') THEN SUM(i.valoroutras) ELSE SUM(e.valoricmssubstituicao + COALESCE(e.valorfcpst, 0)) END AS valoroutras,  SUM(e.valoracrescimo) AS valoracrescimo, SUM(e.valorcontabil) AS valortotal, SUM(i.valorcancelado) AS valorcancelado, estabelecimentote.id_tipocrt AS id_tipocrt_loja, i.situacaotributaria situacaotributaria");
-    sql.append(" FROM escrita AS e");
-    sql.append(" INNER JOIN escritaitem AS i ON i.id_escrita = e.id");
-    sql.append(" INNER JOIN maparesumo as mr on mr.ecf = e.ecf AND mr.data = e.data AND mr.id_loja = e.id_loja");
-    sql.append(" INNER JOIN loja l ON l.id = e.id_loja");
-    sql.append(" INNER JOIN fornecedor AS estabelecimento ON estabelecimento.id = l.id_fornecedor");
-    sql.append(" INNER JOIN tipoempresa AS estabelecimentote ON estabelecimentote.id = estabelecimento.id_tipoempresa");
-    sql.append(" INNER JOIN  aliquota a ON i.id_aliquota = a.id");
-    if (i_exportacao.tipoData == TipoData.ENTRADA.getId()) {
-      sql.append(" WHERE e.data BETWEEN  '" + Format.dataBanco(i_exportacao.dataInicio) + "' AND '" + Format.dataBanco(i_exportacao.dataTermino) + "'");
-    } else if (i_exportacao.tipoData == TipoData.EMISSAO.getId()) {
-      sql.append(" WHERE e.dataemissao BETWEEN  '" + Format.dataBanco(i_exportacao.dataInicio) + "' AND '" + Format.dataBanco(i_exportacao.dataTermino) + "'");
-    } 
-    sql.append(" AND e.id_loja = " + i_exportacao.idLoja);
-    sql.append(" AND e.cupomfiscal = TRUE AND e.modelo = '" + ModeloNotaFiscal.CUPOMFISCAL.getModelo() + "'");
-    sql.append(" GROUP BY mr.data, e.ecf, mr.contadorinicial, mr.contadorfinal, mr.reducao, mr.contadorreinicio, mr.gtfinal, mr.gtinicial, mr.desconto, id_tipocrt_loja, i.situacaotributaria");
-    sql.append(" ORDER BY e.ecf");
-    sql.append(" ) AS FOO GROUP BY data, ecf, contadorinicial, contadorfinal, reducao, contadorreinicio, gtfinal, gtinicial, valordesconto, id_tipocrt_loja ");
-    sql.append(" ORDER BY ecf");
-    rst = stm.executeQuery(sql.toString());
-    rst.last();
-    ProgressBar.setMaximum(rst.getRow());
-    rst.beforeFirst();
-    while (rst.next()) {
-      ProgressBar.setStatus("Exportando Cupom Fiscal ECF " + Format.number(rst.getInt("ecf"), 3) + "...");
-      FortesCFCVO oCFC = new FortesCFCVO();
-      oCFC.campo1 = "CFC";
-      oCFC.campo2 = Format.number(this.oFortesDAO.getCodigoEstabelecimento(i_exportacao.idLoja), 4);
-      oCFC.campo3 = Format.data(Format.dataGUI(rst.getDate("data")), "dd/MM/yyyy", "yyyyMMdd");
-      oCFC.campo4 = Format.number(rst.getInt("ecf"), 3);
-      oCFC.campo5 = Format.number(rst.getInt("contadorfinal"), 6);
-      oCFC.campo6 = Format.number(rst.getInt("contadorinicial"), 6);
-      oCFC.campo7 = Format.number(rst.getInt("contadorfinal"), 6);
-      oCFC.campo8 = Format.number(rst.getInt("reducao"), 6);
-      oCFC.campo9 = Format.number(rst.getInt("contadorreinicio"), 6);
-      oCFC.campo10 = FormatDecimal2(rst.getDouble("gtfinal") - rst.getDouble("gtinicial")).replace(".", "").replace(",", ".");
-      oCFC.campo11 = FormatDecimal2(rst.getDouble("gtfinal")).replace(".", "").replace(",", ".");
-      oCFC.campo12 = FormatDecimal2(rst.getDouble("valorcancelado")).replace(".", "").replace(",", ".");
-      oCFC.campo13 = FormatDecimal2(rst.getDouble("valordesconto")).replace(".", "").replace(",", ".");
-      oCFC.campo14 = FormatDecimal2(rst.getDouble("valoroutras")).replace(".", "").replace(",", ".");
-      oCFC.campo15 = FormatDecimal2(rst.getDouble("valorisento")).replace(".", "").replace(",", ".");
-      oCFC.campo16 = FormatDecimal2(rst.getDouble("valoricmssubstituicao")).replace(".", "").replace(",", ".");
-      oCFC.campo17 = "0.00";
-      oCFC.campo18 = "N";
-      oCFC.campo19 = "";
-      oCFC.campo20 = "";
-      oCFC.campo21 = "";
-      oCFC.campo22 = "";
-      oCFC.campo23 = "";
-      oCFC.campo24 = "";
-      oCFC.campo25 = "";
-      oCFC.campo26 = "";
-      oCFC.campo27 = "";
-      oCFC.campo28 = "";
-      oCFC.campo29 = "";
-      oCFC.campo30 = "";
-      oCFC.campo31 = "";
-      oCFC.campo32 = "";
-      oCFC.campo33 = "N";
-      oCFC.campo34 = FormatDecimal2(rst.getDouble("valoracrescimo")).replace(".", "").replace(",", ".");
-      oCFC.campo35 = Format.number(this.oFortesDAO.getCodigoEstabelecimento(i_exportacao.idLoja), 4);
-      oCFC.campo36 = "";
-      i_exportacao.qtdRegistro++;
-      i_arquivo.write(oCFC.getString());
-      sql = new StringBuilder();
-      sql.append("SELECT e.id, e.numeronota, e.valorcontabil, mr.desconto, e.cancelado, e.valoracrescimo");
-      sql.append(" FROM escrita AS e");
-      sql.append(" INNER JOIN maparesumo as mr on mr.ecf = e.ecf AND mr.data = e.data AND mr.id_loja = e.id_loja");
-      if (i_exportacao.tipoData == TipoData.ENTRADA.getId()) {
-        sql.append(" WHERE e.data = '" + rst.getDate("data") + "'");
-      } else if (i_exportacao.tipoData == TipoData.EMISSAO.getId()) {
-        sql.append(" WHERE e.dataemissao = '" + rst.getDate("data") + "'");
-      } 
-      sql.append(" AND e.ecf = " + rst.getInt("ecf"));
-      sql.append(" AND e.id_loja = " + i_exportacao.idLoja);
-      sql.append(" AND e.cupomfiscal = TRUE AND e.modelo = '" + ModeloNotaFiscal.CUPOMFISCAL.getModelo() + "'");
-      rstCupom = stmCupom.executeQuery(sql.toString());
-      while (rstCupom.next()) {
-        FortesCCFVO oCCF = new FortesCCFVO();
-        oCCF.campo1 = "CCF";
-        oCCF.campo2 = Format.number(rstCupom.getInt("numeronota"), 6);
-        oCCF.campo3 = "0.00";
-        oCCF.campo4 = FormatDecimal2(0.0D).replace(".", "").replace(",", ".");
-        oCCF.campo5 = "";
-        oCCF.campo6 = rstCupom.getBoolean("cancelado") ? "2" : "0";
-        oCCF.campo7 = FormatDecimal2(rstCupom.getDouble("valoracrescimo")).replace(".", "").replace(",", ".");
-        oCCF.campo8 = "";
-        oCCF.campo9 = "";
-        oCCF.campo10 = "";
-        oCCF.campo11 = "";
-        oCCF.campo12 = "";
-        oCCF.campo13 = "";
-        oCCF.campo14 = "";
-        oCCF.campo15 = "";
-        oCCF.campo16 = "";
-        oCCF.campo17 = "";
-        oCCF.campo18 = "";
-        oCCF.campo19 = "";
-        oCCF.campo20 = "";
-        oCCF.campo21 = "";
-        oCCF.campo22 = "";
-        oCCF.campo23 = "";
-        oCCF.campo24 = "";
-        oCCF.campo25 = "";
-        oCCF.campo26 = "";
-        oCCF.campo27 = "";
-        oCCF.campo28 = "";
-        oCCF.campo29 = "";
-        i_exportacao.qtdRegistro++;
-        i_arquivo.write(oCCF.getString());
-        sql = new StringBuilder();
-        sql.append("SELECT ei.id_produto, ei.quantidade, te.descricao AS tipoembalagem,");
-        sql.append(" (ei.valorbasecalculo + ei.valorisento + ei.valoroutras + ei.valorcancelado) AS valorbruto,");
-        sql.append(" ROUND(CASE WHEN (ei.valortotal < (ei.valorbasecalculo + ei.valorisento + ei.valoroutras)) THEN 0");
-        sql.append(" ELSE (ei.valortotal - (ei.valorbasecalculo + ei.valorisento + ei.valoroutras)) END, 2) AS valordescontoitem,");
-        sql.append(" ei.cfop, ei.situacaotributaria, ei.valorbasecalculo, (a.porcentagemfinal + COALESCE(a.porcentagemfcp, 0)) AS aliquota,");
-        sql.append(" ROUND(((ei.valorbasecalculo + ei.valorisento + ei.valoroutras) + (CASE WHEN e.aplicaicmsipi = FALSE THEN ei.valoripi ELSE 0 END)), 2) AS valorbasepiscofins,");
-        sql.append(" COALESCE(ei.id_tipoorigemmercadoria, p.id_tipoorigemmercadoria) AS id_tipoorigemmercadoria, ei.tiponaturezareceita, tpc.cst AS situacaotributariapiscofins, ei.valorcancelado, ei.valordesconto, ei.valortotal,");
-        sql.append(" ROUND(CASE WHEN (ei.valortotal < (ei.valorbasecalculo + ei.valorisento + ei.valoroutras)) THEN ((ei.valorbasecalculo + ei.valorisento + ei.valoroutras) - ei.valortotal)");
-        sql.append(" ELSE 0 END, 2) AS valoracrescimoitem,");
-        if (idTipoEmpresa == TipoEmpresa.LUCRO_PRESUMIDO.getId()) {
-          sql.append(" tpc.valorpispresumido, tpc.valorcofinspresumido,");
-        } else {
-          sql.append(" tpc.valorpis, tpc.valorcofins,");
-        } 
-        sql.append(" ei.cancelado");
-        sql.append(" FROM escrita AS e");
-        sql.append(" INNER JOIN escritaitem AS ei ON e.id = ei.id_escrita");
-        sql.append(" INNER JOIN produto AS p ON p.id = ei.id_produto");
-        sql.append(" INNER JOIN loja AS l ON l.id = e.id_loja");
-        sql.append(" INNER JOIN fornecedor AS f ON f.id = l.id_fornecedor");
-        sql.append(" INNER JOIN produtoaliquota AS pa ON pa.id_produto = p.id AND pa.id_estado = f.id_estado");
-        sql.append(" INNER JOIN tipoembalagem AS te ON te.id = p.id_tipoembalagem");
-        sql.append(" INNER JOIN aliquota AS a ON a.id = ei.id_aliquota");
-        sql.append(" INNER JOIN tipopiscofins AS tpc ON tpc.id = ei.id_tipopiscofins");
-        sql.append(" WHERE ei.id_escrita = " + rstCupom.getInt("id"));
-        rstProduto = stmProduto.executeQuery(sql.toString());
-        while (rstProduto.next()) {
-          FortesPCCVO oPCC = new FortesPCCVO();
-          oPCC.campo1 = "PCC";
-          oPCC.campo2 = Format.number(rstProduto.getInt("id_produto"), 9);
-          oPCC.campo3 = Format.decimal3(rstProduto.getDouble("quantidade")).replace(".", "").replace(",", ".");
-          oPCC.campo4 = rstProduto.getString("tipoembalagem");
-          oPCC.campo5 = FormatDecimal2(rstProduto.getDouble("valortotal")).replace(".", "").replace(",", ".");
-          oPCC.campo6 = rstProduto.getString("cfop").replace(".", "").replace(",", ".");
-          if (((AliquotaDAO)VRInstance.criar(AliquotaDAO.class)).isSubstituido(rstProduto.getInt("situacaotributaria"))) {
-            oPCC.campo7 = "1";
-          } else if (((AliquotaDAO)VRInstance.criar(AliquotaDAO.class)).isIsento(rstProduto.getInt("situacaotributaria"))) {
-            oPCC.campo7 = "2";
-          } else if (((AliquotaDAO)VRInstance.criar(AliquotaDAO.class)).isOutras(rstProduto.getInt("situacaotributaria"))) {
-            oPCC.campo7 = "3";
-          } else {
-            oPCC.campo7 = "0";
-          } 
-          if (rstProduto.getDouble("valorbruto") - rstProduto.getDouble("valorcancelado") > 0.0D) {
-            oPCC.campo12 = rstProduto.getString("id_tipoorigemmercadoria");
-            oPCC.campo13 = Format.number(rstProduto.getInt("situacaotributaria"), 2);
-            oPCC.campo14 = Format.number(rstProduto.getInt("situacaotributariapiscofins"), 2);
-            oPCC.campo15 = Format.number(rstProduto.getInt("situacaotributariapiscofins"), 2);
-            if ("02,03,04,05,06,07,08,09".contains(rstProduto.getString("situacaotributariapiscofins"))) {
-              oPCC.campo16 = Format.number(this.oFortesDAO.converteTipoNaturezaReceita(rstProduto.getInt("tiponaturezareceita"), rstProduto.getInt("situacaotributariapiscofins")), 3);
-              oPCC.campo17 = Format.number(this.oFortesDAO.converteTipoNaturezaReceita(rstProduto.getInt("tiponaturezareceita"), rstProduto.getInt("situacaotributariapiscofins")), 3);
-            } else {
-              oPCC.campo16 = "";
-              oPCC.campo17 = "";
-            } 
-          } else {
-            oPCC.campo12 = "";
-            oPCC.campo13 = "";
-            oPCC.campo14 = "";
-            oPCC.campo15 = "";
-            oPCC.campo16 = "";
-            oPCC.campo17 = "";
-          } 
-          oPCC.campo18 = FormatDecimal2(rstProduto.getDouble("valorcancelado")).replace(".", "").replace(",", ".");
-          if (rstProduto.getBoolean("cancelado") || rstProduto.getDouble("valorcancelado") > 0.0D) {
-            oPCC.campo8 = "0.00";
-            oPCC.campo9 = "0.00";
-            oPCC.campo10 = "0.00";
-            oPCC.campo11 = "0.00";
-            oPCC.campo19 = "0.00";
-            oPCC.campo20 = "0.00";
-          } else {
-            oPCC.campo8 = FormatDecimal2(rstProduto.getDouble("valorbasecalculo")).replace(".", "").replace(",", ".");
-            oPCC.campo9 = FormatDecimal2(rstProduto.getDouble("aliquota")).replace(".", "").replace(",", ".");
-            if (rstProduto.getInt("situacaotributariapiscofins") != 49) {
-              oPCC.campo10 = FormatDecimal2(rstProduto.getDouble("valorbasepiscofins")).replace(".", "").replace(",", ".");
-              oPCC.campo11 = FormatDecimal2(rstProduto.getDouble("valorbasepiscofins")).replace(".", "").replace(",", ".");
-            } else {
-              oPCC.campo10 = "0.00";
-              oPCC.campo11 = "0.00";
-            } 
-            oPCC.campo19 = FormatDecimal2(rstProduto.getDouble("valordescontoitem")).replace(".", "").replace(",", ".");
-            oPCC.campo20 = FormatDecimal2(rstProduto.getDouble("valortotal") + rstProduto.getDouble("valoracrescimoitem") - rstProduto.getDouble("valorcancelado") - rstProduto.getDouble("valordescontoitem")).replace(".", "").replace(",", ".");
-          } 
-          oPCC.campo21 = "1";
-          if (this.oCAB.campo9.equals("S")) {
-            oPCC.campo22 = "0.00";
-            oPCC.campo23 = "0.00";
-            oPCC.campo24 = "0.00";
-          } 
-          oPCC.campo25 = "1";
-          if (this.oCAB.campo9.equals("S")) {
-            oPCC.campo26 = "0.00";
-            oPCC.campo27 = "0.00";
-            oPCC.campo28 = "0.00";
-          } 
-          oPCC.campo29 = FormatDecimal2(rstProduto.getDouble("valoracrescimoitem")).replace(".", "").replace(",", ".");
-          oPCC.campo30 = "";
-          oPCC.campo31 = "";
-          if (oPCC.campo14.equals("09"))
-            oPCC.campo11 = "0.00"; 
-          if (oPCC.campo15.equals("09"))
-            oPCC.campo10 = "0.00"; 
-          oPCC.campo32 = "";
-          i_exportacao.qtdRegistro++;
-          i_arquivo.write(oPCC.getStringLayout140());
-        } 
-      } 
-      sql = new StringBuilder();
-      sql.append("SELECT SUM(ei.valorbasecalculo + ei.valorisento + ei.valoroutras) AS valor,");
-      sql.append(" ei.cfop, SUM(ei.valorbasecalculo) AS valorbasecalculo, (a.porcentagem + COALESCE(a.porcentagemfcp, 0)) AS aliquota,");
-      sql.append(" SUM(ei.valoricms + COALESCE(ei.valorfcp, 0)) AS valoricms,SUM(ei.valorisento) AS valorisento, SUM(ei.valoroutras) AS valoroutras, ei.situacaotributaria,");
-      sql.append(" COALESCE(ei.id_tipoorigemmercadoria, p.id_tipoorigemmercadoria) AS id_tipoorigemmercadoria, tpc.cst AS cst, estado.sigla AS uf, municipio.id AS codmunicipio");
-      sql.append(" FROM escrita AS e");
-      sql.append(" INNER JOIN escritaitem AS ei ON e.id = ei.id_escrita");
-      sql.append(" INNER JOIN produto AS p ON p.id = ei.id_produto");
-      sql.append(" INNER JOIN tipoembalagem AS te ON te.id = p.id_tipoembalagem");
-      sql.append(" INNER JOIN aliquota AS a ON a.id = ei.id_aliquota");
-      sql.append(" INNER JOIN tipopiscofins AS tpc ON tpc.id = ei.id_tipopiscofins");
-      sql.append(" INNER JOIN fornecedor f ON e.id_fornecedor = f.id");
-      sql.append(" INNER JOIN estado ON f.id_estado = estado.id");
-      sql.append(" INNER JOIN municipio ON f.id_municipio = municipio.id");
-      if (i_exportacao.tipoData == TipoData.ENTRADA.getId()) {
-        sql.append(" WHERE e.data = '" + rst.getDate("data") + "'");
-      } else if (i_exportacao.tipoData == TipoData.EMISSAO.getId()) {
-        sql.append(" WHERE e.dataemissao = '" + rst.getDate("data") + "'");
-      } 
-      sql.append(" AND e.ecf = " + rst.getInt("ecf"));
-      sql.append(" AND e.id_loja = " + i_exportacao.idLoja);
-      sql.append(" AND e.cupomfiscal = TRUE AND e.modelo = '" + ModeloNotaFiscal.CUPOMFISCAL.getModelo() + "'");
-      sql.append(" GROUP BY ei.cfop, (a.porcentagem + COALESCE(a.porcentagemfcp, 0)), ei.situacaotributaria, COALESCE(ei.id_tipoorigemmercadoria, p.id_tipoorigemmercadoria), cst, uf, codmunicipio");
-      rstImposto = stmImposto.executeQuery(sql.toString());
-      while (rstImposto.next()) {
-        FortesICFVO oICF = new FortesICFVO();
-        oICF.campo1 = "ICF";
-        oICF.campo2 = FormatDecimal2(rstImposto.getDouble("valor")).replace(".", "").replace(",", ".");
-        oICF.campo3 = Global.estado;
-        oICF.campo4 = rstImposto.getString("cfop").replace(".", "").replace(",", ".");
-        oICF.campo5 = FormatDecimal2(rstImposto.getDouble("valorbasecalculo")).replace(".", "").replace(",", ".");
-        oICF.campo6 = FormatDecimal2(rstImposto.getDouble("aliquota")).replace(".", "").replace(",", ".");
-        oICF.campo7 = FormatDecimal2(rstImposto.getDouble("valoricms")).replace(".", "").replace(",", ".");
-        oICF.campo8 = FormatDecimal2(rstImposto.getDouble("valorisento")).replace(".", "").replace(",", ".");
-        oICF.campo9 = FormatDecimal2(rstImposto.getDouble("valoroutras")).replace(".", "").replace(",", ".");
-        if (((AliquotaDAO)VRInstance.criar(AliquotaDAO.class)).isSubstituido(rstImposto.getInt("situacaotributaria"))) {
-          oICF.campo10 = "S";
-        } else {
-          oICF.campo10 = "N";
-        } 
-        oICF.campo11 = "";
-        oICF.campo12 = "";
-        oICF.campo13 = rstImposto.getString("id_tipoorigemmercadoria");
-        oICF.campo14 = Format.number(rstImposto.getInt("situacaotributaria"), 2);
-        oICF.campo15 = "";
-        oICF.campo16 = "";
-        if (rst.getInt("id_tipocrt_loja") == TipoCrt.SIMPLES_NACIONAL.getId() && (
-          (TipoPisCofinsDAO)VRInstance.criar(TipoPisCofinsDAO.class)).isMonofasico(rstImposto.getInt("cst"))) {
-          oICF.campo17 = "S";
-          oICF.campo18 = "S";
-        } else {
-          oICF.campo17 = "N";
-          oICF.campo18 = "N";
-        } 
-        oICF.campo19 = "";
-        oICF.campo20 = "";
-        i_exportacao.qtdRegistro++;
-        i_arquivo.write(oICF.getStringLayout109());
-      } 
-      sql = new StringBuilder();
-      sql.append("SELECT finalizadora.descricao AS finalizadora,");
-      sql.append(" COALESCE(SUM(vendafinalizadora.valor - vendafinalizadora.troco), 0) AS valor");
-      sql.append(" FROM pdv.venda AS venda");
-      sql.append(" LEFT JOIN pdv.vendafinalizadora as vendafinalizadora on vendafinalizadora.id_venda = venda.id AND venda.cancelado = FALSE");
-      sql.append(" INNER JOIN pdv.finalizadora AS finalizadora ON finalizadora.id = vendafinalizadora.id_finalizadora");
-      sql.append(" INNER JOIN escrita AS e ON e.id_loja = venda.id_loja AND e.data = venda.data AND e.ecf = venda.ecf AND e.numeronota = venda.numerocupom");
-      sql.append(" WHERE 1 = 1");
-      if (i_exportacao.tipoData == TipoData.ENTRADA.getId()) {
-        sql.append(" AND e.data = '" + rst.getDate("data") + "'");
-      } else if (i_exportacao.tipoData == TipoData.EMISSAO.getId()) {
-        sql.append(" AND e.dataemissao = '" + rst.getDate("data") + "'");
-      } 
-      sql.append(" AND e.id_loja = " + i_exportacao.idLoja);
-      sql.append(" AND e.ecf = " + rst.getInt("ecf"));
-      sql.append(" GROUP BY finalizadora.descricao");
-      sql.append(" ORDER BY finalizadora.descricao");
-      rstFinalizadora = stmFinalizadora.executeQuery(sql.toString());
-      if (i_exportacao.outrosValoresDocumento)
-        while (rstFinalizadora.next()) {
-          FortesOVFVO oOVF = new FortesOVFVO();
-          oOVF.campo1 = "OVF";
-          oOVF.campo2 = rstFinalizadora.getString("finalizadora");
-          oOVF.campo3 = FormatDecimal2(rstFinalizadora.getDouble("valor")).replace(".", "").replace(",", ".");
-          i_exportacao.qtdRegistro++;
-          i_arquivo.write(oOVF.getString());
-        }  
-      ProgressBar.next();
-    } 
-    stmImposto.close();
-    stmProduto.close();
-    stmCupom.close();
-    stm.close();
-  }
+  // private void exportarCupomFiscal(ExportarFortesVO i_exportacao, Arquivo i_arquivo) throws Exception {
+  //   VRStatement stm = null;
+  //   VRStatement stmCupom = null;
+  //   VRStatement stmProduto = null;
+  //   VRStatement stmImposto = null;
+  //   VRStatement stmFinalizadora = null;
+  //   ResultSet rst = null;
+  //   ResultSet rstCupom = null;
+  //   ResultSet rstProduto = null;
+  //   ResultSet rstImposto = null;
+  //   ResultSet rstFinalizadora = null;
+  //   StringBuilder sql = null;
+  //   stm = VRStatement.createStatement();
+  //   stmCupom = VRStatement.createStatement();
+  //   stmProduto = VRStatement.createStatement();
+  //   stmImposto = VRStatement.createStatement();
+  //   stmFinalizadora = VRStatement.createStatement();
+  //   int idTipoEmpresa = ((LojaDAO)VRInstance.criar(LojaDAO.class)).getIdTipoEmpresa(i_exportacao.idLoja);
+  //   ProgressBar.setStatus("Exportando Cupom Fiscal...");
+  //   sql = new StringBuilder();
+  //   sql.append(" SELECT data, ecf, contadorinicial, contadorfinal, reducao, contadorreinicio, SUM(valorcontabil) AS valorcontabil, gtfinal, gtinicial, SUM(valorcancelamento) AS valorcancelamento, ");
+  //   sql.append(" valordesconto, SUM(valoricmssubstituicao) AS valoricmssubstituicao, SUM(valorisento)  AS valorisento, SUM(valoroutras) AS valoroutras, ");
+  //   sql.append(" SUM(valoracrescimo) AS valoracrescimo, SUM(valortotal) AS valortotal, SUM(valorcancelado) AS valorcancelado, id_tipocrt_loja FROM( ");
+  //   sql.append("SELECT mr.data, e.ecf, mr.contadorinicial, mr.contadorfinal, mr.reducao, mr.contadorreinicio, SUM(i.valorbasecalculo + i.valorisento + i.valoroutras + i.valorcancelado - i.valordesconto) AS valorcontabil, mr.gtfinal, mr.gtinicial, SUM(e.valorcancelamento) AS valorcancelamento,");
+  //   sql.append(" mr.desconto AS valordesconto, CASE WHEN i.situacaotributaria IN ('10','30','60','70') THEN 0 ELSE SUM(i.valoroutras) END AS valoricmssubstituicao,SUM(i.valorisento) AS valorisento,");
+  //   sql.append(" CASE WHEN i.situacaotributaria IN ('10','30','60','70') THEN SUM(i.valoroutras) ELSE SUM(e.valoricmssubstituicao + COALESCE(e.valorfcpst, 0)) END AS valoroutras,  SUM(e.valoracrescimo) AS valoracrescimo, SUM(e.valorcontabil) AS valortotal, SUM(i.valorcancelado) AS valorcancelado, estabelecimentote.id_tipocrt AS id_tipocrt_loja, i.situacaotributaria situacaotributaria");
+  //   sql.append(" FROM escrita AS e");
+  //   sql.append(" INNER JOIN escritaitem AS i ON i.id_escrita = e.id");
+  //   sql.append(" INNER JOIN maparesumo as mr on mr.ecf = e.ecf AND mr.data = e.data AND mr.id_loja = e.id_loja");
+  //   sql.append(" INNER JOIN loja l ON l.id = e.id_loja");
+  //   sql.append(" INNER JOIN fornecedor AS estabelecimento ON estabelecimento.id = l.id_fornecedor");
+  //   sql.append(" INNER JOIN tipoempresa AS estabelecimentote ON estabelecimentote.id = estabelecimento.id_tipoempresa");
+  //   sql.append(" INNER JOIN  aliquota a ON i.id_aliquota = a.id");
+  //   if (i_exportacao.tipoData == TipoData.ENTRADA.getId()) {
+  //     sql.append(" WHERE e.data BETWEEN  '" + Format.dataBanco(i_exportacao.dataInicio) + "' AND '" + Format.dataBanco(i_exportacao.dataTermino) + "'");
+  //   } else if (i_exportacao.tipoData == TipoData.EMISSAO.getId()) {
+  //     sql.append(" WHERE e.dataemissao BETWEEN  '" + Format.dataBanco(i_exportacao.dataInicio) + "' AND '" + Format.dataBanco(i_exportacao.dataTermino) + "'");
+  //   } 
+  //   sql.append(" AND e.id_loja = " + i_exportacao.idLoja);
+  //   sql.append(" AND e.cupomfiscal = TRUE AND e.modelo = '" + ModeloNotaFiscal.CUPOMFISCAL.getModelo() + "'");
+  //   sql.append(" GROUP BY mr.data, e.ecf, mr.contadorinicial, mr.contadorfinal, mr.reducao, mr.contadorreinicio, mr.gtfinal, mr.gtinicial, mr.desconto, id_tipocrt_loja, i.situacaotributaria");
+  //   sql.append(" ORDER BY e.ecf");
+  //   sql.append(" ) AS FOO GROUP BY data, ecf, contadorinicial, contadorfinal, reducao, contadorreinicio, gtfinal, gtinicial, valordesconto, id_tipocrt_loja ");
+  //   sql.append(" ORDER BY ecf");
+  //   rst = stm.executeQuery(sql.toString());
+  //   rst.last();
+  //   ProgressBar.setMaximum(rst.getRow());
+  //   rst.beforeFirst();
+  //   while (rst.next()) {
+  //     ProgressBar.setStatus("Exportando Cupom Fiscal ECF " + Format.number(rst.getInt("ecf"), 3) + "...");
+  //     FortesCFCVO oCFC = new FortesCFCVO();
+  //     oCFC.campo1 = "CFC";
+  //     oCFC.campo2 = Format.number(this.oFortesDAO.getCodigoEstabelecimento(i_exportacao.idLoja), 4);
+  //     oCFC.campo3 = Format.data(Format.dataGUI(rst.getDate("data")), "dd/MM/yyyy", "yyyyMMdd");
+  //     oCFC.campo4 = Format.number(rst.getInt("ecf"), 3);
+  //     oCFC.campo5 = Format.number(rst.getInt("contadorfinal"), 6);
+  //     oCFC.campo6 = Format.number(rst.getInt("contadorinicial"), 6);
+  //     oCFC.campo7 = Format.number(rst.getInt("contadorfinal"), 6);
+  //     oCFC.campo8 = Format.number(rst.getInt("reducao"), 6);
+  //     oCFC.campo9 = Format.number(rst.getInt("contadorreinicio"), 6);
+  //     oCFC.campo10 = FormatDecimal2(rst.getDouble("gtfinal") - rst.getDouble("gtinicial")).replace(".", "").replace(",", ".");
+  //     oCFC.campo11 = FormatDecimal2(rst.getDouble("gtfinal")).replace(".", "").replace(",", ".");
+  //     oCFC.campo12 = FormatDecimal2(rst.getDouble("valorcancelado")).replace(".", "").replace(",", ".");
+  //     oCFC.campo13 = FormatDecimal2(rst.getDouble("valordesconto")).replace(".", "").replace(",", ".");
+  //     oCFC.campo14 = FormatDecimal2(rst.getDouble("valoroutras")).replace(".", "").replace(",", ".");
+  //     oCFC.campo15 = FormatDecimal2(rst.getDouble("valorisento")).replace(".", "").replace(",", ".");
+  //     oCFC.campo16 = FormatDecimal2(rst.getDouble("valoricmssubstituicao")).replace(".", "").replace(",", ".");
+  //     oCFC.campo17 = "0.00";
+  //     oCFC.campo18 = "N";
+  //     oCFC.campo19 = "";
+  //     oCFC.campo20 = "";
+  //     oCFC.campo21 = "";
+  //     oCFC.campo22 = "";
+  //     oCFC.campo23 = "";
+  //     oCFC.campo24 = "";
+  //     oCFC.campo25 = "";
+  //     oCFC.campo26 = "";
+  //     oCFC.campo27 = "";
+  //     oCFC.campo28 = "";
+  //     oCFC.campo29 = "";
+  //     oCFC.campo30 = "";
+  //     oCFC.campo31 = "";
+  //     oCFC.campo32 = "";
+  //     oCFC.campo33 = "N";
+  //     oCFC.campo34 = FormatDecimal2(rst.getDouble("valoracrescimo")).replace(".", "").replace(",", ".");
+  //     oCFC.campo35 = Format.number(this.oFortesDAO.getCodigoEstabelecimento(i_exportacao.idLoja), 4);
+  //     oCFC.campo36 = "";
+  //     i_exportacao.qtdRegistro++;
+  //     i_arquivo.write(oCFC.getString());
+  //     sql = new StringBuilder();
+  //     sql.append("SELECT e.id, e.numeronota, e.valorcontabil, mr.desconto, e.cancelado, e.valoracrescimo");
+  //     sql.append(" FROM escrita AS e");
+  //     sql.append(" INNER JOIN maparesumo as mr on mr.ecf = e.ecf AND mr.data = e.data AND mr.id_loja = e.id_loja");
+  //     if (i_exportacao.tipoData == TipoData.ENTRADA.getId()) {
+  //       sql.append(" WHERE e.data = '" + rst.getDate("data") + "'");
+  //     } else if (i_exportacao.tipoData == TipoData.EMISSAO.getId()) {
+  //       sql.append(" WHERE e.dataemissao = '" + rst.getDate("data") + "'");
+  //     } 
+  //     sql.append(" AND e.ecf = " + rst.getInt("ecf"));
+  //     sql.append(" AND e.id_loja = " + i_exportacao.idLoja);
+  //     sql.append(" AND e.cupomfiscal = TRUE AND e.modelo = '" + ModeloNotaFiscal.CUPOMFISCAL.getModelo() + "'");
+  //     rstCupom = stmCupom.executeQuery(sql.toString());
+  //     while (rstCupom.next()) {
+  //       FortesCCFVO oCCF = new FortesCCFVO();
+  //       oCCF.campo1 = "CCF";
+  //       oCCF.campo2 = Format.number(rstCupom.getInt("numeronota"), 6);
+  //       oCCF.campo3 = "0.00";
+  //       oCCF.campo4 = FormatDecimal2(0.0D).replace(".", "").replace(",", ".");
+  //       oCCF.campo5 = "";
+  //       oCCF.campo6 = rstCupom.getBoolean("cancelado") ? "2" : "0";
+  //       oCCF.campo7 = FormatDecimal2(rstCupom.getDouble("valoracrescimo")).replace(".", "").replace(",", ".");
+  //       oCCF.campo8 = "";
+  //       oCCF.campo9 = "";
+  //       oCCF.campo10 = "";
+  //       oCCF.campo11 = "";
+  //       oCCF.campo12 = "";
+  //       oCCF.campo13 = "";
+  //       oCCF.campo14 = "";
+  //       oCCF.campo15 = "";
+  //       oCCF.campo16 = "";
+  //       oCCF.campo17 = "";
+  //       oCCF.campo18 = "";
+  //       oCCF.campo19 = "";
+  //       oCCF.campo20 = "";
+  //       oCCF.campo21 = "";
+  //       oCCF.campo22 = "";
+  //       oCCF.campo23 = "";
+  //       oCCF.campo24 = "";
+  //       oCCF.campo25 = "";
+  //       oCCF.campo26 = "";
+  //       oCCF.campo27 = "";
+  //       oCCF.campo28 = "";
+  //       oCCF.campo29 = "";
+  //       i_exportacao.qtdRegistro++;
+  //       i_arquivo.write(oCCF.getString());
+  //       sql = new StringBuilder();
+  //       sql.append("SELECT ei.id_produto, ei.quantidade, te.descricao AS tipoembalagem,");
+  //       sql.append(" (ei.valorbasecalculo + ei.valorisento + ei.valoroutras + ei.valorcancelado) AS valorbruto,");
+  //       sql.append(" ROUND(CASE WHEN (ei.valortotal < (ei.valorbasecalculo + ei.valorisento + ei.valoroutras)) THEN 0");
+  //       sql.append(" ELSE (ei.valortotal - (ei.valorbasecalculo + ei.valorisento + ei.valoroutras)) END, 2) AS valordescontoitem,");
+  //       sql.append(" ei.cfop, ei.situacaotributaria, ei.valorbasecalculo, (a.porcentagemfinal + COALESCE(a.porcentagemfcp, 0)) AS aliquota,");
+  //       sql.append(" ROUND(((ei.valorbasecalculo + ei.valorisento + ei.valoroutras) + (CASE WHEN e.aplicaicmsipi = FALSE THEN ei.valoripi ELSE 0 END)), 2) AS valorbasepiscofins,");
+  //       sql.append(" COALESCE(ei.id_tipoorigemmercadoria, p.id_tipoorigemmercadoria) AS id_tipoorigemmercadoria, ei.tiponaturezareceita, tpc.cst AS situacaotributariapiscofins, ei.valorcancelado, ei.valordesconto, ei.valortotal,");
+  //       sql.append(" ROUND(CASE WHEN (ei.valortotal < (ei.valorbasecalculo + ei.valorisento + ei.valoroutras)) THEN ((ei.valorbasecalculo + ei.valorisento + ei.valoroutras) - ei.valortotal)");
+  //       sql.append(" ELSE 0 END, 2) AS valoracrescimoitem,");
+  //       if (idTipoEmpresa == TipoEmpresa.LUCRO_PRESUMIDO.getId()) {
+  //         sql.append(" tpc.valorpispresumido, tpc.valorcofinspresumido,");
+  //       } else {
+  //         sql.append(" tpc.valorpis, tpc.valorcofins,");
+  //       } 
+  //       sql.append(" ei.cancelado");
+  //       sql.append(" FROM escrita AS e");
+  //       sql.append(" INNER JOIN escritaitem AS ei ON e.id = ei.id_escrita");
+  //       sql.append(" INNER JOIN produto AS p ON p.id = ei.id_produto");
+  //       sql.append(" INNER JOIN loja AS l ON l.id = e.id_loja");
+  //       sql.append(" INNER JOIN fornecedor AS f ON f.id = l.id_fornecedor");
+  //       sql.append(" INNER JOIN produtoaliquota AS pa ON pa.id_produto = p.id AND pa.id_estado = f.id_estado");
+  //       sql.append(" INNER JOIN tipoembalagem AS te ON te.id = p.id_tipoembalagem");
+  //       sql.append(" INNER JOIN aliquota AS a ON a.id = ei.id_aliquota");
+  //       sql.append(" INNER JOIN tipopiscofins AS tpc ON tpc.id = ei.id_tipopiscofins");
+  //       sql.append(" WHERE ei.id_escrita = " + rstCupom.getInt("id"));
+  //       rstProduto = stmProduto.executeQuery(sql.toString());
+  //       while (rstProduto.next()) {
+  //         FortesPCCVO oPCC = new FortesPCCVO();
+  //         oPCC.campo1 = "PCC";
+  //         oPCC.campo2 = Format.number(rstProduto.getInt("id_produto"), 9);
+  //         oPCC.campo3 = Format.decimal3(rstProduto.getDouble("quantidade")).replace(".", "").replace(",", ".");
+  //         oPCC.campo4 = rstProduto.getString("tipoembalagem");
+  //         oPCC.campo5 = FormatDecimal2(rstProduto.getDouble("valortotal")).replace(".", "").replace(",", ".");
+  //         oPCC.campo6 = rstProduto.getString("cfop").replace(".", "").replace(",", ".");
+  //         if (((AliquotaDAO)VRInstance.criar(AliquotaDAO.class)).isSubstituido(rstProduto.getInt("situacaotributaria"))) {
+  //           oPCC.campo7 = "1";
+  //         } else if (((AliquotaDAO)VRInstance.criar(AliquotaDAO.class)).isIsento(rstProduto.getInt("situacaotributaria"))) {
+  //           oPCC.campo7 = "2";
+  //         } else if (((AliquotaDAO)VRInstance.criar(AliquotaDAO.class)).isOutras(rstProduto.getInt("situacaotributaria"))) {
+  //           oPCC.campo7 = "3";
+  //         } else {
+  //           oPCC.campo7 = "0";
+  //         } 
+  //         if (rstProduto.getDouble("valorbruto") - rstProduto.getDouble("valorcancelado") > 0.0D) {
+  //           oPCC.campo12 = rstProduto.getString("id_tipoorigemmercadoria");
+  //           oPCC.campo13 = Format.number(rstProduto.getInt("situacaotributaria"), 2);
+  //           oPCC.campo14 = Format.number(rstProduto.getInt("situacaotributariapiscofins"), 2);
+  //           oPCC.campo15 = Format.number(rstProduto.getInt("situacaotributariapiscofins"), 2);
+  //           if ("02,03,04,05,06,07,08,09".contains(rstProduto.getString("situacaotributariapiscofins"))) {
+  //             oPCC.campo16 = Format.number(this.oFortesDAO.converteTipoNaturezaReceita(rstProduto.getInt("tiponaturezareceita"), rstProduto.getInt("situacaotributariapiscofins")), 3);
+  //             oPCC.campo17 = Format.number(this.oFortesDAO.converteTipoNaturezaReceita(rstProduto.getInt("tiponaturezareceita"), rstProduto.getInt("situacaotributariapiscofins")), 3);
+  //           } else {
+  //             oPCC.campo16 = "";
+  //             oPCC.campo17 = "";
+  //           } 
+  //         } else {
+  //           oPCC.campo12 = "";
+  //           oPCC.campo13 = "";
+  //           oPCC.campo14 = "";
+  //           oPCC.campo15 = "";
+  //           oPCC.campo16 = "";
+  //           oPCC.campo17 = "";
+  //         } 
+  //         oPCC.campo18 = FormatDecimal2(rstProduto.getDouble("valorcancelado")).replace(".", "").replace(",", ".");
+  //         if (rstProduto.getBoolean("cancelado") || rstProduto.getDouble("valorcancelado") > 0.0D) {
+  //           oPCC.campo8 = "0.00";
+  //           oPCC.campo9 = "0.00";
+  //           oPCC.campo10 = "0.00";
+  //           oPCC.campo11 = "0.00";
+  //           oPCC.campo19 = "0.00";
+  //           oPCC.campo20 = "0.00";
+  //         } else {
+  //           oPCC.campo8 = FormatDecimal2(rstProduto.getDouble("valorbasecalculo")).replace(".", "").replace(",", ".");
+  //           oPCC.campo9 = FormatDecimal2(rstProduto.getDouble("aliquota")).replace(".", "").replace(",", ".");
+  //           if (rstProduto.getInt("situacaotributariapiscofins") != 49) {
+  //             oPCC.campo10 = FormatDecimal2(rstProduto.getDouble("valorbasepiscofins")).replace(".", "").replace(",", ".");
+  //             oPCC.campo11 = FormatDecimal2(rstProduto.getDouble("valorbasepiscofins")).replace(".", "").replace(",", ".");
+  //           } else {
+  //             oPCC.campo10 = "0.00";
+  //             oPCC.campo11 = "0.00";
+  //           } 
+  //           oPCC.campo19 = FormatDecimal2(rstProduto.getDouble("valordescontoitem")).replace(".", "").replace(",", ".");
+  //           oPCC.campo20 = FormatDecimal2(rstProduto.getDouble("valortotal") + rstProduto.getDouble("valoracrescimoitem") - rstProduto.getDouble("valorcancelado") - rstProduto.getDouble("valordescontoitem")).replace(".", "").replace(",", ".");
+  //         } 
+  //         oPCC.campo21 = "1";
+  //         if (this.oCAB.campo9.equals("S")) {
+  //           oPCC.campo22 = "0.00";
+  //           oPCC.campo23 = "0.00";
+  //           oPCC.campo24 = "0.00";
+  //         } 
+  //         oPCC.campo25 = "1";
+  //         if (this.oCAB.campo9.equals("S")) {
+  //           oPCC.campo26 = "0.00";
+  //           oPCC.campo27 = "0.00";
+  //           oPCC.campo28 = "0.00";
+  //         } 
+  //         oPCC.campo29 = FormatDecimal2(rstProduto.getDouble("valoracrescimoitem")).replace(".", "").replace(",", ".");
+  //         oPCC.campo30 = "";
+  //         oPCC.campo31 = "";
+  //         if (oPCC.campo14.equals("09"))
+  //           oPCC.campo11 = "0.00"; 
+  //         if (oPCC.campo15.equals("09"))
+  //           oPCC.campo10 = "0.00"; 
+  //         oPCC.campo32 = "";
+  //         i_exportacao.qtdRegistro++;
+  //         i_arquivo.write(oPCC.getStringLayout140());
+  //       } 
+  //     } 
+  //     sql = new StringBuilder();
+  //     sql.append("SELECT SUM(ei.valorbasecalculo + ei.valorisento + ei.valoroutras) AS valor,");
+  //     sql.append(" ei.cfop, SUM(ei.valorbasecalculo) AS valorbasecalculo, (a.porcentagem + COALESCE(a.porcentagemfcp, 0)) AS aliquota,");
+  //     sql.append(" SUM(ei.valoricms + COALESCE(ei.valorfcp, 0)) AS valoricms,SUM(ei.valorisento) AS valorisento, SUM(ei.valoroutras) AS valoroutras, ei.situacaotributaria,");
+  //     sql.append(" COALESCE(ei.id_tipoorigemmercadoria, p.id_tipoorigemmercadoria) AS id_tipoorigemmercadoria, tpc.cst AS cst, estado.sigla AS uf, municipio.id AS codmunicipio");
+  //     sql.append(" FROM escrita AS e");
+  //     sql.append(" INNER JOIN escritaitem AS ei ON e.id = ei.id_escrita");
+  //     sql.append(" INNER JOIN produto AS p ON p.id = ei.id_produto");
+  //     sql.append(" INNER JOIN tipoembalagem AS te ON te.id = p.id_tipoembalagem");
+  //     sql.append(" INNER JOIN aliquota AS a ON a.id = ei.id_aliquota");
+  //     sql.append(" INNER JOIN tipopiscofins AS tpc ON tpc.id = ei.id_tipopiscofins");
+  //     sql.append(" INNER JOIN fornecedor f ON e.id_fornecedor = f.id");
+  //     sql.append(" INNER JOIN estado ON f.id_estado = estado.id");
+  //     sql.append(" INNER JOIN municipio ON f.id_municipio = municipio.id");
+  //     if (i_exportacao.tipoData == TipoData.ENTRADA.getId()) {
+  //       sql.append(" WHERE e.data = '" + rst.getDate("data") + "'");
+  //     } else if (i_exportacao.tipoData == TipoData.EMISSAO.getId()) {
+  //       sql.append(" WHERE e.dataemissao = '" + rst.getDate("data") + "'");
+  //     } 
+  //     sql.append(" AND e.ecf = " + rst.getInt("ecf"));
+  //     sql.append(" AND e.id_loja = " + i_exportacao.idLoja);
+  //     sql.append(" AND e.cupomfiscal = TRUE AND e.modelo = '" + ModeloNotaFiscal.CUPOMFISCAL.getModelo() + "'");
+  //     sql.append(" GROUP BY ei.cfop, (a.porcentagem + COALESCE(a.porcentagemfcp, 0)), ei.situacaotributaria, COALESCE(ei.id_tipoorigemmercadoria, p.id_tipoorigemmercadoria), cst, uf, codmunicipio");
+  //     rstImposto = stmImposto.executeQuery(sql.toString());
+  //     while (rstImposto.next()) {
+  //       FortesICFVO oICF = new FortesICFVO();
+  //       oICF.campo1 = "ICF";
+  //       oICF.campo2 = FormatDecimal2(rstImposto.getDouble("valor")).replace(".", "").replace(",", ".");
+  //       oICF.campo3 = Global.estado;
+  //       oICF.campo4 = rstImposto.getString("cfop").replace(".", "").replace(",", ".");
+  //       oICF.campo5 = FormatDecimal2(rstImposto.getDouble("valorbasecalculo")).replace(".", "").replace(",", ".");
+  //       oICF.campo6 = FormatDecimal2(rstImposto.getDouble("aliquota")).replace(".", "").replace(",", ".");
+  //       oICF.campo7 = FormatDecimal2(rstImposto.getDouble("valoricms")).replace(".", "").replace(",", ".");
+  //       oICF.campo8 = FormatDecimal2(rstImposto.getDouble("valorisento")).replace(".", "").replace(",", ".");
+  //       oICF.campo9 = FormatDecimal2(rstImposto.getDouble("valoroutras")).replace(".", "").replace(",", ".");
+  //       if (((AliquotaDAO)VRInstance.criar(AliquotaDAO.class)).isSubstituido(rstImposto.getInt("situacaotributaria"))) {
+  //         oICF.campo10 = "S";
+  //       } else {
+  //         oICF.campo10 = "N";
+  //       } 
+  //       oICF.campo11 = "";
+  //       oICF.campo12 = "";
+  //       oICF.campo13 = rstImposto.getString("id_tipoorigemmercadoria");
+  //       oICF.campo14 = Format.number(rstImposto.getInt("situacaotributaria"), 2);
+  //       oICF.campo15 = "";
+  //       oICF.campo16 = "";
+  //       if (rst.getInt("id_tipocrt_loja") == TipoCrt.SIMPLES_NACIONAL.getId() && (
+  //         (TipoPisCofinsDAO)VRInstance.criar(TipoPisCofinsDAO.class)).isMonofasico(rstImposto.getInt("cst"))) {
+  //         oICF.campo17 = "S";
+  //         oICF.campo18 = "S";
+  //       } else {
+  //         oICF.campo17 = "N";
+  //         oICF.campo18 = "N";
+  //       } 
+  //       oICF.campo19 = "";
+  //       oICF.campo20 = "";
+  //       i_exportacao.qtdRegistro++;
+  //       i_arquivo.write(oICF.getStringLayout109());
+  //     } 
+  //     sql = new StringBuilder();
+  //     sql.append("SELECT finalizadora.descricao AS finalizadora,");
+  //     sql.append(" COALESCE(SUM(vendafinalizadora.valor - vendafinalizadora.troco), 0) AS valor");
+  //     sql.append(" FROM pdv.venda AS venda");
+  //     sql.append(" LEFT JOIN pdv.vendafinalizadora as vendafinalizadora on vendafinalizadora.id_venda = venda.id AND venda.cancelado = FALSE");
+  //     sql.append(" INNER JOIN pdv.finalizadora AS finalizadora ON finalizadora.id = vendafinalizadora.id_finalizadora");
+  //     sql.append(" INNER JOIN escrita AS e ON e.id_loja = venda.id_loja AND e.data = venda.data AND e.ecf = venda.ecf AND e.numeronota = venda.numerocupom");
+  //     sql.append(" WHERE 1 = 1");
+  //     if (i_exportacao.tipoData == TipoData.ENTRADA.getId()) {
+  //       sql.append(" AND e.data = '" + rst.getDate("data") + "'");
+  //     } else if (i_exportacao.tipoData == TipoData.EMISSAO.getId()) {
+  //       sql.append(" AND e.dataemissao = '" + rst.getDate("data") + "'");
+  //     } 
+  //     sql.append(" AND e.id_loja = " + i_exportacao.idLoja);
+  //     sql.append(" AND e.ecf = " + rst.getInt("ecf"));
+  //     sql.append(" GROUP BY finalizadora.descricao");
+  //     sql.append(" ORDER BY finalizadora.descricao");
+  //     rstFinalizadora = stmFinalizadora.executeQuery(sql.toString());
+  //     if (i_exportacao.outrosValoresDocumento) {
+  //       while (rstFinalizadora.next()) {
+  //         FortesOVFVO oOVF = new FortesOVFVO();
+  //         oOVF.campo1 = "OVF";
+  //         oOVF.campo2 = rstFinalizadora.getString("finalizadora");
+  //         oOVF.campo3 = FormatDecimal2(rstFinalizadora.getDouble("valor")).replace(".", "").replace(",", ".");
+  //         i_exportacao.qtdRegistro++;
+  //         i_arquivo.write(oOVF.getString());
+  //       }
+  //     }
+  //     ProgressBar.next();
+  //   } 
+  //   stmImposto.close();
+  //   stmProduto.close();
+  //   stmCupom.close();
+  //   stm.close();
+  // }
   
   private void exportarConhecimentoTransporteCarga(ExportarFortesVO i_exportacao, Arquivo i_arquivo) throws Exception {
     VRStatement stm = null;
@@ -2310,7 +2345,7 @@ public class Fortes158DAO {
       sql.append(" CASE WHEN piscofins.valorpis <> 0 THEN ROUND((item.valorbasecalculo + item.valorisento + item.valoroutras + (CASE WHEN escopo.aplicaicmsipi = FALSE THEN item.valoripi ELSE 0 END) - item.valordesconto) * ((100 - piscofins.reduzidocredito) / 100), 2) ELSE 0 END AS basepiscofins,");
     } 
     sql.append(" piscofins.cst cst, item.tiponaturezareceita, escopo.id_tipofretenotafiscal, (COALESCE(aorigem.porcentagem, 0) + COALESCE(aorigem.porcentagemfcp, 0)) AS aliq_orig_perc, (COALESCE(adestino.porcentagem, 0) + COALESCE(adestino.porcentagemfcp, 0)) AS aliq_dest_perc, aliquota.porcentagemfcp,");
-    sql.append(" ndi.basecalculo AS baseinss, ndi.aliquota AS aliquotainss, ndi.valor AS inss");
+    sql.append(" ndi.basecalculo AS baseinss, ndi.aliquota AS aliquotainss, ndi.valor AS inss, escopo.id_indicadorpagamento");
     sql.append(" FROM escrita AS escopo");
     sql.append(" INNER JOIN escritaitem AS item ON escopo.id = item.id_escrita");
     sql.append(" INNER JOIN fornecedor f ON f.id = escopo.id_fornecedor");
@@ -2334,7 +2369,7 @@ public class Fortes158DAO {
     } 
     sql.append(" AND escopo.id_loja = " + i_exportacao.idLoja);
     sql.append(" AND escopo.modelo IN ('" + ModeloNotaFiscal.CTRC.getModelo() + "', '" + ModeloNotaFiscal.TRANSPORTE.getModelo() + "', '" + ModeloNotaFiscal.CTE.getModelo() + "')");
-    sql.append(" GROUP BY item.cfop, escopo.id_fornecedor, escopo.serie, escopo.numeronota ");
+    sql.append(" GROUP BY item.cfop, escopo.id_fornecedor, escopo.serie, escopo.numeronota, escopo.id_indicadorpagamento ");
     sql.append(",escopo.dataemissao, escopo.data, item.id_aliquota, item.id_produto ");
     sql.append(",escopo.modelo, (aliquota.porcentagemfinal + COALESCE(aliquota.porcentagemfcp, 0)), COALESCE(escopo.chavenfe, '') ");
     sql.append(",COALESCE(escopo.informacaocomplementar, '') ");
@@ -2362,7 +2397,7 @@ public class Fortes158DAO {
       oCtc.campo3 = "E";
       oCtc.campo4 = rst.getString("chavenfe").trim().isEmpty() ? "CTA" : "CTE";
       oCtc.campo6 = rst.getString("serie");
-      oCtc.campo8 = Format.number(rst.getInt("numeronota"), 6);
+      oCtc.campo8 = Format.number(rst.getInt("numeronota"), 9);
       oCtc.campo10 = Format.data(Format.dataGUI(rst.getDate("dataemissao")), "dd/MM/yyyy", "yyyyMMdd");
       oCtc.campo11 = "0";
       oCtc.campo12 = Format.data(Format.dataGUI(rst.getDate("data")), "dd/MM/yyyy", "yyyyMMdd");
@@ -2380,9 +2415,25 @@ public class Fortes158DAO {
       oCtc.campo39 = FormatDecimal2(rst.getDouble("aliquotaorigem")).replace(".", "").replace(",", ".");
       oCtc.campo40 = FormatDecimal2(rst.getDouble("aliquotaloja")).replace(".", "").replace(",", ".");
       oCtc.campo53 = (rst.getObject("observacao") != null) ? rst.getString("observacao") : "";
-      oCtc.campo54 = "N";
+      
+      int paymentIndicator = rst.getInt("id_indicadorpagamento");
+
+      switch (paymentIndicator) {
+        case 1:
+          oCtc.campo54 = "P";
+          break;
+        case 0:
+        case 2:
+          oCtc.campo54 = "V";
+          break;
+        case 9:
+          oCtc.campo54 = "N";
+          break;
+      }
+
       oCtc.campo55 = Format.number(rst.getInt("situacaotributaria"), 2);
-      oCtc.campo56 = (rst.getString("modelo") == ModeloNotaFiscal.CTE.getModelo()) ? rst.getString("chavenfe") : "";
+
+      oCtc.campo56 = (rst.getString("modelo").equals(ModeloNotaFiscal.CTE.getModelo())) ? rst.getString("chavenfe") : "";
       oCtc.campo57 = "000001";
       oCtc.campo58 = (rst.getObject("cst") != null) ? rst.getString("cst") : "";
       oCtc.campo59 = (rst.getObject("cst") != null) ? rst.getString("cst") : "";
@@ -2447,8 +2498,20 @@ public class Fortes158DAO {
       oCtc.campo104 = "";
       oCtc.campo105 = "";
       oCtc.campo106 = "";
+      oCtc.campo107 = "";
+      oCtc.campo108 = "";
+      oCtc.campo109 = "";
+      oCtc.campo110 = "";
+      oCtc.campo111 = "";
+      oCtc.campo112 = "";
+      oCtc.campo113 = "";
+      oCtc.campo114 = "";
+      oCtc.campo115 = "";
+      oCtc.campo116 = "";
+      oCtc.campo117 = "";
+
       i_exportacao.qtdRegistro++;
-      i_arquivo.write(oCtc.getStringLayout140());
+      i_arquivo.write(oCtc.getStringLayout158());
     } 
     stm.close();
   }
@@ -2462,7 +2525,7 @@ public class Fortes158DAO {
     String dataInventario = DataHora.getUltimoDiaMes(Format.mesAno(i_exportacao.dataTermino));
     sql = new StringBuilder();
     sql.append("SELECT i.data, i.id_produto, i.quantidade, p.id_tipoembalagem, i.custosemimposto, a.situacaotributaria,");
-    sql.append(" ROUND(SUM((i.quantidade) * i.custocomimposto),2) AS basecalculoicms, (a.porcentagemfinal + COALESCE(a.porcentagemfcp, 0)) AS porcentagemfinal, p.id_tipoorigemmercadoriaentrada,");
+    sql.append(" ROUND(SUM((i.quantidade) * i.custosemimposto),2) AS basecalculoicms, (a.porcentagemfinal + COALESCE(a.porcentagemfcp, 0)) AS porcentagemfinal, p.id_tipoorigemmercadoriaentrada,");
     sql.append(" ROUND(SUM((i.quantidade) * i.custocomimposto) * (a.porcentagemfinal + COALESCE(a.porcentagemfcp, 0)) / 100,2) AS valoricms, a.csosn");
     sql.append(" FROM inventario AS i");
     sql.append(" INNER JOIN produto AS p ON p.id = i.id_produto");
@@ -2484,13 +2547,19 @@ public class Fortes158DAO {
       oIIV.campo2 = Format.number(this.oFortesDAO.getCodigoEstabelecimento(i_exportacao.idLoja), 4);
       oIIV.campo3 = Format.data(Format.dataGUI(rst.getDate("data")), "dd/MM/yyyy", "yyyyMMdd");
       oIIV.campo4 = String.valueOf(rst.getInt("id_produto"));
-      oIIV.campo5 = FormatDecimal2(rst.getDouble("quantidade")).replace(".", "").replace(",", ".");
+      oIIV.campo5 = FormatDecimal3(rst.getDouble("quantidade")).replace(".", "").replace(",", ".");
       if (rst.getInt("id_tipoembalagem") == 4) {
         oIIV.campo6 = "KG";
       } else {
         oIIV.campo6 = "UN";
       } 
-      oIIV.campo7 = FormatDecimal2(rst.getDouble("custosemimposto")).replace(".", "").replace(",", ".");
+      
+      if (rst.getDouble("custosemimposto") > 0) {
+        oIIV.campo7 = FormatDecimal2(rst.getDouble("custosemimposto")).replace(".", "").replace(",", ".");
+      } else {
+        oIIV.campo7 = "0.01";
+      }
+
       oIIV.campo8 = "01";
       oIIV.campo9 = Format.number(rst.getInt("id_tipoorigemmercadoriaentrada"), 1);
       oIIV.campo10 = Format.number(rst.getInt("situacaotributaria"), 2);
@@ -2499,13 +2568,19 @@ public class Fortes158DAO {
       oIIV.campo13 = FormatDecimal2(rst.getDouble("valoricms")).replace(".", "").replace(",", ".");
       oIIV.campo14 = FormatDecimal2(rst.getDouble("custosemimposto")).replace(".", "").replace(",", ".");
       int idFornecedor = (((LojaDAO)VRInstance.criar(LojaDAO.class)).carregar(i_exportacao.idLoja)).idFornecedor;
-      int tipoEmpresa = (((FornecedorDAO)VRInstance.criar(FornecedorDAO.class)).carregar(idFornecedor)).idTipoEmpresa;
-      if (tipoEmpresa == TipoEmpresa.EPP_SIMPLES.getId() || tipoEmpresa == TipoEmpresa.ME_SIMPLES.getId())
+      int tipoEmpresa = (((FornecedorDAO) VRInstance.criar(FornecedorDAO.class)).carregar(idFornecedor)).idTipoEmpresa;
+      
+      if (tipoEmpresa == TipoEmpresa.EPP_SIMPLES.getId() || tipoEmpresa == TipoEmpresa.ME_SIMPLES.getId()) {
         oIIV.campo15 = Format.number(rst.getInt("id_tipoorigemmercadoriaentrada"), 1); 
-      if (tipoEmpresa == TipoEmpresa.EPP_SIMPLES.getId() || tipoEmpresa == TipoEmpresa.ME_SIMPLES.getId())
-        oIIV.campo16 = Format.number(rst.getInt("csosn"), 1); 
+        oIIV.campo16 = Format.number(rst.getInt("csosn"), 1);
+      }
+
+      oIIV.campo17 = "";
+      oIIV.campo18 = "";
+      oIIV.campo19 = "";
+
       i_exportacao.qtdRegistro++;
-      i_arquivo.write(oIIV.getStringLayout140());
+      i_arquivo.write(oIIV.getStringLayout158());
       ProgressBar.next();
     } 
     stm.close();
@@ -2596,9 +2671,10 @@ public class Fortes158DAO {
     FornecedorVO oFornecedor = ((FornecedorDAO)VRInstance.criar(FornecedorDAO.class)).carregar((((LojaDAO)VRInstance.criar(LojaDAO.class)).carregar(i_exportacao.idLoja)).idFornecedor);
     stmCupom = VRStatement.createStatement();
     sql = new StringBuilder();
-    sql.append("SELECT e.id, e.id_loja, e.data, e.chavecfe, e.chavenfce, e.numeronota,");
+    sql.append("SELECT e.id, e.id_loja, e.data, e.chavecfe, e.chavenfce, e.numeronota, e.serie,");
     sql.append(" e.id_situacaonfe, e.valorcontabil,");
     sql.append(" (SELECT SUM (valordesconto) AS valordesconto FROM escritaitem WHERE id_escrita = e.id),");
+    sql.append(" (SELECT SUM (valortotal) AS valortotal FROM escritaitem WHERE id_escrita = e.id),");
     sql.append(" e.valoracrescimo, (e.valoricmssubstituicao + COALESCE(e.valorfcpst, 0)) AS valoricmssubstituicao,");
     sql.append(" SUM (ei.valorbasecalculo + ei.valorisento + ei.valoroutras) AS receitapiscofins, e.id_tiposaida, e.cancelado");
     sql.append(" FROM escrita e");
@@ -2607,7 +2683,7 @@ public class Fortes158DAO {
     sql.append(" AND '" + Format.dataBanco(i_exportacao.dataTermino) + "'");
     sql.append(" AND (e.modelo = '" + ModeloNotaFiscal.CFE.getModelo() + "' OR e.modelo = '" + ModeloNotaFiscal.NFCE.getModelo() + "')");
     sql.append(" AND e.id_loja = " + i_exportacao.idLoja);
-    sql.append(" GROUP BY e.id, e.id_loja, e.data, e.chavecfe, e.chavenfce, e.numeronota, e.id_situacaonfe,");
+    sql.append(" GROUP BY e.id, e.id_loja, e.data, e.chavecfe, e.chavenfce, e.numeronota, e.serie, e.id_situacaonfe,");
     sql.append(" e.valorcontabil, e.valordesconto, e.valoracrescimo, (e.valoricmssubstituicao + COALESCE(e.valorfcpst, 0)), e.id_tiposaida");
     rstCupom = stmCupom.executeQuery(sql.toString());
     rstCupom.last();
@@ -2619,23 +2695,28 @@ public class Fortes158DAO {
       oCPE.campo1 = "CPE";
       oCPE.campo2 = Format.number(this.oFortesDAO.getCodigoEstabelecimento(i_exportacao.idLoja), 4);
       oCPE.campo3 = Format.data(Format.dataGUI(rstCupom.getDate("data")), "dd/MM/yyyy", "yyyyMMdd");
+      
       if (rstCupom.getObject("chavecfe") != null && rstCupom.getObject("chavenfce").equals("")) {
         oCPE.campo4 = rstCupom.getString("chavecfe");
-        oCPE.campo5 = Texto.substring(rstCupom.getString("chavecfe").trim(), 22, 31);
       } else if (rstCupom.getObject("chavecfe").equals("") && rstCupom.getObject("chavenfce") != null) {
         oCPE.campo4 = rstCupom.getString("chavenfce");
-        oCPE.campo5 = Texto.substring(rstCupom.getString("chavenfce").trim(), 22, 26);
       } else {
         oCPE.campo4 = "";
-      } 
+      }
+
+      if (oCPE.campo4.length() > 0) {
+        oCPE.campo5 = Format.number(rstCupom.getInt("serie"), 9);
+      }
+
       oCPE.campo6 = Format.number(rstCupom.getInt("numeronota"), 6);
       if (rstCupom.getBoolean("cancelado") == true) {
         oCPE.campo7 = "2";
       } else {
         oCPE.campo7 = "0";
-      } 
+      }
+
       oCPE.campo8 = "";
-      oCPE.campo9 = FormatDecimal2(rstCupom.getDouble("valorcontabil")).replace(".", "").replace(",", ".");
+      oCPE.campo9 = FormatDecimal2(rstCupom.getDouble("valortotal")).replace(".", "").replace(",", ".");
       oCPE.campo10 = FormatDecimal2(rstCupom.getDouble("valordesconto")).replace(".", "").replace(",", ".");
       oCPE.campo11 = "";
       oCPE.campo12 = FormatDecimal2(rstCupom.getDouble("valoricmssubstituicao")).replace(".", "").replace(",", ".");
@@ -2666,6 +2747,7 @@ public class Fortes158DAO {
       oCPE.campo33 = "";
       oCPE.campo34 = "";
       oCPE.campo35 = "";
+
       i_exportacao.qtdRegistro++;
       i_arquivo.write(oCPE.getStringLayout140());
       if (oCPE.campo7.equals("2"))
@@ -2682,7 +2764,6 @@ public class Fortes158DAO {
       sql.append(" ) AS tipoembalagem,");
       sql.append(" ei.cfop, ei.valoracrescimo,");
       sql.append(" (ei.valorbasecalculo + ei.valorisento + ei.valoroutras + ei.valorcancelado) AS valorbruto,");
-      sql.append(" (ei.valortotal - (ei.valorbasecalculo + ei.valorisento + ei.valoroutras)) AS valordesconto, ");
       sql.append(" COALESCE(ei.id_tipoorigemmercadoria, p.id_tipoorigemmercadoria) AS id_tipoorigemmercadoria,");
       sql.append(" (");
       sql.append("    SELECT a.csosn");
@@ -2698,8 +2779,8 @@ public class Fortes158DAO {
       } else {
         sql.append(" tpc.valorcofins, tpc.valorpis, ");
       } 
-      sql.append(" p.tiponaturezareceita,  ei.id_tiposaida, ei.valoricms");
-      sql.append(" , (ei.valortotal + ei.valordesconto) AS valortotal");
+      sql.append(" p.tiponaturezareceita,  ei.id_tiposaida, ei.valoricms,");
+      sql.append(" ei.valortotal, ei.valordesconto");
       sql.append(" FROM escritaitem AS ei");
       sql.append(" INNER JOIN produto p ON ei.id_produto = p.id");
       sql.append(" INNER JOIN aliquota AS a ON ei.id_aliquota = a.id");
@@ -2715,9 +2796,9 @@ public class Fortes158DAO {
         oPCE.campo1 = "PCE";
         oPCE.campo2 = String.valueOf(rstProduto.getInt("id_produto"));
         if (rstProduto.getDouble("quantidade") <= 0.0D) {
-          oPCE.campo3 = "0,01";
+          oPCE.campo3 = "0.001";
         } else {
-          oPCE.campo3 = FormatDecimal2(rstProduto.getDouble("quantidade")).replace(".", "").replace(",", ".");
+          oPCE.campo3 = FormatDecimal3(rstProduto.getDouble("quantidade")).replace(".", "").replace(",", ".");
         } 
         oPCE.campo4 = rstProduto.getString("tipoembalagem");
         oPCE.campo5 = rstProduto.getString("cfop").replace(".", "").replace(",", ".");
@@ -2753,14 +2834,26 @@ public class Fortes158DAO {
           baseCalculoPisCofins = rstProduto.getDouble("basecalculo") - rstProduto.getDouble("valoricms");
         } else {
           baseCalculoPisCofins = rstProduto.getDouble("basecalculo");
-        } 
-        oPCE.campo17 = FormatDecimal2(baseCalculoPisCofins).replace(".", "").replace(",", ".");
+        }
+
+        if (!"01,05,09,50,75,72".contains(oPCE.campo16)) {
+          oPCE.campo17 = "0.00";
+        } else {
+          oPCE.campo17 = FormatDecimal2(baseCalculoPisCofins).replace(".", "").replace(",", ".");
+        }
+
         oPCE.campo18 = "1";
         oPCE.campo19 = (rstProduto.getDouble("valorcofins") > 0.0D && this.oCAB.campo9.equals("S")) ? FormatDecimal2(rstProduto.getDouble("valorcofins")).replace(".", "").replace(",", ".") : "";
         oPCE.campo20 = "";
         oPCE.campo21 = (Numero.round(baseCalculoPisCofins * rstProduto.getDouble("valorcofins") / 100.0D, 2) > 0.0D && this.oCAB.campo9.equals("S")) ? FormatDecimal2(Numero.round(baseCalculoPisCofins * rstProduto.getDouble("valorcofins") / 100.0D, 2)).replace(".", "").replace(",", ".") : "";
         oPCE.campo22 = getCodigoACFiscal(rstProduto.getInt("tiponaturezareceita"), rstProduto.getInt("cst"));
-        oPCE.campo24 = FormatDecimal2(rstProduto.getDouble("basecalculo")).replace(".", "").replace(",", ".");
+        
+        if (!"01,05,09,50,75,72".contains(oPCE.campo23)) {
+          oPCE.campo24 = "0.00";
+        } else {
+          oPCE.campo24 = FormatDecimal2(rstProduto.getDouble("basecalculo")).replace(".", "").replace(",", ".");
+        }
+        
         oPCE.campo25 = "1";
         oPCE.campo26 = (rstProduto.getDouble("valorpis") > 0.0D && this.oCAB.campo9.equals("S")) ? FormatDecimal2(rstProduto.getDouble("valorpis")).replace(".", "").replace(",", ".") : "";
         oPCE.campo27 = "";
@@ -2771,8 +2864,10 @@ public class Fortes158DAO {
         if (idContaContabilCredito != -1)
           conta = getContaContabil(idContaContabilCredito); 
         oPCE.campo30 = conta;
+        oPCE.campo31 = "";
+
         i_exportacao.qtdRegistro++;
-        i_arquivo.write(oPCE.getStringLayout140());
+        i_arquivo.write(oPCE.getStringLayout158());
         ProgressBar.next();
       } 
       stmProduto.close();
