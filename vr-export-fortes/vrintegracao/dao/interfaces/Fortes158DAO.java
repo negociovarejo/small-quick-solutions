@@ -95,7 +95,7 @@ public class Fortes158DAO {
 			value += ".00";
 		}
 		
-		return value.replace(".", ",");
+		return value.replace(".", ",").replace("�", "0");
 	}
   
   public void exportar(ExportarFortesVO i_exportacao, List<Integer> i_loja, int i_idFormulario, int i_idTipoOperacao) throws Exception {
@@ -219,9 +219,16 @@ public class Fortes158DAO {
         oPAR.campo5 = Format.number(rst.getLong("cnpj"), 11);
       } else {
         oPAR.campo5 = Format.number(rst.getLong("cnpj"), 14);
-      } 
-      if (Numero.is(rst.getString("inscricaoestadual").replace(".", "").replace("-", "").trim()) && Double.parseDouble(rst.getString("inscricaoestadual").replace(".", "").replace("-", "").trim()) > 0.0D)
-        oPAR.campo6 = Texto.substring(rst.getString("inscricaoestadual").replace(".", "").replace("-", "").trim(), 0, 14); 
+      }
+      
+      String ie = rst.getString("inscricaoestadual").replace(".", "").replace("-", "").trim();
+
+      if (Numero.is(ie) && Double.parseDouble(ie) > 0.0D) {
+        oPAR.campo6 = Format.number(Texto.substring(ie, 0, 14), 9); 
+      } else {
+        oPAR.campo6 = "0";
+      }
+
       oPAR.campo7 = rst.getString("inscricaomunicipal");
       oPAR.campo8 = "N";
       oPAR.campo9 = "N";
@@ -1180,10 +1187,9 @@ public class Fortes158DAO {
           oPNM.campo118 = "";
           oPNM.campo119 = "";
 
-          // if (rstProduto.getInt("situacaotributaria") == 51 && rstProduto.getDouble("valorbasecalculo") > 0) {
-          //   oPNM.campo120 = "PORCENTAGEM ALIQUOTA";
-          // }
-
+          if (rstProduto.getInt("situacaotributaria") == 51 && rstProduto.getDouble("valorbasecalculo") > 0) {
+            oPNM.campo120 = FormatDecimal2(rstProduto.getDouble("porcentagem")).replace(".", "").replace(",", ".");
+          }
 
           i_exportacao.qtdRegistro++;
           i_arquivo.write(oPNM.getStringLayout158());
@@ -1269,9 +1275,9 @@ public class Fortes158DAO {
               oINM.campo33 = FormatDecimal2(rstImposto.getDouble("valorfcpst")).replace(".", "").replace(",", ".");
             }
           
-          // if (rstProduto.getInt("situacaotributaria") == 51 && rstProduto.getDouble("valorbasecalculo") > 0) {
-          //   oINM.campo34 = "PORCENTAGEM ALIQUOTA";
-          // }
+          if (rstImposto.getInt("situacaotributaria") == 51 && rstImposto.getDouble("basecalculoicms") > 0) {
+            oINM.campo34 = FormatDecimal2(rstImposto.getDouble("aliquotaicms")).replace(".", "").replace(",", ".");
+          }
 
           i_exportacao.qtdRegistro++;
           i_arquivo.write(oINM.getStringLayout158());
