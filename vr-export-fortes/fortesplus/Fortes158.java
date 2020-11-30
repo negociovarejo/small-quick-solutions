@@ -64,18 +64,18 @@ public class Fortes158 {
       oExportacao.caminho = "/home/derickfelix/Public/";
       oExportacao.tipoData = 2;
       oExportacao.dataInicio = "01/10/2020";
-      oExportacao.dataTermino = "10/10/2020";
+      oExportacao.dataTermino = "31/10/2020";
       oExportacao.participantes = true;
       oExportacao.produto = true;
-      // oExportacao.notaServico = true;
-      // oExportacao.notaEntrada = true;
-      // oExportacao.notaSaida = true;
-      // oExportacao.conhecimentoTransporteCarga = true;
-      // oExportacao.inventario = true;
-      // oExportacao.operacaoCreditoDebito = true;
-      // oExportacao.outrosValoresDocumento = true;
+      oExportacao.notaServico = true;
+      oExportacao.notaEntrada = true;
+      oExportacao.notaSaida = true;
+      oExportacao.conhecimentoTransporteCarga = true;
+      oExportacao.inventario = true;
+      oExportacao.operacaoCreditoDebito = true;
+      oExportacao.outrosValoresDocumento = true;
       oExportacao.cupomFiscalEletronico = true;
-      // oExportacao.estoqueEscriturado = true;
+      oExportacao.estoqueEscriturado = true;
     
       List<Integer> vLoja = new ArrayList<>();
       vLoja.add(1);
