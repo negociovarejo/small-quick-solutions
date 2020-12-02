@@ -58,7 +58,6 @@ public class Fortes158 {
       (new BancoDAO()).atualizar();
       SplashScreen.dispose();
 
-
       ProgressBar.show();
       ExportarFortesVO oExportacao = new ExportarFortesVO();
       oExportacao.caminho = "/home/derickfelix/Public/";
@@ -74,7 +73,7 @@ public class Fortes158 {
       oExportacao.inventario = true;
       oExportacao.operacaoCreditoDebito = true;
       oExportacao.outrosValoresDocumento = true;
-      oExportacao.cupomFiscalEletronico = true;
+      // oExportacao.cupomFiscalEletronico = true;
       oExportacao.estoqueEscriturado = true;
     
       List<Integer> vLoja = new ArrayList<>();

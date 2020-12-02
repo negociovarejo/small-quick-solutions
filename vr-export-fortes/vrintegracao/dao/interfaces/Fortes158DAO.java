@@ -6,8 +6,10 @@ import java.util.Set;
 import java.util.Map;
 import java.util.HashSet;
 import java.util.HashMap;
+import java.util.Locale;
 import java.math.RoundingMode;
 import java.text.DecimalFormat;
+import java.text.DecimalFormatSymbols;
 import org.apache.commons.lang3.ArrayUtils;
 import vrframework.classe.DataHora;
 import vrframework.classe.Format;
@@ -101,7 +103,7 @@ public class Fortes158DAO {
       format += "#";
     }
 
-    DecimalFormat df2 = new DecimalFormat(format);
+    DecimalFormat df2 = new DecimalFormat(format, new DecimalFormatSymbols(Locale.US));
 		String value = df2.format(i_valor);
 		
 		if (value.contains(".")) {
@@ -1158,7 +1160,7 @@ public class Fortes158DAO {
 
           oPNM.campo7 = rstProduto.getString("tipoembalagem");
           oPNM.campo8 = FormatDecimal2(rstProduto.getDouble("quantidade")).replace(".", "").replace(",", ".");
-          oPNM.campo9 = FormatDecimal2(rstProduto.getDouble("valortotal")).replace(".", "").replace(",", ".");
+          oPNM.campo9 = FormatDecimal2(rstProduto.getDouble("valortotal") + rstProduto.getDouble("valordescontofiscal")).replace(".", "").replace(",", ".");
           oPNM.campo10 = FormatDecimal2(rstProduto.getDouble("valoripi")).replace(".", "").replace(",", ".");
           if (((AliquotaDAO) VRInstance.criar(AliquotaDAO.class)).isIsento(rstProduto.getInt("situacaotributaria"))) {
             oPNM.campo11 = "2";
@@ -1256,7 +1258,7 @@ public class Fortes158DAO {
             oPNM.campo38 = Format.number(rstProduto.getInt("cstpiscofins"), 2);
             cstPisCofins = Format.number(rstProduto.getInt("cstpiscofins"), 2);
           } 
-          String tfdd = FormatDecimal2(rstProduto.getDouble("valortotal") + rstProduto.getDouble("valorfretefiscal") + rstProduto.getDouble("valorseguro") + rstProduto.getDouble("valoroutrasdespesasfiscal") - rstProduto.getDouble("valordescontofiscal")).replace(".", "").replace(",", ".");
+          String tfdd = FormatDecimal2(rstProduto.getDouble("valortotal") + rstProduto.getDouble("valordescontofiscal") + rstProduto.getDouble("valorfretefiscal") + rstProduto.getDouble("valorseguro") + rstProduto.getDouble("valoroutrasdespesasfiscal") - rstProduto.getDouble("valordescontofiscal")).replace(".", "").replace(",", ".");
           
           switch (oPNM.campo37) {
             case "09":
@@ -1293,6 +1295,7 @@ public class Fortes158DAO {
           oPNM.campo54 = "0.00";
           oPNM.campo56 = "0.00";
           oPNM.campo58 = "0.00";
+
           if (((oFornecedor.idTipoEmpresa == TipoEmpresa.LUCRO_REAL.getId() || oFornecedor.idTipoEmpresa == TipoEmpresa.LUCRO_PRESUMIDO.getId()) && this.oFortesDAO
             .isFornecedorDistribuidor(i_exportacao.idLoja)) || rstProduto
             .getString("cfop").startsWith("3.")) {
@@ -1530,13 +1533,13 @@ public class Fortes158DAO {
           } 
           oINM.campo27 = "";
           if (rst.getInt("id_tipoentradasaida") == TipoEntradaSaida.ENTRADA.getId() && rst.getObject("id_notasaida") == null)
-            if ("30,60".contains(oINM.campo20)) {
-              oINM.campo28 = "0.00";
-              oINM.campo29 = "0.00";
-              oINM.campo30 = "0.00";
-              oINM.campo31 = "0.00";
-              oINM.campo32 = "0.00";
-              oINM.campo33 = "0.00";
+            if ("30,40,60".contains(oINM.campo20)) {
+              oINM.campo28 = "";
+              oINM.campo29 = "";
+              oINM.campo30 = "";
+              oINM.campo31 = "";
+              oINM.campo32 = "";
+              oINM.campo33 = "";
             } else {
               oINM.campo28 = FormatDecimal2(rstImposto.getDouble("basecalculoicms")).replace(".", "").replace(",", ".");
               oINM.campo29 = FormatDecimal2(rstImposto.getDouble("valorfcp") / rstImposto.getDouble("basecalculoicms") * 100.0D).replace(".", "").replace(",", ".");
@@ -1559,9 +1562,8 @@ public class Fortes158DAO {
         sql.append(" FROM escrita AS e");
         sql.append(" INNER JOIN escritaitem AS ei ON e.id = ei.id_escrita");
         sql.append(" INNER JOIN produto AS p ON p.id = ei.id_produto");
-        sql.append(" INNER JOIN produtoaliquota AS pa ON pa.id_produto = p.id AND pa.id_estado = " + Global.idEstado);
-        sql.append(" INNER JOIN aliquota AS a ON a.id = pa.id_aliquotacredito");
-        sql.append(" LEFT JOIN tabelasubstituicaotributaria AS tst ON tst.id_aliquota = pa.id_aliquotacredito AND tst.id_estado = e.id_estado");
+        sql.append(" INNER JOIN aliquota AS a ON a.id = ei.id_aliquota");
+        sql.append(" LEFT JOIN tabelasubstituicaotributaria AS tst ON tst.id_aliquota = ei.id_aliquota AND tst.id_estado = e.id_estado");
         sql.append(" WHERE ei.id_escrita = " + rst.getLong("id"));
         sql.append(" GROUP BY tst.percentualmva, tst.percentualmvasimples, (a.porcentagemfinal + COALESCE(a.porcentagemfcp, 0)), ei.situacaotributaria, p.utilizatabelasubstituicaotributaria, a.porcentagemfcp");
         rstST = stmST.executeQuery(sql.toString());
@@ -1587,6 +1589,7 @@ public class Fortes158DAO {
               oSNM.campo6 = FormatDecimal2(rstST.getDouble("percentualmva")).replace(".", "").replace(",", ".");
               break;
           } 
+
           oSNM.campo7 = "0.00";
           oSNM.campo8 = "0.00";
           if (rstST.getDouble("porcentagemfcp") > 0.0D) {
@@ -1595,9 +1598,8 @@ public class Fortes158DAO {
             oSNM.campo9 = "N";
           } else {
             oSNM.campo9 = "";
-          } 
-          if (rst.getInt("estadoFornecedor") != Global.idEstado)
-            oSNM.campo6 = "0.00"; 
+          }
+
           i_exportacao.qtdRegistro++;
           i_arquivo.write(oSNM.getString());
         } 
@@ -1688,10 +1690,10 @@ public class Fortes158DAO {
           oNFM.campo28 = "";
           break;
         case DENEGADA:
-          oNFM.campo13 = "4";
+          oNFM.campo13 = "1";
           break;
         case INUTILIZADA:
-          oNFM.campo13 = "5";
+          oNFM.campo13 = "1";
           break;
         default:
           oNFM.campo13 = "0";
@@ -1727,7 +1729,12 @@ public class Fortes158DAO {
             oNFM.campo26 = FormatDecimal2(rst.getDouble("valorcontabil")).replace(".", "").replace(",", ".");
           } else {
             oNFM.campo15 = Format.number(rst.getInt("id_fornecedor"), 9);
-            oNFM.campo26 = FormatDecimal2(rst.getDouble("valortotalbruto")).replace(".", "").replace(",", ".");
+
+            if ("1.102,1.403".contains(rst.getString("cfop"))) {
+              oNFM.campo26 = FormatDecimal2(rst.getDouble("valortotalbruto")).replace(".", "").replace(",", ".");
+            } else {
+              oNFM.campo26 = FormatDecimal2(rst.getDouble("valorcontabil")).replace(".", "").replace(",", ".");
+            }
           }
         }
         
@@ -1991,13 +1998,18 @@ public class Fortes158DAO {
           //   }
           // }
           
-          if (oPNM.campo37.equals("49")) {
-            oPNM.campo39 = "0.00";
-            oPNM.campo40 = "0.00";
+          if (oPNM.campo37.equals("07") || oPNM.campo37.equals("49")) {
+            oPNM.campo39 = "";
           } else {
             oPNM.campo39 = FormatDecimal2(rstProduto.getDouble("valortotal") + rstProduto.getDouble("valorfrete") - rstProduto.getDouble("valordesconto")).replace(".", "").replace(",", ".");
+          }
+
+          if (oPNM.campo38.equals("07") || oPNM.campo38.equals("49")) {
+            oPNM.campo40 = "";
+          } else {
             oPNM.campo40 = FormatDecimal2(rstProduto.getDouble("valortotal") + rstProduto.getDouble("valorfrete") - rstProduto.getDouble("valordesconto")).replace(".", "").replace(",", ".");
-          } 
+          }
+
           oPNM.campo41 = FormatDecimal2(rstProduto.getDouble("valorfrete")).replace(".", "").replace(",", ".");
           oPNM.campo42 = "0.00";
           oPNM.campo43 = FormatDecimal2(rstProduto.getDouble("valordesconto")).replace(".", "").replace(",", ".");
@@ -2136,10 +2148,11 @@ public class Fortes158DAO {
           oPNM.campo114 = "";
           oPNM.campo115 = "";
           oPNM.campo116 = "";
-          int[] aCstPisCofinsSaida = { 49, 70, 98 };
+          int[] aCstPisCofinsSaida = { 49, 98, 99 };
+
           if (ArrayUtils.contains(aCstPisCofinsSaida, rstProduto.getInt("cstpiscofins"))) {
-            oPNM.campo39 = "0.00";
-            oPNM.campo40 = "0.00";
+            oPNM.campo39 = "";
+            oPNM.campo40 = "";
           }
 
           oPNM.campo117 = "";
@@ -2588,7 +2601,7 @@ public class Fortes158DAO {
     sql.append("  e.id, e.id_loja, e.data, e.chavecfe, e.chavenfce, e.id_indicadorpagamento,");
     sql.append("  e.numeronota, e.serie, e.id_situacaonfe, e.valorcontabil,");
     sql.append("  SUM (ei.valordesconto) AS valordesconto,");
-    sql.append("  SUM (ei.valortotal) AS valortotal,");
+    sql.append("  SUM (ei.valortotal - ei.valorcancelado) AS valortotal,");
     sql.append("  e.valoracrescimo, (e.valoricmssubstituicao + COALESCE(e.valorfcpst, 0)) AS valoricmssubstituicao,");
     sql.append("  SUM (ei.valorbasecalculo + ei.valorisento + ei.valoroutras) AS receitapiscofins, e.id_tiposaida, e.cancelado ");
     sql.append("FROM escrita e");
@@ -2632,10 +2645,10 @@ public class Fortes158DAO {
         oCPE.campo7 = "2";
       } else {
         oCPE.campo7 = "0";
+        oCPE.campo9 = FormatDecimal2(rstCupom.getDouble("valortotal")).replace(".", "").replace(",", ".");
       }
 
       oCPE.campo8 = "";
-      oCPE.campo9 = FormatDecimal2(rstCupom.getDouble("valortotal")).replace(".", "").replace(",", ".");
       oCPE.campo10 = FormatDecimal2(rstCupom.getDouble("valordesconto")).replace(".", "").replace(",", ".");
       oCPE.campo11 = "";
       oCPE.campo12 = FormatDecimal2(rstCupom.getDouble("valoricmssubstituicao")).replace(".", "").replace(",", ".");
@@ -2703,6 +2716,7 @@ public class Fortes158DAO {
       sql.append("  te.descricao AS tipoembalagem,");
       sql.append("  ei.cfop, ei.valoracrescimo,");
       sql.append("  (ei.valorbasecalculo + ei.valorisento + ei.valoroutras + ei.valorcancelado) AS valorbruto,");
+      sql.append("  (ei.valortotal + ei.valoracrescimo - ei.valordesconto - ei.valorcancelado) AS valorliquido,");
       sql.append("  COALESCE(ei.id_tipoorigemmercadoria, p.id_tipoorigemmercadoria) AS id_tipoorigemmercadoria,");
       sql.append("  a.csosn,");
       sql.append("  ei.situacaotributaria, ei.valorbasecalculo,");
@@ -2730,6 +2744,10 @@ public class Fortes158DAO {
       // long last = System.currentTimeMillis();
      
       while (rstProduto.next()) {
+        if (rstProduto.getDouble("valorliquido") == 0) {
+          continue;
+        }
+
         FortesPCEVO oPCE = new FortesPCEVO();
         oPCE.campo1 = "PCE";
         oPCE.campo2 = String.valueOf(rstProduto.getInt("id_produto"));
@@ -2829,7 +2847,7 @@ public class Fortes158DAO {
       stmImposto = new VRStatement();
       stmImposto.open();
       sql = new StringBuilder();
-      sql.append("SELECT SUM (ei.valortotal - ei.valordesconto + ei.valoracrescimo) AS valor, (a.porcentagemfinal + COALESCE(a.porcentagemfcp, 0)) AS porcentagemfinal,");
+      sql.append("SELECT SUM (ei.valortotal - ei.valordesconto + ei.valoracrescimo - ei.valorcancelado) AS valor, (a.porcentagemfinal + COALESCE(a.porcentagemfcp, 0)) AS porcentagemfinal,");
       sql.append(" SUM (ei.valoricms + COALESCE(ei.valorfcp, 0)) AS valoricms, SUM (ei.valorisento) AS valorisento,");
       sql.append(" SUM (ei.valoroutras)AS valoroutras, ei.situacaotributaria,");
       sql.append(" COALESCE(ei.id_tipoorigemmercadoria, p.id_tipoorigemmercadoria) AS id_tipoorigemmercadoria,");
