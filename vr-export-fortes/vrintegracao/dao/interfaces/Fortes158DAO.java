@@ -2611,6 +2611,7 @@ public class Fortes158DAO {
     sql.append("  AND '" + Format.dataBanco(i_exportacao.dataTermino) + "'");
     sql.append("  AND (e.modelo = '" + ModeloNotaFiscal.CFE.getModelo() + "' OR e.modelo = '" + ModeloNotaFiscal.NFCE.getModelo() + "')");
     sql.append("  AND e.id_loja = " + i_exportacao.idLoja + " ");
+    sql.append("  AND e.cancelado = 'f'");
     sql.append("GROUP BY");
     sql.append("  e.id, e.id_loja, e.data, e.chavecfe, e.chavenfce, e.id_indicadorpagamento,");
     sql.append("  e.numeronota, e.serie, e.id_situacaonfe, e.valorcontabil,");
