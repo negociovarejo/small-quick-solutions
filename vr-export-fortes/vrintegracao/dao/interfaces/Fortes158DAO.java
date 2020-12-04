@@ -2715,7 +2715,7 @@ public class Fortes158DAO {
       sql = new StringBuilder();
       sql.append("SELECT ei.id_produto, ei.quantidade,");
       sql.append("  te.descricao AS tipoembalagem,");
-      sql.append("  ei.cfop, ei.valoracrescimo,");
+      sql.append("  ei.cfop, ei.valoracrescimo, ei.valoroutras,");
       sql.append("  (ei.valorbasecalculo + ei.valorisento + ei.valoroutras + ei.valorcancelado) AS valorbruto,");
       sql.append("  (ei.valortotal + ei.valoracrescimo - ei.valordesconto - ei.valorcancelado) AS valorliquido,");
       sql.append("  COALESCE(ei.id_tipoorigemmercadoria, p.id_tipoorigemmercadoria) AS id_tipoorigemmercadoria,");
@@ -2762,7 +2762,7 @@ public class Fortes158DAO {
         oPCE.campo6 = FormatDecimal2(rstProduto.getDouble("valortotal")).replace(".", "").replace(",", ".");
         oPCE.campo7 = FormatDecimal2(rstProduto.getDouble("valordesconto")).replace(".", "").replace(",", ".");
         oPCE.campo8 = "";
-        oPCE.campo9 = rstProduto.getString("valoracrescimo");
+        oPCE.campo9 = FormatDecimal2(rstProduto.getDouble("valoroutras") >= rstProduto.getDouble("valortotal") ? rstProduto.getDouble("valoroutras") - rstProduto.getDouble("valortotal") : 0.00).replace(".", "").replace(",", ".");
         if (oFornecedor.idTipoEmpresa == TipoEmpresa.EPP_SIMPLES.getId() || oFornecedor.idTipoEmpresa == TipoEmpresa.ME_SIMPLES
           .getId() || oFornecedor.idTipoEmpresa == TipoEmpresa.MEI
           .getId()) {
