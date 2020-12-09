@@ -26,6 +26,11 @@ public class Fortes158 {
   public static void main(String[] args)
   {
     try {
+      if (args.length != 1) {
+        System.out.println("Usage: java progName.jar <path>");
+        return;
+      }
+
       LookAndFeel.set();
       App.setName("FortesPlus");
       Folder.changeVRFolder();
@@ -60,10 +65,10 @@ public class Fortes158 {
 
       ProgressBar.show();
       ExportarFortesVO oExportacao = new ExportarFortesVO();
-      oExportacao.caminho = "/home/derickfelix/Public/";
+      oExportacao.caminho = args[0];
       oExportacao.tipoData = 2;
-      oExportacao.dataInicio = "01/10/2020";
-      oExportacao.dataTermino = "31/10/2020";
+      oExportacao.dataInicio = "01/11/2020";
+      oExportacao.dataTermino = "31/11/2020";
       oExportacao.participantes = true;
       oExportacao.produto = true;
       oExportacao.notaServico = true;
