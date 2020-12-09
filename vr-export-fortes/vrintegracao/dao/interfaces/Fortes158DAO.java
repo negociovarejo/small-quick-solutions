@@ -1104,7 +1104,12 @@ public class Fortes158DAO {
           sql.append(" tpc.valorpis,tpc.valorcofins, tpc.valorpis AS aliquotapis, tpc.valorcofins AS aliquotacofins, ");
           sql.append(" CASE WHEN (tpc.valorpis <> 0 OR tpc.cst = 73) THEN ROUND((ei.valorbasecalculo + ei.valorisento + ei.valoroutras + (CASE WHEN e.aplicaicmsipi = FALSE THEN ei.valoripi ELSE 0 END) - ei.valordesconto), 2) ELSE 0 END AS valorbasepiscofins,");
         } 
-        sql.append(" ei.valorfretefiscal, ei.valordescontofiscal, ei.valorseguro, ei.valoroutras, te.descricao as tipoembalagem,  tst.percentualmva, tst.percentualmvasimples, ROUND(ei.valortotal, 2) AS totalpiscofins,");
+
+        if (!Global.getVersaoRelease().equals("4.0.0")) {
+          sql.append(" ei.valorfretefiscal, ");
+        }
+        
+        sql.append(" ei.valordescontofiscal, ei.valorseguro, ei.valoroutras, te.descricao as tipoembalagem,  tst.percentualmva, tst.percentualmvasimples, ROUND(ei.valortotal, 2) AS totalpiscofins,");
         sql.append(" (COALESCE(aorigem.porcentagem,0) + COALESCE(aorigem.porcentagemfcp, 0)) AS aliq_orig_perc, (COALESCE(adestino.porcentagem,0) + COALESCE(adestino.porcentagemfcp, 0)) AS aliq_dest_perc, a.porcentagemfcp, p.tiponaturezareceita, e.id_tipoentrada, ten. contabilidadepadrao, e.id_tiposaida, e.valorfcp,");
         sql.append(" COALESCE(ad.porcentagemfcp, 0) AS porcentagemfcpst, e.valorfcpst");
         sql.append(" FROM escrita AS e");
@@ -1130,8 +1135,13 @@ public class Fortes158DAO {
         } else {
           sql.append(" tpc.valorpis, tpc.valorcofins,");
         } 
-        sql.append(" te.descricao, ei.valorbasecalculo,  ei.valorisento, ei.valoroutras, e.aplicaicmsipi, ei.valordesconto, ei.valorfretefiscal");
-        sql.append(" ,ei.valordescontofiscal, ei.valoroutras, ei.valorseguro, ");
+        sql.append(" te.descricao, ei.valorbasecalculo,  ei.valorisento, ei.valoroutras, e.aplicaicmsipi, ei.valordesconto,");
+
+        if (!Global.getVersaoRelease().equals("4.0.0")) {
+          sql.append(" ei.valorfretefiscal,");
+        }
+
+        sql.append(" ei.valordescontofiscal, ei.valoroutras, ei.valorseguro, ");
         if (oFornecedor.idTipoEmpresa == TipoEmpresa.LUCRO_PRESUMIDO.getId()) {
           sql.append(" tpc.valorpispresumido, tpc.valorcofinspresumido, ");
         } else {
@@ -1258,7 +1268,13 @@ public class Fortes158DAO {
             oPNM.campo38 = Format.number(rstProduto.getInt("cstpiscofins"), 2);
             cstPisCofins = Format.number(rstProduto.getInt("cstpiscofins"), 2);
           } 
-          String tfdd = FormatDecimal2(rstProduto.getDouble("valortotal") + rstProduto.getDouble("valordescontofiscal") + rstProduto.getDouble("valorfretefiscal") + rstProduto.getDouble("valorseguro") + rstProduto.getDouble("valoroutrasdespesasfiscal") - rstProduto.getDouble("valordescontofiscal")).replace(".", "").replace(",", ".");
+          String tfdd;
+
+          if (Global.getVersaoRelease().equals("4.0.0")) {
+            tfdd = FormatDecimal2(rstProduto.getDouble("valortotal") + rstProduto.getDouble("valordescontofiscal") + rstProduto.getDouble("valorseguro") + rstProduto.getDouble("valoroutrasdespesasfiscal") - rstProduto.getDouble("valordescontofiscal")).replace(".", "").replace(",", ".");
+          } else {
+            tfdd = FormatDecimal2(rstProduto.getDouble("valortotal") + rstProduto.getDouble("valordescontofiscal") + rstProduto.getDouble("valorfretefiscal") + rstProduto.getDouble("valorseguro") + rstProduto.getDouble("valoroutrasdespesasfiscal") - rstProduto.getDouble("valordescontofiscal")).replace(".", "").replace(",", ".");
+          }
           
           switch (oPNM.campo37) {
             case "09":
@@ -1280,7 +1296,10 @@ public class Fortes158DAO {
               oPNM.campo40 = tfdd;
           }
       
-          oPNM.campo41 = FormatDecimal2(rstProduto.getDouble("valorfretefiscal")).replace(".", "").replace(",", ".");
+          if (!Global.getVersaoRelease().equals("4.0.0")) {
+            oPNM.campo41 = FormatDecimal2(rstProduto.getDouble("valorfretefiscal")).replace(".", "").replace(",", ".");
+          }
+
           oPNM.campo42 = "0.00";
           oPNM.campo43 = FormatDecimal2(rstProduto.getDouble("valordescontofiscal")).replace(".", "").replace(",", ".");
           oPNM.campo44 = tfdd;

@@ -26,8 +26,8 @@ public class Fortes158 {
   public static void main(String[] args)
   {
     try {
-      if (args.length != 1) {
-        System.out.println("Usage: java progName.jar <path>");
+      if (args.length != 4) {
+        System.out.println("Usage: java progName.jar <startDate> <endDate> <path> <storeId>");
         return;
       }
 
@@ -35,7 +35,7 @@ public class Fortes158 {
       App.setName("FortesPlus");
       Folder.changeVRFolder();
       SplashScreen.show();
-      SplashScreen.setSobre("Fortes Plus", Global.getVersao(), Global.getData());
+      SplashScreen.setSobre("Fortes Plus", Global.getVersaoRelease(), Global.getData());
       SplashScreen.setStatus("Inicializando sistema...");
       String ipBanco = VRProperties.getString("database.ip");
       String ipSecBanco = VRProperties.getString("database.ipsec");
@@ -65,10 +65,10 @@ public class Fortes158 {
 
       ProgressBar.show();
       ExportarFortesVO oExportacao = new ExportarFortesVO();
-      oExportacao.caminho = args[0];
       oExportacao.tipoData = 2;
-      oExportacao.dataInicio = "01/11/2020";
-      oExportacao.dataTermino = "31/11/2020";
+      oExportacao.dataInicio = args[0];
+      oExportacao.dataTermino = args[1];
+      oExportacao.caminho = args[2];
       oExportacao.participantes = true;
       oExportacao.produto = true;
       oExportacao.notaServico = true;
@@ -82,7 +82,7 @@ public class Fortes158 {
       oExportacao.estoqueEscriturado = true;
     
       List<Integer> vLoja = new ArrayList<>();
-      vLoja.add(1);
+      vLoja.add(Integer.parseInt(args[3]));
 
       Fortes158DAO dao = (Fortes158DAO) VRInstance.criar(Fortes158DAO.class);
       dao.exportar(oExportacao, vLoja, Formulario.INTERFACE_EXPORTACAO_FORTES.getId(), TipoOperacao.EXPORTAR.getId()); 
