@@ -6,31 +6,20 @@ import java.util.ArrayList;
 import vrframework.classe.App;
 import vrframework.classe.Conexao;
 import vrframework.classe.Folder;
-import vrframework.classe.Java;
 import vrframework.classe.LookAndFeel;
 import vrframework.classe.Mensagem;
 import vrframework.classe.Proxy;
 import vrframework.classe.SplashScreen;
-import vrframework.classe.VRInstance;
 import vrframework.classe.VRProperties;
-import vrframework.classe.ProgressBar;
 import vrintegracao.classe.Global;
 import vrintegracao.dao.BancoDAO;
-import vrintegracao.dao.interfaces.Fortes158DAO;
-import vrintegracao.vo.Formulario;
-import vrintegracao.vo.TipoOperacao;
-import vrintegracao.vo.interfaces.fortes.ExportarFortesVO;
+import fortesplus.gui.Fortes158;
 
-public class Fortes158 {
+public class FortesPlus {
 
   public static void main(String[] args)
   {
     try {
-      if (args.length != 4) {
-        System.out.println("Usage: java progName.jar <startDate> <endDate> <path> <storeId>");
-        return;
-      }
-
       LookAndFeel.set();
       App.setName("FortesPlus");
       Folder.changeVRFolder();
@@ -59,38 +48,13 @@ public class Fortes158 {
         Proxy.setProxy(); 
       }
 
-      SplashScreen.setStatus("Atualizando banco...");
-      (new BancoDAO()).atualizar();
+      // SplashScreen.setStatus("Atualizando banco...");
+      // (new BancoDAO()).atualizar();
       SplashScreen.dispose();
 
-      ProgressBar.show();
-      ExportarFortesVO oExportacao = new ExportarFortesVO();
-      oExportacao.tipoData = 2;
-      oExportacao.dataInicio = args[0];
-      oExportacao.dataTermino = args[1];
-      oExportacao.caminho = args[2];
-      oExportacao.participantes = true;
-      oExportacao.produto = true;
-      oExportacao.notaServico = true;
-      oExportacao.notaEntrada = true;
-      oExportacao.notaSaida = true;
-      oExportacao.conhecimentoTransporteCarga = true;
-      oExportacao.inventario = true;
-      oExportacao.operacaoCreditoDebito = true;
-      oExportacao.outrosValoresDocumento = true;
-      oExportacao.cupomFiscalEletronico = true;
-      oExportacao.estoqueEscriturado = true;
-    
-      List<Integer> vLoja = new ArrayList<>();
-      vLoja.add(Integer.parseInt(args[3]));
-
-      Fortes158DAO dao = (Fortes158DAO) VRInstance.criar(Fortes158DAO.class);
-      dao.exportar(oExportacao, vLoja, Formulario.INTERFACE_EXPORTACAO_FORTES.getId(), TipoOperacao.EXPORTAR.getId()); 
-      ProgressBar.dispose();
-      Mensagem.exibir("Arquivo exportado com sucesso!", "FortesPlus");
-
+      Fortes158 form = new Fortes158();
+      form.setVisible(true);
     } catch (Exception ex) {
-      ProgressBar.dispose();
       Mensagem.exibirErro(ex, "Atenção");
     } 
   }

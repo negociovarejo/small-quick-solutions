@@ -7,4 +7,5 @@ javac vrintegracao/vo/interfaces/fortes/FortesPCEVO.java
 javac vrintegracao/vo/interfaces/fortes/FortesIIVVO.java
 javac vrintegracao/vo/interfaces/fortes/FortesCTCVO.java
 javac vrintegracao/dao/interfaces/Fortes158DAO.java
-javac fortesplus/Fortes158.java
+javac fortesplus/gui/Fortes158.java
+javac fortesplus/FortesPlus.java

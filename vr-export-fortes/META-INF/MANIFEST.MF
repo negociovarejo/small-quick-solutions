@@ -3,4 +3,4 @@ App-Date: 09/12/2020
 Version-Major: 1
 Version-Minor: 1
 Version-Release: 0
-Main-Class: fortesplus.Fortes158
+Main-Class: fortesplus.FortesPlus
