@@ -63,9 +63,11 @@ import vrintegracao.vo.interfaces.fortes.FortesICFVO;
 import vrintegracao.vo.interfaces.fortes.FortesIESVO;
 import vrintegracao.vo.interfaces.fortes.FortesIIVVO;
 import vrintegracao.vo.interfaces.fortes.FortesINMVO;
+import vrintegracao.vo.interfaces.fortes.FortesIVCVO;
 import vrintegracao.vo.interfaces.fortes.FortesNFMVO;
 import vrintegracao.vo.interfaces.fortes.FortesNSCVO;
 import vrintegracao.vo.interfaces.fortes.FortesNOPVO;
+import vrintegracao.vo.interfaces.fortes.FortesNVCVO;
 import vrintegracao.vo.interfaces.fortes.FortesOCCVO;
 import vrintegracao.vo.interfaces.fortes.FortesOUMVO;
 import vrintegracao.vo.interfaces.fortes.FortesOVEVO;
@@ -74,6 +76,7 @@ import vrintegracao.vo.interfaces.fortes.FortesOVNVO;
 import vrintegracao.vo.interfaces.fortes.FortesPARVO;
 import vrintegracao.vo.interfaces.fortes.FortesPCCVO;
 import vrintegracao.vo.interfaces.fortes.FortesPCEVO;
+import vrintegracao.vo.interfaces.fortes.FortesPNCVO;
 import vrintegracao.vo.interfaces.fortes.FortesPNMVO;
 import vrintegracao.vo.interfaces.fortes.FortesPROVO;
 import vrintegracao.vo.interfaces.fortes.FortesSNMVO;
@@ -2656,331 +2659,660 @@ public class Fortes158DAO {
 
     while (rstCupom.next()) {
       ProgressBar.setStatus("Exportando Cupons Eletrónicos");
-      FortesCPEVO oCPE = new FortesCPEVO();
-      oCPE.campo1 = "CPE";
-      oCPE.campo2 = Format.number(this.oFortesDAO.getCodigoEstabelecimento(i_exportacao.idLoja), 4);
-      oCPE.campo3 = Format.data(Format.dataGUI(rstCupom.getDate("data")), "dd/MM/yyyy", "yyyyMMdd");
-      
-      if (rstCupom.getObject("chavecfe") != null && rstCupom.getObject("chavenfce").equals("")) {
-        oCPE.campo4 = rstCupom.getString("chavecfe");
-        oCPE.campo5 = Texto.substring(rstCupom.getString("chavecfe").trim(), 22, 31);
-      } else if (rstCupom.getObject("chavecfe").equals("") && rstCupom.getObject("chavenfce") != null) {
-        oCPE.campo4 = rstCupom.getString("chavenfce");
-        oCPE.campo5 = Texto.substring(rstCupom.getString("chavenfce").trim(), 22, 26);
-      } else {
-        oCPE.campo4 = "";
-      }
 
-      oCPE.campo6 = Format.number(rstCupom.getInt("numeronota"), 6);
-      if (rstCupom.getBoolean("cancelado") == true) {
-        oCPE.campo7 = "2";
-      } else {
-        oCPE.campo7 = "0";
-        oCPE.campo9 = FormatDecimal2(rstCupom.getDouble("valortotal")).replace(".", "").replace(",", ".");
-      }
-
-      oCPE.campo8 = "";
-      oCPE.campo10 = FormatDecimal2(rstCupom.getDouble("valordesconto")).replace(".", "").replace(",", ".");
-      oCPE.campo11 = "";
-      oCPE.campo12 = FormatDecimal2(rstCupom.getDouble("valoricmssubstituicao")).replace(".", "").replace(",", ".");
-      oCPE.campo13 = FormatDecimal2(rstCupom.getDouble("valoracrescimo")).replace(".", "").replace(",", ".");
-      oCPE.campo14 = "";
-      oCPE.campo15 = FormatDecimal2(rstCupom.getDouble("receitapiscofins")).replace(".", "").replace(",", ".");
-      oCPE.campo16 = FormatDecimal2(rstCupom.getDouble("receitapiscofins")).replace(".", "").replace(",", ".");
-      oCPE.campo17 = "";
-      oCPE.campo18 = "";
-      oCPE.campo19 = "";
-      oCPE.campo20 = "";
-      oCPE.campo21 = "";
-      oCPE.campo22 = "";
-      
-      int paymentIndicator = rstCupom.getInt("id_indicadorpagamento");
-
-      switch (paymentIndicator) {
-        case 0:
-          oCPE.campo23 = "V";
-          break;
-        case 1:
-          oCPE.campo23 = "P";
-          break;
-        case 2:
-          oCPE.campo23 = "V";
-          break;
-        case 9:
-          oCPE.campo23 = "N";
-          break;
-      } 
-
-      oCPE.campo24 = "";
-
-      if (mapTipoSaidaContaContabil.get(rstCupom.getInt("id_tiposaida")) == null) {
-        mapTipoSaidaContaContabil.put(rstCupom.getInt("id_tiposaida"), this.oParametroContabilidadeDAO.carregarContaContabilTiposaida(rstCupom.getInt("id_tiposaida")));
-      }
-
-      int idContaContabilCredito = mapTipoSaidaContaContabil.get(rstCupom.getInt("id_tiposaida"));
-
-      if (idContaContabilCredito > 0) {
-        oCPE.campo25 = getContaContabil(idContaContabilCredito); 
-      }
-      
-      oCPE.campo26 = "";
-      oCPE.campo27 = "";
-      oCPE.campo28 = "";
-      oCPE.campo29 = "";
-      oCPE.campo30 = "";
-      oCPE.campo31 = "";
-      oCPE.campo32 = "";
-      oCPE.campo33 = "";
-      oCPE.campo34 = "";
-      oCPE.campo35 = "";
-
-      i_exportacao.qtdRegistro++;
-      i_arquivo.write(oCPE.getStringLayout140());
-      ProgressBar.next();
-
-      if (oCPE.campo7.equals("2"))
-        continue; 
-      stmProduto = new VRStatement();
-      stmProduto.open();
-      sql = new StringBuilder();
-      sql.append("SELECT ei.id_produto, ei.quantidade,");
-      sql.append("  te.descricao AS tipoembalagem,");
-      sql.append("  ei.cfop, ei.valoracrescimo, ei.valoroutras, ei.valorisento,");
-      sql.append("  (ei.valorbasecalculo + ei.valorisento + ei.valoroutras + ei.valorcancelado) AS valorbruto,");
-      sql.append("  (ei.valortotal + ei.valoracrescimo - ei.valordesconto - ei.valorcancelado) AS valorliquido,");
-      sql.append("  COALESCE(ei.id_tipoorigemmercadoria, p.id_tipoorigemmercadoria) AS id_tipoorigemmercadoria,");
-      sql.append("  a.csosn,");
-      sql.append("  ei.situacaotributaria, ei.valorbasecalculo,");
-      sql.append("  (a.porcentagemfinal + COALESCE(a.porcentagemfcp, 0)) AS porcentagemfinal, tpc.cst,");
-      sql.append("  (ei.valorbasecalculo + ei.valorisento + ei.valoroutras) AS basecalculo,");
-      if (oFornecedor.idTipoEmpresa == TipoEmpresa.LUCRO_PRESUMIDO.getId()) {
-        sql.append("  tpc.valorcofinspresumido as valorcofins, tpc.valorpispresumido as valorpis, ");
-      } else {
-        sql.append("  tpc.valorcofins, tpc.valorpis, ");
-      } 
-      sql.append("  p.tiponaturezareceita,  ei.id_tiposaida, ei.valoricms,");
-      sql.append("  ei.valortotal, ei.valordesconto, ttr.codigoacfiscal ");
-      sql.append("FROM escritaitem ei");
-      sql.append("  INNER JOIN produto p ON ei.id_produto = p.id");
-      sql.append("  INNER JOIN tipoembalagem te ON te.id = p.id_tipoembalagem");
-      sql.append("  INNER JOIN aliquota a ON ei.id_aliquota = a.id");
-      sql.append("  INNER JOIN tipopiscofins tpc ON ei.id_tipopiscofins = tpc.id ");
-      sql.append("  LEFT JOIN tiponaturezareceita ttr ON ttr.codigo = p.tiponaturezareceita and ttr.cst = tpc.cst ");
-      sql.append("WHERE id_escrita = " + rstCupom.getLong("id"));
-      sql.append("  AND ei.cancelado = false");
-      rstProduto = stmProduto.executeQuery(sql.toString());
-      double baseCalculoPisCofins = 0.0D;
-      double valorPis = 0.0D;
-      double valorCofins = 0.0D;
-      // long last = System.currentTimeMillis();
-     
-      while (rstProduto.next()) {
-        if (rstProduto.getDouble("valorliquido") == 0) {
-          continue;
-        }
-
-        FortesPCEVO oPCE = new FortesPCEVO();
-        oPCE.campo1 = "PCE";
-        oPCE.campo2 = String.valueOf(rstProduto.getInt("id_produto"));
+      if (rstCupom.getString("modelo").equals(ModeloNotaFiscal.CFE.getModelo())) {
+        FortesCPEVO oCPE = new FortesCPEVO();
+        oCPE.campo1 = "CPE";
+        oCPE.campo2 = Format.number(this.oFortesDAO.getCodigoEstabelecimento(i_exportacao.idLoja), 4);
+        oCPE.campo3 = Format.data(Format.dataGUI(rstCupom.getDate("data")), "dd/MM/yyyy", "yyyyMMdd");
         
-        if (rstProduto.getDouble("quantidade") <= 0.0D) {
-          oPCE.campo3 = "0.001";
+        if (rstCupom.getObject("chavecfe") != null && rstCupom.getObject("chavenfce").equals("")) {
+          oCPE.campo4 = rstCupom.getString("chavecfe");
+          oCPE.campo5 = Texto.substring(rstCupom.getString("chavecfe").trim(), 22, 31);
+        } else if (rstCupom.getObject("chavecfe").equals("") && rstCupom.getObject("chavenfce") != null) {
+          oCPE.campo4 = rstCupom.getString("chavenfce");
+          oCPE.campo5 = Texto.substring(rstCupom.getString("chavenfce").trim(), 22, 26);
         } else {
-          oPCE.campo3 = FormatDecimal3(rstProduto.getDouble("quantidade")).replace(".", "").replace(",", ".");
+          oCPE.campo4 = "";
         }
 
-        oPCE.campo4 = rstProduto.getString("tipoembalagem");
-        oPCE.campo5 = rstProduto.getString("cfop").replace(".", "").replace(",", ".");
-        oPCE.campo6 = FormatDecimal2(rstProduto.getDouble("valortotal")).replace(".", "").replace(",", ".");
-        oPCE.campo7 = FormatDecimal2(rstProduto.getDouble("valordesconto")).replace(".", "").replace(",", ".");
-        oPCE.campo8 = "";
+        oCPE.campo6 = Format.number(rstCupom.getInt("numeronota"), 6);
+        if (rstCupom.getBoolean("cancelado") == true) {
+          oCPE.campo7 = "2";
+        } else {
+          oCPE.campo7 = "0";
+          oCPE.campo9 = FormatDecimal2(rstCupom.getDouble("valortotal")).replace(".", "").replace(",", ".");
+        }
 
-        double increaseValue = rstProduto.getDouble("valoroutras") > 0 ? rstProduto.getDouble("valoroutras") : rstProduto.getDouble("valorisento");
-
-        oPCE.campo9 = FormatDecimal2(increaseValue >= rstProduto.getDouble("valortotal") ? increaseValue - rstProduto.getDouble("valortotal") : 0.00).replace(".", "").replace(",", ".");
+        oCPE.campo8 = "";
+        oCPE.campo10 = FormatDecimal2(rstCupom.getDouble("valordesconto")).replace(".", "").replace(",", ".");
+        oCPE.campo11 = "";
+        oCPE.campo12 = FormatDecimal2(rstCupom.getDouble("valoricmssubstituicao")).replace(".", "").replace(",", ".");
+        oCPE.campo13 = FormatDecimal2(rstCupom.getDouble("valoracrescimo")).replace(".", "").replace(",", ".");
+        oCPE.campo14 = "";
+        oCPE.campo15 = FormatDecimal2(rstCupom.getDouble("receitapiscofins")).replace(".", "").replace(",", ".");
+        oCPE.campo16 = FormatDecimal2(rstCupom.getDouble("receitapiscofins")).replace(".", "").replace(",", ".");
+        oCPE.campo17 = "";
+        oCPE.campo18 = "";
+        oCPE.campo19 = "";
+        oCPE.campo20 = "";
+        oCPE.campo21 = "";
+        oCPE.campo22 = "";
         
-        if (
-          oFornecedor.idTipoEmpresa == TipoEmpresa.EPP_SIMPLES.getId() ||
-          oFornecedor.idTipoEmpresa == TipoEmpresa.ME_SIMPLES.getId() ||
-          oFornecedor.idTipoEmpresa == TipoEmpresa.MEI.getId()
-        ) {
-          oPCE.campo10 = Format.number(rstProduto.getInt("id_tipoorigemmercadoria"), 1);
-          oPCE.campo11 = Format.number(rstProduto.getInt("csosn"), 3);
-        } else {
-          oPCE.campo10 = "";
-          oPCE.campo11 = "";
-        }
+        int paymentIndicator = rstCupom.getInt("id_indicadorpagamento");
 
-        oPCE.campo12 = Format.number(rstProduto.getInt("id_tipoorigemmercadoria"), 1);
-        oPCE.campo13 = Format.number(rstProduto.getInt("situacaotributaria"), 2);
-        oPCE.campo14 = FormatDecimal2(rstProduto.getDouble("valorbasecalculo")).replace(".", "").replace(",", ".");
-        oPCE.campo15 = FormatDecimal2(rstProduto.getDouble("porcentagemfinal")).replace(".", "").replace(",", ".");
-        
-        if (
-          oFornecedor.idTipoEmpresa == TipoEmpresa.LUCRO_REAL.getId() ||
-          oFornecedor.idTipoEmpresa == TipoEmpresa.LUCRO_PRESUMIDO.getId()
-        ) {
-          oPCE.campo16 = Format.number(rstProduto.getInt("cst"), 2);
-        } else {
-          oPCE.campo16 = "";
-        }
+        switch (paymentIndicator) {
+          case 0:
+            oCPE.campo23 = "V";
+            break;
+          case 1:
+            oCPE.campo23 = "P";
+            break;
+          case 2:
+            oCPE.campo23 = "V";
+            break;
+          case 9:
+            oCPE.campo23 = "N";
+            break;
+        } 
 
-        if (
-          oFornecedor.idTipoEmpresa == TipoEmpresa.LUCRO_REAL.getId() ||
-          oFornecedor.idTipoEmpresa == TipoEmpresa.LUCRO_PRESUMIDO.getId()
-        ) {
-          oPCE.campo23 = Format.number(rstProduto.getInt("cst"), 2);
-        } else {
-          oPCE.campo23 = "";
-        }
+        oCPE.campo24 = "";
 
-        if (parametroExcluirIcmsDaBase) {
-          baseCalculoPisCofins = rstProduto.getDouble("basecalculo") - rstProduto.getDouble("valoricms");
-        } else {
-          baseCalculoPisCofins = rstProduto.getDouble("basecalculo");
-        }
-       
-        // if (!"01,05,09,50,75,72".contains(oPCE.campo16)) {
-        //   oPCE.campo17 = "0.00";
-        // } else {
-        //   oPCE.campo17 = FormatDecimal2(baseCalculoPisCofins).replace(".", "").replace(",", ".");
-        // }
-
-        if (!oPCE.campo16.equals("49")) {
-          oPCE.campo17 = FormatDecimal2(rstProduto.getDouble("valortotal") - rstProduto.getDouble("valordesconto") + rstProduto.getDouble("valoracrescimo")).replace(".", "").replace(",", ".");
-        }
-
-        oPCE.campo18 = "1";
-        oPCE.campo19 = (rstProduto.getDouble("valorcofins") > 0.0D && this.oCAB.campo9.equals("S")) ? FormatDecimal2(rstProduto.getDouble("valorcofins")).replace(".", "").replace(",", ".") : "";
-        oPCE.campo20 = "";
-        oPCE.campo21 = (Numero.round(baseCalculoPisCofins * rstProduto.getDouble("valorcofins") / 100.0D, 2) > 0.0D && this.oCAB.campo9.equals("S")) ? FormatDecimal2(Numero.round(baseCalculoPisCofins * rstProduto.getDouble("valorcofins") / 100.0D, 2)).replace(".", "").replace(",", ".") : "";
-        oPCE.campo22 = Format.number(rstProduto.getInt("codigoacfiscal"), 3);
-
-        if (Integer.parseInt(oPCE.campo22) == 0 && rstProduto.getString("tiponaturezareceita") != null) {
-          vNotFoundAcFiscal.add(rstProduto.getString("tiponaturezareceita"));
-        }
-
-        // if (!"01,05,09,50,75,72".contains(oPCE.campo23)) {
-        //   oPCE.campo24 = "0.00";
-        // } else {
-        //   oPCE.campo24 = FormatDecimal2(rstProduto.getDouble("basecalculo")).replace(".", "").replace(",", ".");
-        // }
-
-        if (!oPCE.campo23.equals("49")) {
-          oPCE.campo24 = FormatDecimal2(rstProduto.getDouble("valortotal") - rstProduto.getDouble("valordesconto") + rstProduto.getDouble("valoracrescimo")).replace(".", "").replace(",", ".");
-        }
-
-        oPCE.campo25 = "1";
-        oPCE.campo26 = (rstProduto.getDouble("valorpis") > 0.0D && this.oCAB.campo9.equals("S")) ? FormatDecimal2(rstProduto.getDouble("valorpis")).replace(".", "").replace(",", ".") : "";
-        oPCE.campo27 = "";
-        oPCE.campo28 = (Numero.round(baseCalculoPisCofins * rstProduto.getDouble("valorpis") / 100.0D, 2) > 0.0D && this.oCAB.campo9.equals("S")) ? FormatDecimal2(Numero.round(baseCalculoPisCofins * rstProduto.getDouble("valorpis") / 100.0D, 2)).replace(".", "").replace(",", ".") : "";
-        oPCE.campo29 = oPCE.campo22;
-        
         if (mapTipoSaidaContaContabil.get(rstCupom.getInt("id_tiposaida")) == null) {
-          mapTipoSaidaContaContabil.put(rstCupom.getInt("id_tiposaida"), this.oParametroContabilidadeDAO.carregarContaContabilTiposaida(rstProduto.getInt("id_tiposaida")));
+          mapTipoSaidaContaContabil.put(rstCupom.getInt("id_tiposaida"), this.oParametroContabilidadeDAO.carregarContaContabilTiposaida(rstCupom.getInt("id_tiposaida")));
         }
 
-        idContaContabilCredito = mapTipoSaidaContaContabil.get(rstCupom.getInt("id_tiposaida"));
-        
+        int idContaContabilCredito = mapTipoSaidaContaContabil.get(rstCupom.getInt("id_tiposaida"));
+
         if (idContaContabilCredito > 0) {
-          oPCE.campo30 = getContaContabil(idContaContabilCredito);
+          oCPE.campo25 = getContaContabil(idContaContabilCredito); 
         }
-
-        oPCE.campo31 = "";
+        
+        oCPE.campo26 = "";
+        oCPE.campo27 = "";
+        oCPE.campo28 = "";
+        oCPE.campo29 = "";
+        oCPE.campo30 = "";
+        oCPE.campo31 = "";
+        oCPE.campo32 = "";
+        oCPE.campo33 = "";
+        oCPE.campo34 = "";
+        oCPE.campo35 = "";
 
         i_exportacao.qtdRegistro++;
-        i_arquivo.write(oPCE.getStringLayout158());
-      }
-      // System.out.println("Executed: " + (System.currentTimeMillis() - last) + "ms");
-     
-      stmProduto.close();
-      stmImposto = new VRStatement();
-      stmImposto.open();
-      sql = new StringBuilder();
-      sql.append("SELECT SUM (ei.valortotal - ei.valordesconto + ei.valoracrescimo - ei.valorcancelado) AS valor, (a.porcentagemfinal + COALESCE(a.porcentagemfcp, 0)) AS porcentagemfinal,");
-      sql.append(" SUM (ei.valoricms + COALESCE(ei.valorfcp, 0)) AS valoricms, SUM (ei.valorisento) AS valorisento,");
-      sql.append(" SUM (ei.valoroutras) AS valoroutras, ei.situacaotributaria,");
-      sql.append(" COALESCE(ei.id_tipoorigemmercadoria, p.id_tipoorigemmercadoria) AS id_tipoorigemmercadoria,");
-      sql.append(" SUM (ei.valorbasecalculo) AS valorbasecalculo, ");
-      sql.append(" a.csosn, tpc.cst, ei.cfop, sum(ei.valortotal) as valortotal");
-      sql.append(" FROM escritaitem AS ei");
-      sql.append(" INNER JOIN aliquota AS a ON ei.id_aliquota = a.id");
-      sql.append(" INNER JOIN produto AS p ON ei.id_produto = p.id");
-      sql.append(" INNER JOIN tipopiscofins AS tpc ON ei.id_tipopiscofins = tpc.id");
-      sql.append(" WHERE ei.id_escrita = " + rstCupom.getLong("id"));
-      sql.append(" AND ei.cancelado = false");
-      sql.append(" GROUP BY ei.cfop, tpc.cst, valorbasecalculo, (a.porcentagemfinal + COALESCE(a.porcentagemfcp, 0)), ei.situacaotributaria,");
-      sql.append(" COALESCE(ei.id_tipoorigemmercadoria, p.id_tipoorigemmercadoria), a.csosn");
-      rstImposto = stmImposto.executeQuery(sql.toString());
-      while (rstImposto.next()) {
-        FortesCFIVO oCFI = new FortesCFIVO();
-        oCFI.campo1 = "CFI";
-       
-        double increaseValue = rstImposto.getDouble("valoroutras") > 0 ? rstImposto.getDouble("valoroutras") : rstImposto.getDouble("valorisento");
-        double increaseField = increaseValue >= rstImposto.getDouble("valortotal") ? increaseValue - rstImposto.getDouble("valortotal") : 0.00;
+        i_arquivo.write(oCPE.getStringLayout140());
+        ProgressBar.next();
 
-        oCFI.campo2 = FormatDecimal2(rstImposto.getDouble("valor") + increaseField).replace(".", "").replace(",", ".");
-        oCFI.campo3 = oFornecedor.estado;
-        oCFI.campo4 = Format.number(rstImposto.getString("cfop").replace(".", ""), 4);
-        oCFI.campo5 = FormatDecimal2(rstImposto.getDouble("valorbasecalculo")).replace(".", "").replace(",", ".");
-        oCFI.campo6 = FormatDecimal2(rstImposto.getDouble("porcentagemfinal")).replace(".", "").replace(",", ".");
-        oCFI.campo7 = FormatDecimal2(rstImposto.getDouble("valoricms")).replace(".", "").replace(",", ".");
-        oCFI.campo8 = FormatDecimal2(rstImposto.getDouble("valor") + increaseField).replace(".", "").replace(",", ".");
-        oCFI.campo9 = FormatDecimal2(rstImposto.getDouble("valor") + increaseField).replace(".", "").replace(",", ".");
-        
-        boolean substituicao = aliquotaDao.isSubstituido(rstImposto.getInt("situacaotributaria"));
-
-        if (substituicao) {
-          oCFI.campo10 = "S";
+        if (oCPE.campo7.equals("2"))
+          continue; 
+        stmProduto = new VRStatement();
+        stmProduto.open();
+        sql = new StringBuilder();
+        sql.append("SELECT ei.id_produto, ei.quantidade,");
+        sql.append("  te.descricao AS tipoembalagem,");
+        sql.append("  ei.cfop, ei.valoracrescimo, ei.valoroutras, ei.valorisento,");
+        sql.append("  (ei.valorbasecalculo + ei.valorisento + ei.valoroutras + ei.valorcancelado) AS valorbruto,");
+        sql.append("  (ei.valortotal + ei.valoracrescimo - ei.valordesconto - ei.valorcancelado) AS valorliquido,");
+        sql.append("  COALESCE(ei.id_tipoorigemmercadoria, p.id_tipoorigemmercadoria) AS id_tipoorigemmercadoria,");
+        sql.append("  a.csosn,");
+        sql.append("  ei.situacaotributaria, ei.valorbasecalculo,");
+        sql.append("  (a.porcentagemfinal + COALESCE(a.porcentagemfcp, 0)) AS porcentagemfinal, tpc.cst,");
+        sql.append("  (ei.valorbasecalculo + ei.valorisento + ei.valoroutras) AS basecalculo,");
+        if (oFornecedor.idTipoEmpresa == TipoEmpresa.LUCRO_PRESUMIDO.getId()) {
+          sql.append("  tpc.valorcofinspresumido as valorcofins, tpc.valorpispresumido as valorpis, ");
         } else {
-          oCFI.campo10 = "N";
-        }
+          sql.append("  tpc.valorcofins, tpc.valorpis, ");
+        } 
+        sql.append("  p.tiponaturezareceita,  ei.id_tiposaida, ei.valoricms,");
+        sql.append("  ei.valortotal, ei.valordesconto, ttr.codigoacfiscal ");
+        sql.append("FROM escritaitem ei");
+        sql.append("  INNER JOIN produto p ON ei.id_produto = p.id");
+        sql.append("  INNER JOIN tipoembalagem te ON te.id = p.id_tipoembalagem");
+        sql.append("  INNER JOIN aliquota a ON ei.id_aliquota = a.id");
+        sql.append("  INNER JOIN tipopiscofins tpc ON ei.id_tipopiscofins = tpc.id ");
+        sql.append("  LEFT JOIN tiponaturezareceita ttr ON ttr.codigo = p.tiponaturezareceita and ttr.cst = tpc.cst ");
+        sql.append("WHERE id_escrita = " + rstCupom.getLong("id"));
+        sql.append("  AND ei.cancelado = false");
+        rstProduto = stmProduto.executeQuery(sql.toString());
+        double baseCalculoPisCofins = 0.0D;
+        double valorPis = 0.0D;
+        double valorCofins = 0.0D;
+        // long last = System.currentTimeMillis();
+      
+        while (rstProduto.next()) {
+          if (rstProduto.getDouble("valorliquido") == 0) {
+            continue;
+          }
 
-        oCFI.campo11 = "N";
-        oCFI.campo12 = "N";
+          FortesPCEVO oPCE = new FortesPCEVO();
+          oPCE.campo1 = "PCE";
+          oPCE.campo2 = String.valueOf(rstProduto.getInt("id_produto"));
+          
+          if (rstProduto.getDouble("quantidade") <= 0.0D) {
+            oPCE.campo3 = "0.001";
+          } else {
+            oPCE.campo3 = FormatDecimal3(rstProduto.getDouble("quantidade")).replace(".", "").replace(",", ".");
+          }
 
-        if (
-          oFornecedor.idTipoEmpresa == TipoEmpresa.EPP_SIMPLES.getId() ||
-          oFornecedor.idTipoEmpresa == TipoEmpresa.ME_SIMPLES.getId() ||
-          oFornecedor.idTipoEmpresa == TipoEmpresa.MEI.getId()
-        ) {
-          oCFI.campo13 = "";
-          oCFI.campo14 = "";
-        } else {
-          oCFI.campo13 = Format.number(rstImposto.getInt("id_tipoorigemmercadoria"), 1);
-          oCFI.campo14 = Format.number(rstImposto.getInt("situacaotributaria"), 2);
-        }
+          oPCE.campo4 = rstProduto.getString("tipoembalagem");
+          oPCE.campo5 = rstProduto.getString("cfop").replace(".", "").replace(",", ".");
+          oPCE.campo6 = FormatDecimal2(rstProduto.getDouble("valortotal")).replace(".", "").replace(",", ".");
+          oPCE.campo7 = FormatDecimal2(rstProduto.getDouble("valordesconto")).replace(".", "").replace(",", ".");
+          oPCE.campo8 = "";
 
-        if (
-          oFornecedor.idTipoEmpresa == TipoEmpresa.EPP_SIMPLES.getId() ||
-          oFornecedor.idTipoEmpresa == TipoEmpresa.ME_SIMPLES.getId() ||
-          oFornecedor.idTipoEmpresa == TipoEmpresa.MEI.getId()
-        ) {
-          oCFI.campo15 = Format.number(rstImposto.getInt("id_tipoorigemmercadoria"), 1);
-          oCFI.campo16 = Format.number(rstImposto.getInt("csosn"), 3);
-        } else {
-          oCFI.campo15 = "";
-          oCFI.campo16 = "";
-        }
+          double increaseValue = rstProduto.getDouble("valoroutras") > 0 ? rstProduto.getDouble("valoroutras") : rstProduto.getDouble("valorisento");
 
-        if (
-          (
+          oPCE.campo9 = FormatDecimal2(increaseValue >= rstProduto.getDouble("valortotal") ? increaseValue - rstProduto.getDouble("valortotal") : 0.00).replace(".", "").replace(",", ".");
+          
+          if (
             oFornecedor.idTipoEmpresa == TipoEmpresa.EPP_SIMPLES.getId() ||
             oFornecedor.idTipoEmpresa == TipoEmpresa.ME_SIMPLES.getId() ||
             oFornecedor.idTipoEmpresa == TipoEmpresa.MEI.getId()
-          ) && (rstImposto.getInt("cst") == 4 || rstImposto.getInt("cst") == 70)
-        ) {
-          oCFI.campo17 = "S";
-          oCFI.campo18 = "S";
+          ) {
+            oPCE.campo10 = Format.number(rstProduto.getInt("id_tipoorigemmercadoria"), 1);
+            oPCE.campo11 = Format.number(rstProduto.getInt("csosn"), 3);
+          } else {
+            oPCE.campo10 = "";
+            oPCE.campo11 = "";
+          }
+
+          oPCE.campo12 = Format.number(rstProduto.getInt("id_tipoorigemmercadoria"), 1);
+          oPCE.campo13 = Format.number(rstProduto.getInt("situacaotributaria"), 2);
+          oPCE.campo14 = FormatDecimal2(rstProduto.getDouble("valorbasecalculo")).replace(".", "").replace(",", ".");
+          oPCE.campo15 = FormatDecimal2(rstProduto.getDouble("porcentagemfinal")).replace(".", "").replace(",", ".");
+          
+          if (
+            oFornecedor.idTipoEmpresa == TipoEmpresa.LUCRO_REAL.getId() ||
+            oFornecedor.idTipoEmpresa == TipoEmpresa.LUCRO_PRESUMIDO.getId()
+          ) {
+            oPCE.campo16 = Format.number(rstProduto.getInt("cst"), 2);
+          } else {
+            oPCE.campo16 = "";
+          }
+
+          if (
+            oFornecedor.idTipoEmpresa == TipoEmpresa.LUCRO_REAL.getId() ||
+            oFornecedor.idTipoEmpresa == TipoEmpresa.LUCRO_PRESUMIDO.getId()
+          ) {
+            oPCE.campo23 = Format.number(rstProduto.getInt("cst"), 2);
+          } else {
+            oPCE.campo23 = "";
+          }
+
+          if (parametroExcluirIcmsDaBase) {
+            baseCalculoPisCofins = rstProduto.getDouble("basecalculo") - rstProduto.getDouble("valoricms");
+          } else {
+            baseCalculoPisCofins = rstProduto.getDouble("basecalculo");
+          }
+        
+          // if (!"01,05,09,50,75,72".contains(oPCE.campo16)) {
+          //   oPCE.campo17 = "0.00";
+          // } else {
+          //   oPCE.campo17 = FormatDecimal2(baseCalculoPisCofins).replace(".", "").replace(",", ".");
+          // }
+
+          if (!oPCE.campo16.equals("49")) {
+            oPCE.campo17 = FormatDecimal2(rstProduto.getDouble("valortotal") - rstProduto.getDouble("valordesconto") + rstProduto.getDouble("valoracrescimo")).replace(".", "").replace(",", ".");
+          }
+
+          oPCE.campo18 = "1";
+          oPCE.campo19 = (rstProduto.getDouble("valorcofins") > 0.0D && this.oCAB.campo9.equals("S")) ? FormatDecimal2(rstProduto.getDouble("valorcofins")).replace(".", "").replace(",", ".") : "";
+          oPCE.campo20 = "";
+          oPCE.campo21 = (Numero.round(baseCalculoPisCofins * rstProduto.getDouble("valorcofins") / 100.0D, 2) > 0.0D && this.oCAB.campo9.equals("S")) ? FormatDecimal2(Numero.round(baseCalculoPisCofins * rstProduto.getDouble("valorcofins") / 100.0D, 2)).replace(".", "").replace(",", ".") : "";
+          oPCE.campo22 = Format.number(rstProduto.getInt("codigoacfiscal"), 3);
+
+          if (Integer.parseInt(oPCE.campo22) == 0 && rstProduto.getString("tiponaturezareceita") != null) {
+            vNotFoundAcFiscal.add(rstProduto.getString("tiponaturezareceita"));
+          }
+
+          // if (!"01,05,09,50,75,72".contains(oPCE.campo23)) {
+          //   oPCE.campo24 = "0.00";
+          // } else {
+          //   oPCE.campo24 = FormatDecimal2(rstProduto.getDouble("basecalculo")).replace(".", "").replace(",", ".");
+          // }
+
+          if (!oPCE.campo23.equals("49")) {
+            oPCE.campo24 = FormatDecimal2(rstProduto.getDouble("valortotal") - rstProduto.getDouble("valordesconto") + rstProduto.getDouble("valoracrescimo")).replace(".", "").replace(",", ".");
+          }
+
+          oPCE.campo25 = "1";
+          oPCE.campo26 = (rstProduto.getDouble("valorpis") > 0.0D && this.oCAB.campo9.equals("S")) ? FormatDecimal2(rstProduto.getDouble("valorpis")).replace(".", "").replace(",", ".") : "";
+          oPCE.campo27 = "";
+          oPCE.campo28 = (Numero.round(baseCalculoPisCofins * rstProduto.getDouble("valorpis") / 100.0D, 2) > 0.0D && this.oCAB.campo9.equals("S")) ? FormatDecimal2(Numero.round(baseCalculoPisCofins * rstProduto.getDouble("valorpis") / 100.0D, 2)).replace(".", "").replace(",", ".") : "";
+          oPCE.campo29 = oPCE.campo22;
+          
+          if (mapTipoSaidaContaContabil.get(rstCupom.getInt("id_tiposaida")) == null) {
+            mapTipoSaidaContaContabil.put(rstCupom.getInt("id_tiposaida"), this.oParametroContabilidadeDAO.carregarContaContabilTiposaida(rstProduto.getInt("id_tiposaida")));
+          }
+
+          idContaContabilCredito = mapTipoSaidaContaContabil.get(rstCupom.getInt("id_tiposaida"));
+          
+          if (idContaContabilCredito > 0) {
+            oPCE.campo30 = getContaContabil(idContaContabilCredito);
+          }
+
+          oPCE.campo31 = "";
+
+          i_exportacao.qtdRegistro++;
+          i_arquivo.write(oPCE.getStringLayout158());
+        }
+        // System.out.println("Executed: " + (System.currentTimeMillis() - last) + "ms");
+      
+        stmProduto.close();
+        stmImposto = new VRStatement();
+        stmImposto.open();
+        sql = new StringBuilder();
+        sql.append("SELECT SUM (ei.valortotal - ei.valordesconto + ei.valoracrescimo - ei.valorcancelado) AS valor, (a.porcentagemfinal + COALESCE(a.porcentagemfcp, 0)) AS porcentagemfinal,");
+        sql.append(" SUM (ei.valoricms + COALESCE(ei.valorfcp, 0)) AS valoricms, SUM (ei.valorisento) AS valorisento,");
+        sql.append(" SUM (ei.valoroutras) AS valoroutras, ei.situacaotributaria,");
+        sql.append(" COALESCE(ei.id_tipoorigemmercadoria, p.id_tipoorigemmercadoria) AS id_tipoorigemmercadoria,");
+        sql.append(" SUM (ei.valorbasecalculo) AS valorbasecalculo, ");
+        sql.append(" a.csosn, tpc.cst, ei.cfop, sum(ei.valortotal) as valortotal");
+        sql.append(" FROM escritaitem AS ei");
+        sql.append(" INNER JOIN aliquota AS a ON ei.id_aliquota = a.id");
+        sql.append(" INNER JOIN produto AS p ON ei.id_produto = p.id");
+        sql.append(" INNER JOIN tipopiscofins AS tpc ON ei.id_tipopiscofins = tpc.id");
+        sql.append(" WHERE ei.id_escrita = " + rstCupom.getLong("id"));
+        sql.append(" AND ei.cancelado = false");
+        sql.append(" GROUP BY ei.cfop, tpc.cst, valorbasecalculo, (a.porcentagemfinal + COALESCE(a.porcentagemfcp, 0)), ei.situacaotributaria,");
+        sql.append(" COALESCE(ei.id_tipoorigemmercadoria, p.id_tipoorigemmercadoria), a.csosn");
+        rstImposto = stmImposto.executeQuery(sql.toString());
+        while (rstImposto.next()) {
+          FortesCFIVO oCFI = new FortesCFIVO();
+          oCFI.campo1 = "CFI";
+        
+          double increaseValue = rstImposto.getDouble("valoroutras") > 0 ? rstImposto.getDouble("valoroutras") : rstImposto.getDouble("valorisento");
+          double increaseField = increaseValue >= rstImposto.getDouble("valortotal") ? increaseValue - rstImposto.getDouble("valortotal") : 0.00;
+
+          oCFI.campo2 = FormatDecimal2(rstImposto.getDouble("valor") + increaseField).replace(".", "").replace(",", ".");
+          oCFI.campo3 = oFornecedor.estado;
+          oCFI.campo4 = Format.number(rstImposto.getString("cfop").replace(".", ""), 4);
+          oCFI.campo5 = FormatDecimal2(rstImposto.getDouble("valorbasecalculo")).replace(".", "").replace(",", ".");
+          oCFI.campo6 = FormatDecimal2(rstImposto.getDouble("porcentagemfinal")).replace(".", "").replace(",", ".");
+          oCFI.campo7 = FormatDecimal2(rstImposto.getDouble("valoricms")).replace(".", "").replace(",", ".");
+          oCFI.campo8 = FormatDecimal2(rstImposto.getDouble("valor") + increaseField).replace(".", "").replace(",", ".");
+          oCFI.campo9 = FormatDecimal2(rstImposto.getDouble("valor") + increaseField).replace(".", "").replace(",", ".");
+          
+          boolean substituicao = aliquotaDao.isSubstituido(rstImposto.getInt("situacaotributaria"));
+
+          if (substituicao) {
+            oCFI.campo10 = "S";
+          } else {
+            oCFI.campo10 = "N";
+          }
+
+          oCFI.campo11 = "N";
+          oCFI.campo12 = "N";
+
+          if (
+            oFornecedor.idTipoEmpresa == TipoEmpresa.EPP_SIMPLES.getId() ||
+            oFornecedor.idTipoEmpresa == TipoEmpresa.ME_SIMPLES.getId() ||
+            oFornecedor.idTipoEmpresa == TipoEmpresa.MEI.getId()
+          ) {
+            oCFI.campo13 = "";
+            oCFI.campo14 = "";
+          } else {
+            oCFI.campo13 = Format.number(rstImposto.getInt("id_tipoorigemmercadoria"), 1);
+            oCFI.campo14 = Format.number(rstImposto.getInt("situacaotributaria"), 2);
+          }
+
+          if (
+            oFornecedor.idTipoEmpresa == TipoEmpresa.EPP_SIMPLES.getId() ||
+            oFornecedor.idTipoEmpresa == TipoEmpresa.ME_SIMPLES.getId() ||
+            oFornecedor.idTipoEmpresa == TipoEmpresa.MEI.getId()
+          ) {
+            oCFI.campo15 = Format.number(rstImposto.getInt("id_tipoorigemmercadoria"), 1);
+            oCFI.campo16 = Format.number(rstImposto.getInt("csosn"), 3);
+          } else {
+            oCFI.campo15 = "";
+            oCFI.campo16 = "";
+          }
+
+          if (
+            (
+              oFornecedor.idTipoEmpresa == TipoEmpresa.EPP_SIMPLES.getId() ||
+              oFornecedor.idTipoEmpresa == TipoEmpresa.ME_SIMPLES.getId() ||
+              oFornecedor.idTipoEmpresa == TipoEmpresa.MEI.getId()
+            ) && (rstImposto.getInt("cst") == 4 || rstImposto.getInt("cst") == 70)
+          ) {
+            oCFI.campo17 = "S";
+            oCFI.campo18 = "S";
+          } else {
+            oCFI.campo17 = "N";
+            oCFI.campo18 = "N";
+          }
+
+          i_exportacao.qtdRegistro++;
+          i_arquivo.write(oCFI.getStringLayout140());
+        } 
+        stmImposto.close();
+      } else {
+        FortesNVCVO oNVC = new FortesNVCVO();
+        oNVC.campo1 = "NVC";
+        oNVC.campo2 = Format.number(this.oFortesDAO.getCodigoEstabelecimento(i_exportacao.idLoja), 4);
+        oNVC.campo3 = Format.data(Format.dataGUI(rstCupom.getDate("data")), "dd/MM/yyyy", "yyyyMMdd");
+        
+        if (rstCupom.getObject("chavecfe") != null && rstCupom.getObject("chavenfce").equals("")) {
+          oNVC.campo4 = rstCupom.getString("chavecfe");
+          oNVC.campo5 = Texto.substring(rstCupom.getString("chavecfe").trim(), 22, 31);
+        } else if (rstCupom.getObject("chavecfe").equals("") && rstCupom.getObject("chavenfce") != null) {
+          oNVC.campo4 = rstCupom.getString("chavenfce");
+          oNVC.campo5 = Texto.substring(rstCupom.getString("chavenfce").trim(), 22, 26);
         } else {
-          oCFI.campo17 = "N";
-          oCFI.campo18 = "N";
+          oNVC.campo4 = "";
         }
 
+        oNVC.campo6 = Format.number(rstCupom.getInt("numeronota"), 6);
+        if (rstCupom.getBoolean("cancelado") == true) {
+          oNVC.campo7 = "2";
+        } else {
+          oNVC.campo7 = "0";
+          oNVC.campo9 = FormatDecimal2(rstCupom.getDouble("valortotal")).replace(".", "").replace(",", ".");
+        }
+
+        oNVC.campo8 = "";
+        oNVC.campo10 = FormatDecimal2(rstCupom.getDouble("valordesconto")).replace(".", "").replace(",", ".");
+        oNVC.campo11 = "";
+        oNVC.campo12 = FormatDecimal2(rstCupom.getDouble("valoricmssubstituicao")).replace(".", "").replace(",", ".");
+        oNVC.campo13 = FormatDecimal2(rstCupom.getDouble("valoracrescimo")).replace(".", "").replace(",", ".");
+        oNVC.campo14 = "";
+        oNVC.campo15 = FormatDecimal2(rstCupom.getDouble("receitapiscofins")).replace(".", "").replace(",", ".");
+        oNVC.campo16 = FormatDecimal2(rstCupom.getDouble("receitapiscofins")).replace(".", "").replace(",", ".");
+        oNVC.campo17 = "";
+        oNVC.campo18 = "";
+        oNVC.campo19 = "";
+        oNVC.campo20 = "";
+        oNVC.campo21 = "";
+        oNVC.campo22 = "";
+        
+        int paymentIndicator = rstCupom.getInt("id_indicadorpagamento");
+
+        switch (paymentIndicator) {
+          case 0:
+            oNVC.campo23 = "V";
+            break;
+          case 1:
+            oNVC.campo23 = "P";
+            break;
+          case 2:
+            oNVC.campo23 = "V";
+            break;
+          case 9:
+            oNVC.campo23 = "N";
+            break;
+        } 
+
+        oNVC.campo24 = "";
+
+        if (mapTipoSaidaContaContabil.get(rstCupom.getInt("id_tiposaida")) == null) {
+          mapTipoSaidaContaContabil.put(rstCupom.getInt("id_tiposaida"), this.oParametroContabilidadeDAO.carregarContaContabilTiposaida(rstCupom.getInt("id_tiposaida")));
+        }
+
+        int idContaContabilCredito = mapTipoSaidaContaContabil.get(rstCupom.getInt("id_tiposaida"));
+
+        if (idContaContabilCredito > 0) {
+          oNVC.campo25 = getContaContabil(idContaContabilCredito); 
+        }
+        
+        oNVC.campo26 = "";
+        oNVC.campo27 = "";
+        oNVC.campo28 = "";
+        oNVC.campo29 = "";
+        oNVC.campo30 = "";
+        oNVC.campo31 = "";
+        oNVC.campo32 = "";
+        oNVC.campo33 = "";
+        oNVC.campo34 = "";
+        oNVC.campo35 = "";
+
         i_exportacao.qtdRegistro++;
-        i_arquivo.write(oCFI.getStringLayout140());
-      } 
-      stmImposto.close();
+        i_arquivo.write(oNVC.getStringLayout140());
+        ProgressBar.next();
+
+        if (oNVC.campo7.equals("2"))
+          continue; 
+        stmProduto = new VRStatement();
+        stmProduto.open();
+        sql = new StringBuilder();
+        sql.append("SELECT ei.id_produto, ei.quantidade,");
+        sql.append("  te.descricao AS tipoembalagem,");
+        sql.append("  ei.cfop, ei.valoracrescimo, ei.valoroutras, ei.valorisento,");
+        sql.append("  (ei.valorbasecalculo + ei.valorisento + ei.valoroutras + ei.valorcancelado) AS valorbruto,");
+        sql.append("  (ei.valortotal + ei.valoracrescimo - ei.valordesconto - ei.valorcancelado) AS valorliquido,");
+        sql.append("  COALESCE(ei.id_tipoorigemmercadoria, p.id_tipoorigemmercadoria) AS id_tipoorigemmercadoria,");
+        sql.append("  a.csosn,");
+        sql.append("  ei.situacaotributaria, ei.valorbasecalculo,");
+        sql.append("  (a.porcentagemfinal + COALESCE(a.porcentagemfcp, 0)) AS porcentagemfinal, tpc.cst,");
+        sql.append("  (ei.valorbasecalculo + ei.valorisento + ei.valoroutras) AS basecalculo,");
+        if (oFornecedor.idTipoEmpresa == TipoEmpresa.LUCRO_PRESUMIDO.getId()) {
+          sql.append("  tpc.valorcofinspresumido as valorcofins, tpc.valorpispresumido as valorpis, ");
+        } else {
+          sql.append("  tpc.valorcofins, tpc.valorpis, ");
+        } 
+        sql.append("  p.tiponaturezareceita,  ei.id_tiposaida, ei.valoricms,");
+        sql.append("  ei.valortotal, ei.valordesconto, ttr.codigoacfiscal ");
+        sql.append("FROM escritaitem ei");
+        sql.append("  INNER JOIN produto p ON ei.id_produto = p.id");
+        sql.append("  INNER JOIN tipoembalagem te ON te.id = p.id_tipoembalagem");
+        sql.append("  INNER JOIN aliquota a ON ei.id_aliquota = a.id");
+        sql.append("  INNER JOIN tipopiscofins tpc ON ei.id_tipopiscofins = tpc.id ");
+        sql.append("  LEFT JOIN tiponaturezareceita ttr ON ttr.codigo = p.tiponaturezareceita and ttr.cst = tpc.cst ");
+        sql.append("WHERE id_escrita = " + rstCupom.getLong("id"));
+        sql.append("  AND ei.cancelado = false");
+        rstProduto = stmProduto.executeQuery(sql.toString());
+        double baseCalculoPisCofins = 0.0D;
+        double valorPis = 0.0D;
+        double valorCofins = 0.0D;
+        // long last = System.currentTimeMillis();
+      
+        while (rstProduto.next()) {
+          if (rstProduto.getDouble("valorliquido") == 0) {
+            continue;
+          }
+
+          FortesPNCVO oPNC = new FortesPNCVO();
+          oPNC.campo1 = "PNC";
+          oPNC.campo2 = String.valueOf(rstProduto.getInt("id_produto"));
+          
+          if (rstProduto.getDouble("quantidade") <= 0.0D) {
+            oPNC.campo3 = "0.001";
+          } else {
+            oPNC.campo3 = FormatDecimal3(rstProduto.getDouble("quantidade")).replace(".", "").replace(",", ".");
+          }
+
+          oPNC.campo4 = rstProduto.getString("tipoembalagem");
+          oPNC.campo5 = rstProduto.getString("cfop").replace(".", "").replace(",", ".");
+          oPNC.campo6 = FormatDecimal2(rstProduto.getDouble("valortotal")).replace(".", "").replace(",", ".");
+          oPNC.campo7 = FormatDecimal2(rstProduto.getDouble("valordesconto")).replace(".", "").replace(",", ".");
+          oPNC.campo8 = "";
+
+          double increaseValue = rstProduto.getDouble("valoroutras") > 0 ? rstProduto.getDouble("valoroutras") : rstProduto.getDouble("valorisento");
+
+          oPNC.campo9 = FormatDecimal2(increaseValue >= rstProduto.getDouble("valortotal") ? increaseValue - rstProduto.getDouble("valortotal") : 0.00).replace(".", "").replace(",", ".");
+          
+          if (
+            oFornecedor.idTipoEmpresa == TipoEmpresa.EPP_SIMPLES.getId() ||
+            oFornecedor.idTipoEmpresa == TipoEmpresa.ME_SIMPLES.getId() ||
+            oFornecedor.idTipoEmpresa == TipoEmpresa.MEI.getId()
+          ) {
+            oPNC.campo10 = Format.number(rstProduto.getInt("id_tipoorigemmercadoria"), 1);
+            oPNC.campo11 = Format.number(rstProduto.getInt("csosn"), 3);
+          } else {
+            oPNC.campo10 = "";
+            oPNC.campo11 = "";
+          }
+
+          oPNC.campo12 = Format.number(rstProduto.getInt("id_tipoorigemmercadoria"), 1);
+          oPNC.campo13 = Format.number(rstProduto.getInt("situacaotributaria"), 2);
+          oPNC.campo14 = FormatDecimal2(rstProduto.getDouble("valorbasecalculo")).replace(".", "").replace(",", ".");
+          oPNC.campo15 = FormatDecimal2(rstProduto.getDouble("porcentagemfinal")).replace(".", "").replace(",", ".");
+          
+          if (
+            oFornecedor.idTipoEmpresa == TipoEmpresa.LUCRO_REAL.getId() ||
+            oFornecedor.idTipoEmpresa == TipoEmpresa.LUCRO_PRESUMIDO.getId()
+          ) {
+            oPNC.campo16 = Format.number(rstProduto.getInt("cst"), 2);
+          } else {
+            oPNC.campo16 = "";
+          }
+
+          if (
+            oFornecedor.idTipoEmpresa == TipoEmpresa.LUCRO_REAL.getId() ||
+            oFornecedor.idTipoEmpresa == TipoEmpresa.LUCRO_PRESUMIDO.getId()
+          ) {
+            oPNC.campo23 = Format.number(rstProduto.getInt("cst"), 2);
+          } else {
+            oPNC.campo23 = "";
+          }
+
+          if (parametroExcluirIcmsDaBase) {
+            baseCalculoPisCofins = rstProduto.getDouble("basecalculo") - rstProduto.getDouble("valoricms");
+          } else {
+            baseCalculoPisCofins = rstProduto.getDouble("basecalculo");
+          }
+        
+          // if (!"01,05,09,50,75,72".contains(oPNC.campo16)) {
+          //   oPNC.campo17 = "0.00";
+          // } else {
+          //   oPNC.campo17 = FormatDecimal2(baseCalculoPisCofins).replace(".", "").replace(",", ".");
+          // }
+
+          if (!oPNC.campo16.equals("49")) {
+            oPNC.campo17 = FormatDecimal2(rstProduto.getDouble("valortotal") - rstProduto.getDouble("valordesconto") + rstProduto.getDouble("valoracrescimo")).replace(".", "").replace(",", ".");
+          }
+
+          oPNC.campo18 = "1";
+          oPNC.campo19 = (rstProduto.getDouble("valorcofins") > 0.0D && this.oCAB.campo9.equals("S")) ? FormatDecimal2(rstProduto.getDouble("valorcofins")).replace(".", "").replace(",", ".") : "";
+          oPNC.campo20 = "";
+          oPNC.campo21 = (Numero.round(baseCalculoPisCofins * rstProduto.getDouble("valorcofins") / 100.0D, 2) > 0.0D && this.oCAB.campo9.equals("S")) ? FormatDecimal2(Numero.round(baseCalculoPisCofins * rstProduto.getDouble("valorcofins") / 100.0D, 2)).replace(".", "").replace(",", ".") : "";
+          oPNC.campo22 = Format.number(rstProduto.getInt("codigoacfiscal"), 3);
+
+          if (Integer.parseInt(oPNC.campo22) == 0 && rstProduto.getString("tiponaturezareceita") != null) {
+            vNotFoundAcFiscal.add(rstProduto.getString("tiponaturezareceita"));
+          }
+
+          // if (!"01,05,09,50,75,72".contains(oPNC.campo23)) {
+          //   oPNC.campo24 = "0.00";
+          // } else {
+          //   oPNC.campo24 = FormatDecimal2(rstProduto.getDouble("basecalculo")).replace(".", "").replace(",", ".");
+          // }
+
+          if (!oPNC.campo23.equals("49")) {
+            oPNC.campo24 = FormatDecimal2(rstProduto.getDouble("valortotal") - rstProduto.getDouble("valordesconto") + rstProduto.getDouble("valoracrescimo")).replace(".", "").replace(",", ".");
+          }
+
+          oPNC.campo25 = "1";
+          oPNC.campo26 = (rstProduto.getDouble("valorpis") > 0.0D && this.oCAB.campo9.equals("S")) ? FormatDecimal2(rstProduto.getDouble("valorpis")).replace(".", "").replace(",", ".") : "";
+          oPNC.campo27 = "";
+          oPNC.campo28 = (Numero.round(baseCalculoPisCofins * rstProduto.getDouble("valorpis") / 100.0D, 2) > 0.0D && this.oCAB.campo9.equals("S")) ? FormatDecimal2(Numero.round(baseCalculoPisCofins * rstProduto.getDouble("valorpis") / 100.0D, 2)).replace(".", "").replace(",", ".") : "";
+          oPNC.campo29 = oPNC.campo22;
+          
+          if (mapTipoSaidaContaContabil.get(rstCupom.getInt("id_tiposaida")) == null) {
+            mapTipoSaidaContaContabil.put(rstCupom.getInt("id_tiposaida"), this.oParametroContabilidadeDAO.carregarContaContabilTiposaida(rstProduto.getInt("id_tiposaida")));
+          }
+
+          idContaContabilCredito = mapTipoSaidaContaContabil.get(rstCupom.getInt("id_tiposaida"));
+          
+          if (idContaContabilCredito > 0) {
+            oPNC.campo30 = getContaContabil(idContaContabilCredito);
+          }
+
+          oPNC.campo31 = "";
+
+          i_exportacao.qtdRegistro++;
+          i_arquivo.write(oPNC.getStringLayout158());
+        }
+        // System.out.println("Executed: " + (System.currentTimeMillis() - last) + "ms");
+      
+        stmProduto.close();
+        stmImposto = new VRStatement();
+        stmImposto.open();
+        sql = new StringBuilder();
+        sql.append("SELECT SUM (ei.valortotal - ei.valordesconto + ei.valoracrescimo - ei.valorcancelado) AS valor, (a.porcentagemfinal + COALESCE(a.porcentagemfcp, 0)) AS porcentagemfinal,");
+        sql.append(" SUM (ei.valoricms + COALESCE(ei.valorfcp, 0)) AS valoricms, SUM (ei.valorisento) AS valorisento,");
+        sql.append(" SUM (ei.valoroutras) AS valoroutras, ei.situacaotributaria,");
+        sql.append(" COALESCE(ei.id_tipoorigemmercadoria, p.id_tipoorigemmercadoria) AS id_tipoorigemmercadoria,");
+        sql.append(" SUM (ei.valorbasecalculo) AS valorbasecalculo, ");
+        sql.append(" a.csosn, tpc.cst, ei.cfop, sum(ei.valortotal) as valortotal");
+        sql.append(" FROM escritaitem AS ei");
+        sql.append(" INNER JOIN aliquota AS a ON ei.id_aliquota = a.id");
+        sql.append(" INNER JOIN produto AS p ON ei.id_produto = p.id");
+        sql.append(" INNER JOIN tipopiscofins AS tpc ON ei.id_tipopiscofins = tpc.id");
+        sql.append(" WHERE ei.id_escrita = " + rstCupom.getLong("id"));
+        sql.append(" AND ei.cancelado = false");
+        sql.append(" GROUP BY ei.cfop, tpc.cst, valorbasecalculo, (a.porcentagemfinal + COALESCE(a.porcentagemfcp, 0)), ei.situacaotributaria,");
+        sql.append(" COALESCE(ei.id_tipoorigemmercadoria, p.id_tipoorigemmercadoria), a.csosn");
+        rstImposto = stmImposto.executeQuery(sql.toString());
+        while (rstImposto.next()) {
+          FortesIVCVO oIVC = new FortesIVCVO();
+          oIVC.campo1 = "IVC";
+        
+          double increaseValue = rstImposto.getDouble("valoroutras") > 0 ? rstImposto.getDouble("valoroutras") : rstImposto.getDouble("valorisento");
+          double increaseField = increaseValue >= rstImposto.getDouble("valortotal") ? increaseValue - rstImposto.getDouble("valortotal") : 0.00;
+
+          oIVC.campo2 = FormatDecimal2(rstImposto.getDouble("valor") + increaseField).replace(".", "").replace(",", ".");
+          oIVC.campo3 = oFornecedor.estado;
+          oIVC.campo4 = Format.number(rstImposto.getString("cfop").replace(".", ""), 4);
+          oIVC.campo5 = FormatDecimal2(rstImposto.getDouble("valorbasecalculo")).replace(".", "").replace(",", ".");
+          oIVC.campo6 = FormatDecimal2(rstImposto.getDouble("porcentagemfinal")).replace(".", "").replace(",", ".");
+          oIVC.campo7 = FormatDecimal2(rstImposto.getDouble("valoricms")).replace(".", "").replace(",", ".");
+          oIVC.campo8 = FormatDecimal2(rstImposto.getDouble("valor") + increaseField).replace(".", "").replace(",", ".");
+          oIVC.campo9 = FormatDecimal2(rstImposto.getDouble("valor") + increaseField).replace(".", "").replace(",", ".");
+          
+          boolean substituicao = aliquotaDao.isSubstituido(rstImposto.getInt("situacaotributaria"));
+
+          if (substituicao) {
+            oIVC.campo10 = "S";
+          } else {
+            oIVC.campo10 = "N";
+          }
+
+          oIVC.campo11 = "N";
+          oIVC.campo12 = "N";
+
+          if (
+            oFornecedor.idTipoEmpresa == TipoEmpresa.EPP_SIMPLES.getId() ||
+            oFornecedor.idTipoEmpresa == TipoEmpresa.ME_SIMPLES.getId() ||
+            oFornecedor.idTipoEmpresa == TipoEmpresa.MEI.getId()
+          ) {
+            oIVC.campo13 = "";
+            oIVC.campo14 = "";
+          } else {
+            oIVC.campo13 = Format.number(rstImposto.getInt("id_tipoorigemmercadoria"), 1);
+            oIVC.campo14 = Format.number(rstImposto.getInt("situacaotributaria"), 2);
+          }
+
+          if (
+            oFornecedor.idTipoEmpresa == TipoEmpresa.EPP_SIMPLES.getId() ||
+            oFornecedor.idTipoEmpresa == TipoEmpresa.ME_SIMPLES.getId() ||
+            oFornecedor.idTipoEmpresa == TipoEmpresa.MEI.getId()
+          ) {
+            oIVC.campo15 = Format.number(rstImposto.getInt("id_tipoorigemmercadoria"), 1);
+            oIVC.campo16 = Format.number(rstImposto.getInt("csosn"), 3);
+          } else {
+            oIVC.campo15 = "";
+            oIVC.campo16 = "";
+          }
+
+          if (
+            (
+              oFornecedor.idTipoEmpresa == TipoEmpresa.EPP_SIMPLES.getId() ||
+              oFornecedor.idTipoEmpresa == TipoEmpresa.ME_SIMPLES.getId() ||
+              oFornecedor.idTipoEmpresa == TipoEmpresa.MEI.getId()
+            ) && (rstImposto.getInt("cst") == 4 || rstImposto.getInt("cst") == 70)
+          ) {
+            oIVC.campo17 = "S";
+            oIVC.campo18 = "S";
+          } else {
+            oIVC.campo17 = "N";
+            oIVC.campo18 = "N";
+          }
+
+          i_exportacao.qtdRegistro++;
+          i_arquivo.write(oIVC.getStringLayout140());
+        } 
+        stmImposto.close();
+      }
     } 
 
     if (!vNotFoundAcFiscal.isEmpty()) {
