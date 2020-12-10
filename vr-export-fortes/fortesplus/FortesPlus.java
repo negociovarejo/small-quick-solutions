@@ -48,8 +48,8 @@ public class FortesPlus {
         Proxy.setProxy(); 
       }
 
-      // SplashScreen.setStatus("Atualizando banco...");
-      // (new BancoDAO()).atualizar();
+      SplashScreen.setStatus("Atualizando banco...");
+      (new BancoDAO()).atualizar();
       SplashScreen.dispose();
 
       Fortes158 form = new Fortes158();

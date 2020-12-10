@@ -1532,7 +1532,7 @@ public class Fortes158DAO {
           } 
           oINM.campo19 = rstImposto.getString("id_tipoorigemmercadoria");
           oINM.campo20 = Format.number(rstImposto.getInt("situacaotributaria"), 2);
-          if (rst.getInt("estadoFornecedor") != ((FornecedorDAO)VRInstance.criar(FornecedorDAO.class)).getIdEstadoPadrao(i_exportacao.idLoja))
+          if (rst.getInt("estadoFornecedor") != ((FornecedorDAO) VRInstance.criar(FornecedorDAO.class)).getIdEstadoPadrao(i_exportacao.idLoja))
             oINM.campo20 = "60"; 
           oINM.campo21 = "";
           oINM.campo22 = "";
@@ -1549,8 +1549,10 @@ public class Fortes158DAO {
             oINM.campo26 = "S";
           } else {
             oINM.campo26 = "N";
-          } 
+          }
+          
           oINM.campo27 = "";
+
           if (rst.getInt("id_tipoentradasaida") == TipoEntradaSaida.ENTRADA.getId() && rst.getObject("id_notasaida") == null)
             if ("30,40,60".contains(oINM.campo20)) {
               oINM.campo28 = "";
@@ -1564,7 +1566,11 @@ public class Fortes158DAO {
               oINM.campo29 = FormatDecimal2(rstImposto.getDouble("valorfcp") / rstImposto.getDouble("basecalculoicms") * 100.0D).replace(".", "").replace(",", ".");
               oINM.campo30 = FormatDecimal2(rstImposto.getDouble("valorfcp")).replace(".", "").replace(",", ".");
               oINM.campo31 = FormatDecimal2(rstImposto.getDouble("valorbasesubstituicao")).replace(".", "").replace(",", ".");
-              oINM.campo32 = FormatDecimal2(rstImposto.getDouble("porcentagemfcp")).replace(".", "").replace(",", ".");
+              
+              if (!oINM.campo20.equals("00")) {
+                oINM.campo32 = FormatDecimal2(rstImposto.getDouble("porcentagemfcp")).replace(".", "").replace(",", ".");
+              }
+
               oINM.campo33 = FormatDecimal2(rstImposto.getDouble("valorfcpst")).replace(".", "").replace(",", ".");
             }
           
@@ -2267,6 +2273,10 @@ public class Fortes158DAO {
             rstImposto.getString("cfop").startsWith("2") ||
             rstImposto.getString("cfop").startsWith("3")
           ) {
+            oINM.campo27 = "";
+          }
+
+          if (oFornecedor.idEstado != 23) {
             oINM.campo27 = "";
           }
 
