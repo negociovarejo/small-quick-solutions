@@ -2633,7 +2633,7 @@ public class Fortes158DAO {
     sql.append("SELECT");
     sql.append("  e.id, e.id_loja, e.data, e.chavecfe, e.chavenfce, e.id_indicadorpagamento,");
     sql.append("  e.numeronota, e.serie, e.id_situacaonfe, e.valorcontabil,");
-    sql.append("  SUM (ei.valordesconto) AS valordesconto,");
+    sql.append("  SUM (ei.valordesconto) AS valordesconto, e.modelo,");
     sql.append("  SUM (ei.valortotal - ei.valorcancelado) AS valortotal,");
     sql.append("  e.valoracrescimo, (e.valoricmssubstituicao + COALESCE(e.valorfcpst, 0)) AS valoricmssubstituicao,");
     sql.append("  SUM (ei.valorbasecalculo + ei.valorisento + ei.valoroutras) AS receitapiscofins, e.id_tiposaida, e.cancelado ");
@@ -2648,7 +2648,7 @@ public class Fortes158DAO {
     sql.append("GROUP BY");
     sql.append("  e.id, e.id_loja, e.data, e.chavecfe, e.chavenfce, e.id_indicadorpagamento,");
     sql.append("  e.numeronota, e.serie, e.id_situacaonfe, e.valorcontabil,");
-    sql.append("  e.valordesconto, e.valoracrescimo, e.cancelado,");
+    sql.append("  e.valordesconto, e.valoracrescimo, e.cancelado, e.modelo,");
     sql.append("  (e.valoricmssubstituicao + COALESCE(e.valorfcpst, 0)), e.id_tiposaida");
 
     rstCupom = stmCupom.executeQuery(sql.toString());
