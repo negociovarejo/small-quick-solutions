@@ -62,16 +62,34 @@ public class FortesPNCVO {
   public String campo30 = "";
 
   public String campo31 = "";
-  
+
+  public String campo32 = "";
+
+  public String campo33 = "";
+
+  public String campo34 = "";
+
+  public String campo35 = "";
+
+  public String campo36 = "";
+
+  public String campo37 = "";
+
+  public String campo38 = "";
+
+  public String campo39 = "";
+
+  public String campo40 = "";
+
+  public String campo41 = "";
+
+  public String campo42 = "";
+
   public String getStringLayout123() {
     return this.campo1 + "|" + this.campo2 + "|" + this.campo3 + "|" + this.campo4 + "|" + this.campo5 + "|" + this.campo6 + "|" + this.campo7 + "|" + this.campo8 + "|" + this.campo9 + "|" + this.campo10 + "|" + this.campo11 + "|" + this.campo12 + "|" + this.campo13 + "|" + this.campo14 + "|" + this.campo15 + "|" + this.campo16 + "|" + this.campo17 + "|" + this.campo18 + "|" + this.campo19 + "|" + this.campo20 + "|" + this.campo21 + "|" + this.campo22 + "|" + this.campo23 + "|" + this.campo24 + "|" + this.campo25 + "|" + this.campo26 + "|" + this.campo27 + "|" + this.campo28 + "|" + this.campo29 + "|" + this.campo30;
   }
   
-  public String getStringLayout140() {
-    return this.campo1 + "|" + this.campo2 + "|" + this.campo3 + "|" + this.campo4 + "|" + this.campo5 + "|" + this.campo6 + "|" + this.campo7 + "|" + this.campo8 + "|" + this.campo9 + "|" + this.campo10 + "|" + this.campo11 + "|" + this.campo12 + "|" + this.campo13 + "|" + this.campo14 + "|" + this.campo15 + "|" + this.campo16 + "|" + this.campo17 + "|" + this.campo18 + "|" + this.campo19 + "|" + this.campo20 + "|" + this.campo21 + "|" + this.campo22 + "|" + this.campo23 + "|" + this.campo24 + "|" + this.campo25 + "|" + this.campo26 + "|" + this.campo27 + "|" + this.campo28 + "|" + this.campo29 + "|" + this.campo30;
-  }
-
   public String getStringLayout158() {
-    return this.campo1 + "|" + this.campo2 + "|" + this.campo3 + "|" + this.campo4 + "|" + this.campo5 + "|" + this.campo6 + "|" + this.campo7 + "|" + this.campo8 + "|" + this.campo9 + "|" + this.campo10 + "|" + this.campo11 + "|" + this.campo12 + "|" + this.campo13 + "|" + this.campo14 + "|" + this.campo15 + "|" + this.campo16 + "|" + this.campo17 + "|" + this.campo18 + "|" + this.campo19 + "|" + this.campo20 + "|" + this.campo21 + "|" + this.campo22 + "|" + this.campo23 + "|" + this.campo24 + "|" + this.campo25 + "|" + this.campo26 + "|" + this.campo27 + "|" + this.campo28 + "|" + this.campo29 + "|" + this.campo30 + "|" + this.campo31;
+    return this.campo1 + "|" + this.campo2 + "|" + this.campo3 + "|" + this.campo4 + "|" + this.campo5 + "|" + this.campo6 + "|" + this.campo7 + "|" + this.campo8 + "|" + this.campo9 + "|" + this.campo10 + "|" + this.campo11 + "|" + this.campo12 + "|" + this.campo13 + "|" + this.campo14 + "|" + this.campo15 + "|" + this.campo16 + "|" + this.campo17 + "|" + this.campo18 + "|" + this.campo19 + "|" + this.campo20 + "|" + this.campo21 + "|" + this.campo22 + "|" + this.campo23 + "|" + this.campo24 + "|" + this.campo25 + "|" + this.campo26 + "|" + this.campo27 + "|" + this.campo28 + "|" + this.campo29 + "|" + this.campo30 + "|" + this.campo31 + "|" + this.campo32 + "|" + this.campo33 + "|" + this.campo34 + "|" + this.campo35 + "|" + this.campo36 + "|" + this.campo37 + "|" + this.campo38 + "|" + this.campo39 + "|" + this.campo40 + "|" + this.campo41 + "|" + this.campo42;
   }
 }
