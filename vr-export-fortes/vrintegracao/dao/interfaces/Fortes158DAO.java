@@ -2635,7 +2635,7 @@ public class Fortes158DAO {
     sql.append("  e.numeronota, e.serie, e.id_situacaonfe, e.valorcontabil, e.especie, e.valoricmsdesonerado,");
     sql.append("  SUM (ei.valordesconto) AS valordesconto, e.modelo, e.valoroutrasdespesas, e.id_estado,");
     sql.append("  SUM (ei.valortotal - ei.valorcancelado) AS valortotal,");
-    sql.append("  SUM (ei.quantidade) AS quantidade,");
+    sql.append("  SUM (ei.quantidade) AS quantidade, count(ei.*) as qtditems,");
     sql.append("  e.valoracrescimo, (e.valoricmssubstituicao + COALESCE(e.valorfcpst, 0)) AS valoricmssubstituicao,");
     sql.append("  SUM (ei.valorbasecalculo + ei.valorisento + ei.valoroutras) AS receitapiscofins, e.id_tiposaida, e.cancelado ");
     sql.append("FROM escrita e");
@@ -2991,8 +2991,8 @@ public class Fortes158DAO {
         oNVC.campo3 = "";
         oNVC.campo4 = Format.number(rstCupom.getInt("serie"), 3);
         oNVC.campo5 = "";
-        oNVC.campo6 = "";
-        oNVC.campo7 = "";
+        oNVC.campo6 = Format.number(0, 9);
+        oNVC.campo7 = Format.number(9, 6);
         oNVC.campo8 = "";
         oNVC.campo9 = "";
         oNVC.campo10 = Format.data(Format.dataGUI(rstCupom.getDate("dataemissao")), "dd/MM/yyyy", "yyyyMMdd");
@@ -3013,7 +3013,7 @@ public class Fortes158DAO {
           oNVC.campo12 = Format.data(Format.dataGUI(rstCupom.getDate("dataemissao")), "dd/MM/yyyy", "yyyyMMdd");
           oNVC.campo13 = FormatDecimal2(rstCupom.getDouble("valortotal")).replace(".", "").replace(",", ".");
           oNVC.campo14 = FormatDecimal2(rstCupom.getDouble("valordesconto")).replace(".", "").replace(",", ".");
-          oNVC.campo15 = FormatDecimal3(rstCupom.getDouble("quantidade")).replace(".", "").replace(",", ".");
+          oNVC.campo15 = rstCupom.getString("qtditems");
    
           int paymentIndicator = rstCupom.getInt("id_indicadorpagamento");
 
