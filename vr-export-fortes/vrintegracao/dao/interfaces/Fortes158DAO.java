@@ -2992,7 +2992,7 @@ public class Fortes158DAO {
         oNVC.campo4 = Format.number(rstCupom.getInt("serie"), 3);
         oNVC.campo5 = "";
         oNVC.campo6 = Format.number(0, 9);
-        oNVC.campo7 = Format.number(9, 6);
+        oNVC.campo7 = "";
         oNVC.campo8 = "";
         oNVC.campo9 = "";
         oNVC.campo10 = Format.data(Format.dataGUI(rstCupom.getDate("dataemissao")), "dd/MM/yyyy", "yyyyMMdd");
