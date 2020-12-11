@@ -2991,7 +2991,7 @@ public class Fortes158DAO {
         oNVC.campo3 = "";
         oNVC.campo4 = Format.number(rstCupom.getInt("serie"), 3);
         oNVC.campo5 = "";
-        oNVC.campo6 = Format.number(0, 9);
+        oNVC.campo6 = Format.number(rstCupom.getInt("numeronota"), 9);
         oNVC.campo7 = "";
         oNVC.campo8 = "";
         oNVC.campo9 = "";
@@ -3279,25 +3279,23 @@ public class Fortes158DAO {
           double increaseField = increaseValue >= rstImposto.getDouble("valortotal") ? increaseValue - rstImposto.getDouble("valortotal") : 0.00;
           
           oIVC.campo4 = FormatDecimal2(rstImposto.getDouble("valor") + increaseField).replace(".", "").replace(",", ".");
-          oIVC.campo5 = FormatDecimal2(rstImposto.getDouble("porcentagemfinal")).replace(".", "").replace(",", ".");
-          oIVC.campo6 = FormatDecimal2(rstImposto.getDouble("valoricms")).replace(".", "").replace(",", ".");
-          oIVC.campo7 = FormatDecimal2(rstImposto.getDouble("valor") + increaseField).replace(".", "").replace(",", ".");
-          oIVC.campo8 = FormatDecimal2(rstImposto.getDouble("valor") + increaseField).replace(".", "").replace(",", ".");
+          oIVC.campo5 = FormatDecimal2(rstImposto.getDouble("valorbasecalculo")).replace(".", "").replace(",", ".");
+          oIVC.campo6 = FormatDecimal2(rstImposto.getDouble("porcentagemfinal")).replace(".", "").replace(",", ".");
+          oIVC.campo7 = FormatDecimal2(rstImposto.getDouble("valoricms")).replace(".", "").replace(",", ".");
+          oIVC.campo8 = FormatDecimal2(rstImposto.getDouble("valorisento")).replace(".", "").replace(",", ".");
+          oIVC.campo9 = FormatDecimal2(rstImposto.getDouble("valoroutras")).replace(".", "").replace(",", ".");
           
-          if (aliquotaDao.isSubstituido(rstImposto.getInt("situacaotributaria"))) {
-            oIVC.campo9 = "S";
-          } else {
-            oIVC.campo9 = "N";
-          }
-
           if (
-            oFornecedor.idTipoEmpresa == TipoEmpresa.EPP_SIMPLES.getId() ||
-            oFornecedor.idTipoEmpresa == TipoEmpresa.ME_SIMPLES.getId() ||
-            oFornecedor.idTipoEmpresa == TipoEmpresa.MEI.getId()
+            aliquotaDao.isSubstituido(rstImposto.getInt("situacaotributaria")) &&
+            (
+              oFornecedor.idTipoEmpresa == TipoEmpresa.EPP_SIMPLES.getId() ||
+              oFornecedor.idTipoEmpresa == TipoEmpresa.ME_SIMPLES.getId() ||
+              oFornecedor.idTipoEmpresa == TipoEmpresa.MEI.getId()
+            )
           ) {
-            oIVC.campo10 = Format.number(rstImposto.getInt("id_tipoorigemmercadoria"), 1);
+            oIVC.campo10 = "S";
           } else {
-            oIVC.campo10 = "";
+            oIVC.campo10 = "N";
           }
 
           if (
@@ -3305,17 +3303,13 @@ public class Fortes158DAO {
               oFornecedor.idTipoEmpresa == TipoEmpresa.EPP_SIMPLES.getId() ||
               oFornecedor.idTipoEmpresa == TipoEmpresa.ME_SIMPLES.getId() ||
               oFornecedor.idTipoEmpresa == TipoEmpresa.MEI.getId()
-            ) && (rstImposto.getInt("cst") == 4 || rstImposto.getInt("cst") == 70)
+            ) && rstImposto.getString("cst").equals("05")
           ) {
             oIVC.campo11 = "S";
             oIVC.campo12 = "S";
-            oIVC.campo17 = "S";
-            oIVC.campo18 = "S";
           } else {
             oIVC.campo11 = "N";
             oIVC.campo12 = "N";
-            oIVC.campo17 = "N";
-            oIVC.campo18 = "N";
           }
 
           if (
@@ -3327,6 +3321,20 @@ public class Fortes158DAO {
           } else {
             oIVC.campo15 = Format.number(rstImposto.getInt("id_tipoorigemmercadoria"), 1);
             oIVC.campo16 = Format.number(rstImposto.getInt("situacaotributaria"), 2);
+          }
+
+          if (
+            (
+              oFornecedor.idTipoEmpresa == TipoEmpresa.EPP_SIMPLES.getId() ||
+              oFornecedor.idTipoEmpresa == TipoEmpresa.ME_SIMPLES.getId() ||
+              oFornecedor.idTipoEmpresa == TipoEmpresa.MEI.getId()
+            ) && rstImposto.getString("cst").equals("04")
+          ) {
+            oIVC.campo17 = "S";
+            oIVC.campo18 = "S";
+          } else {        
+            oIVC.campo17 = "N";
+            oIVC.campo18 = "N";
           }
 
           if (
