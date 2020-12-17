@@ -1334,7 +1334,7 @@ public class Fortes158DAO {
           if (rst.getDouble("valoroutrasdespesas") > 0) {
             oPNM.campo44 = tfdd;
           } else {
-            oPNM.campo44 = FormatDecimal2(rstProduto.getDouble("valortotal") + rstProduto.getDouble("valordescontofiscal") + rstProduto.getDouble("valorseguro") - rstProduto.getDouble("valoroutrasdespesasfiscal") - rstProduto.getDouble("valordescontofiscal")).replace(".", "").replace(",", ".");
+            oPNM.campo44 = FormatDecimal2(rstProduto.getDouble("valortotal") + rstProduto.getDouble("valordescontofiscal") + rstProduto.getDouble("valorseguro") - rstProduto.getDouble("valordescontofiscal")).replace(".", "").replace(",", ".");
           }
           
           oPNM.campo45 = "";
