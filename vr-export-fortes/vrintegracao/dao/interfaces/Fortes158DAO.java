@@ -1173,7 +1173,14 @@ public class Fortes158DAO {
 
           oPNM.campo7 = rstProduto.getString("tipoembalagem");
           oPNM.campo8 = FormatDecimal2(rstProduto.getDouble("quantidade")).replace(".", "").replace(",", ".");
-          oPNM.campo9 = FormatDecimal2(rstProduto.getDouble("valortotal") + rstProduto.getDouble("valordescontofiscal")).replace(".", "").replace(",", ".");
+          
+          ////////////////////////////////////////////////////////
+          if (rst.getDouble("valoroutrasdespesas") > 0) {
+            oPNM.campo9 = FormatDecimal2(rstProduto.getDouble("valortotal") + rstProduto.getDouble("valordescontofiscal")).replace(".", "").replace(",", ".");
+          } else {
+            oPNM.campo9 = FormatDecimal2(rstProduto.getDouble("valortotal") + rstProduto.getDouble("valordescontofiscal") - rstProduto.getDouble("valoroutrasdespesasfiscal")).replace(".", "").replace(",", ".");
+          }
+
           oPNM.campo10 = FormatDecimal2(rstProduto.getDouble("valoripi")).replace(".", "").replace(",", ".");
           if (((AliquotaDAO) VRInstance.criar(AliquotaDAO.class)).isIsento(rstProduto.getInt("situacaotributaria"))) {
             oPNM.campo11 = "2";
@@ -1197,12 +1204,22 @@ public class Fortes158DAO {
               if ("1.102,2.102".contains(rstProduto.getString("cfop"))) {
                 oPNM.campo12 = FormatDecimal2(0.0D).replace(".", "").replace(",", ".");
               } else {
-                oPNM.campo12 = rstProduto.getString("valortotal");
+                //////////////////////////////////////////////////////////
+                if (rst.getDouble("valoroutrasdespesas") > 0) {
+                  oPNM.campo12 = FormatDecimal2(rstProduto.getDouble("valortotal")).replace(".", "").replace(",", ".");
+                } else {
+                  oPNM.campo12 = FormatDecimal2(rstProduto.getDouble("valortotal") - rstProduto.getDouble("valoroutrasdespesasfiscal")).replace(".", "").replace(",", ".");
+                }
               } 
             } else if ("1.556,2.556,1.551,2.551,1.910,2.910".contains(rstProduto.getString("cfop"))) {
               oPNM.campo12 = FormatDecimal2(0.0D).replace(".", "").replace(",", ".");
             } else {
-              oPNM.campo12 = rstProduto.getString("valortotal");
+              //////////////////////////////////////////////////////////////
+              if (rst.getDouble("valoroutrasdespesas") > 0) {
+                oPNM.campo12 = FormatDecimal2(rstProduto.getDouble("valortotal")).replace(".", "").replace(",", ".");
+              } else {
+                oPNM.campo12 = FormatDecimal2(rstProduto.getDouble("valortotal") - rstProduto.getDouble("valoroutrasdespesasfiscal")).replace(".", "").replace(",", ".");
+              }
             } 
             oPNM.campo13 = FormatDecimal2(rstProduto.getDouble("porcentagem")).replace(".", "").replace(",", ".");
           } else {
@@ -1241,7 +1258,14 @@ public class Fortes158DAO {
           } 
           oPNM.campo22 = "0.00";
           oPNM.campo23 = "0.00";
-          oPNM.campo24 = rstProduto.getString("valortotal");
+
+          //////////////////////////////////////////////////////// 
+          if (rst.getDouble("valoroutrasdespesas") > 0) {
+            oPNM.campo24 = FormatDecimal2(rstProduto.getDouble("valortotal")).replace(".", "").replace(",", ".");
+          } else {
+            oPNM.campo24 = FormatDecimal2(rstProduto.getDouble("valortotal") - rstProduto.getDouble("valoroutrasdespesasfiscal")).replace(".", "").replace(",", ".");
+          }
+          
           oPNM.campo25 = "0.00";
           oPNM.campo26 = FormatDecimal2(rstProduto.getDouble("porcentagem")).replace(".", "").replace(",", ".");
           oPNM.campo27 = "0.00";
@@ -1305,7 +1329,14 @@ public class Fortes158DAO {
 
           oPNM.campo42 = "0.00";
           oPNM.campo43 = FormatDecimal2(rstProduto.getDouble("valordescontofiscal")).replace(".", "").replace(",", ".");
-          oPNM.campo44 = tfdd;
+          
+          //////////////////////////////////////////////////////// 
+          if (rst.getDouble("valoroutrasdespesas") > 0) {
+            oPNM.campo44 = tfdd;
+          } else {
+            oPNM.campo44 = FormatDecimal2(rstProduto.getDouble("valortotal") + rstProduto.getDouble("valordescontofiscal") + rstProduto.getDouble("valorseguro") - rstProduto.getDouble("valoroutrasdespesasfiscal") - rstProduto.getDouble("valordescontofiscal")).replace(".", "").replace(",", ".");
+          }
+          
           oPNM.campo45 = "";
           oPNM.campo46 = "";
           oPNM.campo47 = "";
