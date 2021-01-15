@@ -83,7 +83,7 @@ import vrintegracao.vo.interfaces.fortes.FortesSNMVO;
 import vrintegracao.vo.interfaces.fortes.FortesTRAVO;
 import vrintegracao.vo.interfaces.fortes.FortesUNDVO;
 
-public class Fortes158DAO {
+public class Fortes161DAO {
   private final FortesDAO oFortesDAO = (FortesDAO)VRInstance.criar(FortesDAO.class);
 
   private final ParametroContabilidadeDAO oParametroContabilidadeDAO = (ParametroContabilidadeDAO)VRInstance.criar(ParametroContabilidadeDAO.class);
@@ -135,7 +135,7 @@ public class Fortes158DAO {
       i_exportacao.qtdRegistro = 0;
       this.oCAB = new FortesCABVO();
       this.oCAB.campo1 = "CAB";
-      this.oCAB.campo2 = "158";
+      this.oCAB.campo2 = "161";
       this.oCAB.campo3 = "VR SOFTWARE";
       this.oCAB.campo4 = Format.data(DataHora.getDataAtual(), "dd/MM/yyyy", "yyyyMMdd");
       this.oCAB.campo5 = this.oFortesDAO.getCodigoEmpresa(idLoja.intValue());
@@ -1518,8 +1518,12 @@ public class Fortes158DAO {
             oPNM.campo120 = FormatDecimal2(rstProduto.getDouble("porcentagem")).replace(".", "").replace(",", ".");
           }
 
+          oPNM.campo121 = "";
+          oPNM.campo122 = "";
+          oPNM.campo123 = "";
+
           i_exportacao.qtdRegistro++;
-          i_arquivo.write(oPNM.getStringLayout158());
+          i_arquivo.write(oPNM.getStringLayout160());
         } 
         sql = new StringBuilder();
         sql.append("SELECT SUM(ei.valortotal + ei.valorfrete - ei.valordesconto) AS valortotal, es.sigla AS uf, ei.cfop, SUM(ei.valorbasecalculo) AS basecalculoicms, (a.porcentagem + COALESCE(a.porcentagemfcp, 0)) AS aliquotaicms, SUM(ei.valoricms + COALESCE(ei.valorfcp, 0)) AS valoricms,");
@@ -3275,9 +3279,10 @@ public class Fortes158DAO {
             oPNC.campo41 = "";
             oPNC.campo42 = "";
           }
+          oPNC.campo43 = "";
         
           i_exportacao.qtdRegistro++;
-          i_arquivo.write(oPNC.getStringLayout158());
+          i_arquivo.write(oPNC.getStringLayout160());
         }
         // System.out.println("Executed: " + (System.currentTimeMillis() - last) + "ms");
       
@@ -3457,6 +3462,7 @@ public class Fortes158DAO {
     for (String oNotFoundAcFiscal : vNotFoundAcFiscal) {
       file.write(oNotFoundAcFiscal);
     }
+
     file.close();
   }
 

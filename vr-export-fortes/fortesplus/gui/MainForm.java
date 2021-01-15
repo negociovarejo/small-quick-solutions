@@ -36,12 +36,13 @@ import vrintegracao.classe.Global;
 import vrintegracao.dao.DataProcessamentoDAO;
 import vrintegracao.dao.ParametroDAO;
 import vrintegracao.dao.interfaces.Fortes158DAO;
+import vrintegracao.dao.interfaces.Fortes161DAO;
 import vrintegracao.vo.TipoData;
 import vrintegracao.vo.TipoOperacao;
 import vrintegracao.vo.Formulario;
 import vrintegracao.vo.interfaces.fortes.ExportarFortesVO;
 
-public class Fortes158 extends JFrame {
+public class MainForm extends JFrame {
 
   public static final Cursor WAIT_CURSOR = new Cursor(Cursor.WAIT_CURSOR);
   public static final Cursor DEFAULT_CURSOR = new Cursor(Cursor.DEFAULT_CURSOR);
@@ -73,9 +74,9 @@ public class Fortes158 extends JFrame {
   
   private VRToolBarPadrao toolbar;
 
-  public Fortes158() throws Exception
+  public MainForm() throws Exception
   {
-    setTitle("Fortes158 " + Global.getVersaoRelease());
+    setTitle("Fortes Plus 1.3.0");
     setSize(460, 280);
     setLocationRelativeTo(null);
     setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
@@ -92,6 +93,7 @@ public class Fortes158 extends JFrame {
           cboStores.carregar();
           cboStores.setSelecionado(false);
           cboLayout.addItem(new ItemComboVO(158, "158"));
+          cboLayout.addItem(new ItemComboVO(161, "161"));
           cboLayout.setId(158);
           cboDateType.addItem(new ItemComboVO(TipoData.ENTRADA.getId(), TipoData.ENTRADA.getDescricao()));
           cboDateType.addItem(new ItemComboVO(TipoData.EMISSAO.getId(), TipoData.EMISSAO.getDescricao()));
@@ -152,37 +154,45 @@ public class Fortes158 extends JFrame {
             try {
               ProgressBar.show();
               ExportarFortesVO oExportacao = new ExportarFortesVO();
-              oExportacao.caminho = Fortes158.this.flcPath.getArquivo();
-              oExportacao.tipoData = Fortes158.this.cboDateType.getId();
-              oExportacao.dataInicio = Fortes158.this.txtDateFrom.getText();
-              oExportacao.dataTermino = Fortes158.this.txtDateTo.getText();
-              oExportacao.participantes = Fortes158.this.cboItems.isSelecionado(0);
-              oExportacao.produto = Fortes158.this.cboItems.isSelecionado(1);
-              oExportacao.notaServico = Fortes158.this.cboItems.isSelecionado(2);
-              oExportacao.notaEntrada = Fortes158.this.cboItems.isSelecionado(3);
-              oExportacao.notaSaida = Fortes158.this.cboItems.isSelecionado(4);
-              oExportacao.conhecimentoTransporteCarga = Fortes158.this.cboItems.isSelecionado(5);
-              oExportacao.inventario = Fortes158.this.cboItems.isSelecionado(6);
-              oExportacao.operacaoCreditoDebito = Fortes158.this.cboItems.isSelecionado(7);
-              oExportacao.outrosValoresDocumento = Fortes158.this.cboItems.isSelecionado(8);
-              oExportacao.cupomFiscalEletronico = Fortes158.this.cboItems.isSelecionado(9);
-              oExportacao.estoqueEscriturado = Fortes158.this.cboItems.isSelecionado(10);
+              oExportacao.caminho = MainForm.this.flcPath.getArquivo();
+              oExportacao.tipoData = MainForm.this.cboDateType.getId();
+              oExportacao.dataInicio = MainForm.this.txtDateFrom.getText();
+              oExportacao.dataTermino = MainForm.this.txtDateTo.getText();
+              oExportacao.participantes = MainForm.this.cboItems.isSelecionado(0);
+              oExportacao.produto = MainForm.this.cboItems.isSelecionado(1);
+              oExportacao.notaServico = MainForm.this.cboItems.isSelecionado(2);
+              oExportacao.notaEntrada = MainForm.this.cboItems.isSelecionado(3);
+              oExportacao.notaSaida = MainForm.this.cboItems.isSelecionado(4);
+              oExportacao.conhecimentoTransporteCarga = MainForm.this.cboItems.isSelecionado(5);
+              oExportacao.inventario = MainForm.this.cboItems.isSelecionado(6);
+              oExportacao.operacaoCreditoDebito = MainForm.this.cboItems.isSelecionado(7);
+              oExportacao.outrosValoresDocumento = MainForm.this.cboItems.isSelecionado(8);
+              oExportacao.cupomFiscalEletronico = MainForm.this.cboItems.isSelecionado(9);
+              oExportacao.estoqueEscriturado = MainForm.this.cboItems.isSelecionado(10);
 
               List<Integer> vLoja = new ArrayList<>();
-              for (int i = 0; i < Fortes158.this.cboStores.getItemCount(); i++) {
-                if (Fortes158.this.cboStores.isSelecionado(i)) {
-                  vLoja.add(Integer.valueOf(Fortes158.this.cboStores.getId(i)));
+              for (int i = 0; i < MainForm.this.cboStores.getItemCount(); i++) {
+                if (MainForm.this.cboStores.isSelecionado(i)) {
+                  vLoja.add(Integer.valueOf(MainForm.this.cboStores.getId(i)));
                 } 
               }
 
-              Fortes158DAO dao = (Fortes158DAO) VRInstance.criar(Fortes158DAO.class);
-              dao.exportar(oExportacao, vLoja, Formulario.INTERFACE_EXPORTACAO_FORTES.getId(), TipoOperacao.EXPORTAR.getId()); 
+              switch (cboLayout.getId()) {
+                case 158:
+                  Fortes158DAO dao158 = (Fortes158DAO) VRInstance.criar(Fortes158DAO.class);
+                  dao158.exportar(oExportacao, vLoja, Formulario.INTERFACE_EXPORTACAO_FORTES.getId(), TipoOperacao.EXPORTAR.getId()); 
+                  break;
+                case 161:
+                  Fortes161DAO dao161 = (Fortes161DAO) VRInstance.criar(Fortes161DAO.class);
+                  dao161.exportar(oExportacao, vLoja, Formulario.INTERFACE_EXPORTACAO_FORTES.getId(), TipoOperacao.EXPORTAR.getId()); 
+                  break;
+              }
 
               ProgressBar.dispose();
-              Mensagem.exibir("Arquivo exportado com sucesso!", Fortes158.this.getTitle());
+              Mensagem.exibir("Arquivo exportado com sucesso!", MainForm.this.getTitle());
             } catch (Exception ex) {
               ProgressBar.dispose();
-              Mensagem.exibirErro(ex, Fortes158.this.getTitle());
+              Mensagem.exibirErro(ex, MainForm.this.getTitle());
             } 
         }
       }).start();
@@ -191,15 +201,6 @@ public class Fortes158 extends JFrame {
       Mensagem.exibirErro(ex, getTitle());
     } finally {
       setCursor(DEFAULT_CURSOR);
-    } 
-  }
-
-
-  private void cboLayoutItemStateChanged(ItemEvent evt) {
-    try {
-      loadCboItems();
-    } catch (Exception ex) {
-      ex.printStackTrace();
     } 
   }
 
@@ -244,7 +245,7 @@ public class Fortes158 extends JFrame {
     this.btnExit.addActionListener(new ActionListener() {
       public void actionPerformed(ActionEvent evt)
       {
-        Fortes158.this.btnExitActionPerformed(evt);
+        MainForm.this.btnExitActionPerformed(evt);
       }
     });
 
@@ -253,7 +254,7 @@ public class Fortes158 extends JFrame {
     this.btnExport.addActionListener(new ActionListener() {
       public void actionPerformed(ActionEvent evt)
       {
-        Fortes158.this.btnExportActionPerformed(evt);
+        MainForm.this.btnExportActionPerformed(evt);
       }
     });
 
@@ -284,11 +285,6 @@ public class Fortes158 extends JFrame {
     this.flcPath.setObrigatorio(true);
     this.lblPath.setText("Diretório");
     this.lblLayout.setText("Layout");
-    this.cboLayout.addItemListener(new ItemListener() {
-          public void itemStateChanged(ItemEvent evt) {
-            Fortes158.this.cboLayoutItemStateChanged(evt);
-          }
-        });
     this.cboItems.setCheckBox(true);
     this.cboItems.setObrigatorio(true);
   

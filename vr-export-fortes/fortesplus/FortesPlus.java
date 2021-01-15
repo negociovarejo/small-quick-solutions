@@ -13,7 +13,7 @@ import vrframework.classe.SplashScreen;
 import vrframework.classe.VRProperties;
 import vrintegracao.classe.Global;
 import vrintegracao.dao.BancoDAO;
-import fortesplus.gui.Fortes158;
+import fortesplus.gui.MainForm;
 
 public class FortesPlus {
 
@@ -52,7 +52,7 @@ public class FortesPlus {
       (new BancoDAO()).atualizar();
       SplashScreen.dispose();
 
-      Fortes158 form = new Fortes158();
+      MainForm form = new MainForm();
       form.setVisible(true);
     } catch (Exception ex) {
       Mensagem.exibirErro(ex, "Atenção");
