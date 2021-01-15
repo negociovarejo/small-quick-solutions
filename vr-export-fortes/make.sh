@@ -39,6 +39,10 @@ then
   printf "Deleting source code from output...\n"
   
   rm -R ${files[@]}
+
+  jar cvfm fortes-plus-1.3.0.jar META-INF/MANIFEST.MF *
+
+  cd ..
 fi
 
 printf "\033[0;32mOperation finished successfully!\n"
