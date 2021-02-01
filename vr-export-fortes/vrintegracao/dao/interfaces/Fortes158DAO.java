@@ -125,7 +125,7 @@ public class Fortes158DAO {
       }
 		}
 		
-		return value.replace(".", ",").replace("�", "0");
+		return value.replace(".", ",").replace("�", "0").replace("?", "0");
 	}
   
   public void exportar(ExportarFortesVO i_exportacao, List<Integer> i_loja, int i_idFormulario, int i_idTipoOperacao) throws Exception {
@@ -1395,9 +1395,10 @@ public class Fortes158DAO {
           oPNM.campo68 = "";
           oPNM.campo69 = "";
           int[] arrayCfopDerivadoPetroleo = { 
-              1651, 1652, 1653, 1658, 1659, 1660, 1661, 1662, 1663, 1664, 
-              2651, 2652, 2653, 2658, 2659, 2660, 2661, 2662, 2663, 2664, 
-              3651, 3652, 3653 };
+            1651, 1652, 1653, 1658, 1659, 1660, 1661, 1662, 1663, 1664, 
+            2651, 2652, 2653, 2658, 2659, 2660, 2661, 2662, 2663, 2664, 
+            3651, 3652, 3653
+          };
           oPNM.campo70 = ArrayUtils.contains(arrayCfopDerivadoPetroleo, rstProduto.getInt("cfop")) ? "S" : "N";
           oPNM.campo71 = "";
           oPNM.campo72 = "";
@@ -1587,7 +1588,7 @@ public class Fortes158DAO {
           
           oINM.campo27 = "";
 
-          if (rst.getInt("id_tipoentradasaida") == TipoEntradaSaida.ENTRADA.getId() && rst.getObject("id_notasaida") == null)
+          if (rst.getInt("id_tipoentradasaida") == TipoEntradaSaida.ENTRADA.getId() && rst.getObject("id_notasaida") == null && rst.getString("modelo").equals("55"))
             if ("30,40,60".contains(oINM.campo20)) {
               oINM.campo28 = "";
               oINM.campo29 = "";
