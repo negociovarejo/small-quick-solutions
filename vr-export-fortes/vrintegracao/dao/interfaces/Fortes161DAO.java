@@ -1960,7 +1960,17 @@ public class Fortes161DAO {
           oPNM.campo2 = String.valueOf(rstProduto.getInt("id_produto"));
           oPNM.campo3 = rstProduto.getString("cfop").replace(".", "").replace(",", ".");
           oPNM.campo4 = "";
-          oPNM.campo5 = rstProduto.getString("id_tipoorigemmercadoria");
+                   
+          switch (oFornecedor.idTipoEmpresa) {
+            case 8:
+            case 9:
+            case 10:
+            case 11:
+              break;
+            default:
+              oPNM.campo5 = rstProduto.getString("id_tipoorigemmercadoria");
+          }
+          
           oPNM.campo6 = Format.number(rstProduto.getInt("situacaotributaria"), 2);
           oPNM.campo7 = rstProduto.getString("tipoembalagem");
           oPNM.campo8 = FormatDecimal2(rstProduto.getDouble("quantidade")).replace(".", "").replace(",", ".");
@@ -2042,24 +2052,6 @@ public class Fortes161DAO {
             oPNM.campo37 = Format.number(this.oFortesDAO.converteCstPisCofins(rstProduto.getInt("cstpiscofins")), 2);
             oPNM.campo38 = Format.number(this.oFortesDAO.converteCstPisCofins(rstProduto.getInt("cstpiscofins")), 2);
           } 
-
-          // int[] arrayCstPisCofins = { 
-          //   1, 2, 3, 4, 5, 6, 7, 8, 9, 49, 99
-          // };
-
-          // if (!isEntrada &&
-          //   !ArrayUtils.contains(arrayCstPisCofins, rstProduto.getInt("cstpiscofins")) &&
-          //   !rstProduto.getBoolean("notaprodutor") &&
-          //   rst.getInt("id_fornecedorprodutorrural") == 0
-          // ) {
-          //   if (rst.getInt("id_tipoentradasaida") == TipoEntradaSaida.SAIDA.getId()) {
-          //     oPNM.campo37 = "49";
-          //     oPNM.campo38 = "49";
-          //   } else {
-          //     oPNM.campo37 = "99";
-          //     oPNM.campo38 = "99";
-          //   }
-          // }
           
           if (oPNM.campo37.equals("07") || oPNM.campo37.equals("49")) {
             oPNM.campo39 = "";
@@ -2095,7 +2087,18 @@ public class Fortes161DAO {
           } 
           oPNM.campo48 = "";
           oPNM.campo49 = "";
-          oPNM.campo50 = "";
+
+          switch (oFornecedor.idTipoEmpresa) {
+            case 8:
+            case 9:
+            case 10:
+            case 11:
+              oPNM.campo50 = Format.number(rstProduto.getInt("csosn"), 3);
+              break;
+            default:
+              oPNM.campo50 = "";
+          }
+
           oPNM.campo51 = "1";
           oPNM.campo52 = "0.00";
           oPNM.campo54 = "0.00";
@@ -2225,7 +2228,6 @@ public class Fortes161DAO {
           if (rstProduto.getInt("situacaotributaria") == 51 && rstProduto.getDouble("valorbasecalculo") > 0) {
             oPNM.campo120 = FormatDecimal2(rstProduto.getDouble("porcentagem")).replace(".", "").replace(",", ".");
           }
-
 
           i_exportacao.qtdRegistro++;
           i_arquivo.write(oPNM.getStringLayout158());
