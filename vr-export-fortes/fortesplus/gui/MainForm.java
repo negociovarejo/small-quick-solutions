@@ -76,7 +76,7 @@ public class MainForm extends JFrame {
 
   public MainForm() throws Exception
   {
-    setTitle("Fortes Plus 1.3.0");
+    setTitle("Fortes Plus 1.3.2");
     setSize(460, 280);
     setLocationRelativeTo(null);
     setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
@@ -280,10 +280,10 @@ public class MainForm extends JFrame {
     this.cboStores.setCheckBox(true);
     this.cboStores.setObrigatorio(true);
     this.lblItems.setText("Registro");
-    this.lblPeriod.setText("Período");
+    this.lblPeriod.setText("Periodo");
     this.flcPath.setFileSelectionMode("Directories");
     this.flcPath.setObrigatorio(true);
-    this.lblPath.setText("Diretório");
+    this.lblPath.setText("Diretorio");
     this.lblLayout.setText("Layout");
     this.cboItems.setCheckBox(true);
     this.cboItems.setObrigatorio(true);
@@ -404,7 +404,7 @@ public class MainForm extends JFrame {
         )
       );
     
-    this.btnPermission.setToolTipText("Permissão");
+    this.btnPermission.setToolTipText("Permissao");
     this.btnPermission.setIcon(new ImageIcon(getClass().getResource("/vrframework/img/permissao.png")));
 
     GroupLayout layout = new GroupLayout(getContentPane());

@@ -2,5 +2,5 @@ Manifest-Version: 1.0
 App-Date: 09/12/2020
 Version-Major: 1
 Version-Minor: 3
-Version-Release: 0
+Version-Release: 2
 Main-Class: fortesplus.FortesPlus

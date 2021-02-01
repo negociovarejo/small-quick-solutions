@@ -101,6 +101,10 @@ public class Fortes161DAO {
 
   public static String FormatDecimal(double i_valor, int decimals)
 	{
+    if (Double.isNaN(i_valor)) {
+      return "0,00";
+    }
+
     String format = "#.";
     for (int i = 0; i < decimals; ++i) {
       format += "#";
@@ -125,11 +129,11 @@ public class Fortes161DAO {
       }
 		}
 		
-		return value.replace(".", ",").replace("�", "0").replace("?", "0");
+		return value.replace(".", ",");
 	}
   
   public void exportar(ExportarFortesVO i_exportacao, List<Integer> i_loja, int i_idFormulario, int i_idTipoOperacao) throws Exception {
-    ProgressBar.setStatus("Exportando Cabeçalho");
+    ProgressBar.setStatus("Exportando Cabecalho");
     for (Integer idLoja : i_loja) {
       Arquivo arquivo = new Arquivo(i_exportacao.caminho + "Fortes_loja" + idLoja + ".fs", "w", "windows-1252");
       i_exportacao.qtdRegistro = 0;
@@ -448,7 +452,7 @@ public class Fortes161DAO {
     VRStatement stm = null;
     StringBuilder sql = null;
     stm = VRStatement.createStatement();
-    ProgressBar.setStatus("Exportando Natureza de Operação");
+    ProgressBar.setStatus("Exportando Natureza de Operacao");
     sql = new StringBuilder();
     sql.append("SELECT c.cfop, c.descricao");
     sql.append(" FROM cfop AS c");
@@ -626,7 +630,7 @@ public class Fortes161DAO {
     VRStatement stm = null;
     StringBuilder sql = null;
     stm = VRStatement.createStatement();
-    ProgressBar.setStatus("Exportando Nota Serviço");
+    ProgressBar.setStatus("Exportando Nota Servico");
     sql = new StringBuilder();
     sql.append("SELECT e.id_notadespesa, e.id_fornecedor, e.dataemissao, e.numeronota, SUM(ei.valorbasecalculo + ei.valorisento + ei.valoroutras) AS valorbruto,");
     sql.append(" e.serie, e.chavenfe, e.especie, e.observacao, ei.valordesconto, ei.valorisento,");
@@ -721,7 +725,7 @@ public class Fortes161DAO {
     ResultSet rst = null;
     StringBuilder sql = null;
     stm = VRStatement.createStatement();
-    ProgressBar.setStatus("Exportando Comunicação...");
+    ProgressBar.setStatus("Exportando Comunicacao...");
     LojaVO lojaVO = ((LojaDAO) VRInstance.criar(LojaDAO.class)).carregar(i_exportacao.idLoja);
     FornecedorVO oFornecedor = ((FornecedorDAO) VRInstance.criar(FornecedorDAO.class)).carregar(lojaVO.idFornecedor);
     sql = new StringBuilder();
@@ -809,7 +813,7 @@ public class Fortes161DAO {
     ResultSet rst = null;
     StringBuilder sql = null;
     stm = VRStatement.createStatement();
-    ProgressBar.setStatus("Exportando Tela Comunicação...");
+    ProgressBar.setStatus("Exportando Tela Comunicacao...");
     LojaVO lojaVO = ((LojaDAO) VRInstance.criar(LojaDAO.class)).carregar(i_exportacao.idLoja);
     FornecedorVO oFornecedor = ((FornecedorDAO) VRInstance.criar(FornecedorDAO.class)).carregar(lojaVO.idFornecedor);
     sql = new StringBuilder();
@@ -1167,8 +1171,8 @@ public class Fortes161DAO {
             case 11:
               break;
             default:
-            oPNM.campo5 = rstProduto.getString("id_tipoorigemmercadoria");
-            oPNM.campo6 = Format.number(rstProduto.getInt("situacaotributaria"), 2);
+              oPNM.campo5 = rstProduto.getString("id_tipoorigemmercadoria");
+              oPNM.campo6 = Format.number(rstProduto.getInt("situacaotributaria"), 2);
           }
 
           oPNM.campo7 = rstProduto.getString("tipoembalagem");
@@ -1687,7 +1691,7 @@ public class Fortes161DAO {
     stm = VRStatement.createStatement();
     stmProduto = VRStatement.createStatement();
     stmImposto = VRStatement.createStatement();
-    ProgressBar.setStatus("Exportando Nota Fiscal (Saída)");
+    ProgressBar.setStatus("Exportando Nota Fiscal (Saida)");
     sql = new StringBuilder();
     sql.append("SELECT e.id, ei.cfop, COALESCE(e.id_fornecedor, e.id_clienteeventual, 0) AS id_fornecedor, e.id_fornecedorprodutorrural, e.dataemissao, e.numeronota, e.id_tipoentradasaida,");
     sql.append("SUM(ei.valorbasecalculo + ei.valorisento + ei.valoroutras) AS valortotal, e.serie, e.chavenfe, e.especie, e.data, e.id_situacaonfe,");
@@ -1971,9 +1975,9 @@ public class Fortes161DAO {
               break;
             default:
               oPNM.campo5 = rstProduto.getString("id_tipoorigemmercadoria");
+              oPNM.campo6 = Format.number(rstProduto.getInt("situacaotributaria"), 2);
           }
           
-          oPNM.campo6 = Format.number(rstProduto.getInt("situacaotributaria"), 2);
           oPNM.campo7 = rstProduto.getString("tipoembalagem");
           oPNM.campo8 = FormatDecimal2(rstProduto.getDouble("quantidade")).replace(".", "").replace(",", ".");
           oPNM.campo9 = FormatDecimal2(rstProduto.getDouble("valortotal")).replace(".", "").replace(",", ".");
@@ -2543,7 +2547,7 @@ public class Fortes161DAO {
     VRStatement stm = null;
     StringBuilder sql = null;
     stm = VRStatement.createStatement();
-    ProgressBar.setStatus("Exportando Inventário");
+    ProgressBar.setStatus("Exportando Inventario");
     String dataInventario = DataHora.getUltimoDiaMes(Format.mesAno(i_exportacao.dataTermino));
     sql = new StringBuilder();
     sql.append("SELECT i.data, i.id_produto, i.quantidade, p.id_tipoembalagem, i.custosemimposto, a.situacaotributaria,");
@@ -2639,7 +2643,7 @@ public class Fortes161DAO {
     sql.append(" ORDER BY id_fornecedor) AS f GROUP BY id_fornecedor, SUBSTRING(data::varchar, 0, 8)");
     rst = stm.executeQuery(sql.toString());
     while (rst.next()) {
-      ProgressBar.setStatus("Exportando operação com cartão de crédito");
+      ProgressBar.setStatus("Exportando operacao com cartao de credito");
       FortesOCCVO oOCC = new FortesOCCVO();
       oOCC.campo1 = "OCC";
       oOCC.campo2 = Format.number(this.oFortesDAO.getCodigoEstabelecimento(i_exportacao.idLoja), 4);
@@ -2698,7 +2702,7 @@ public class Fortes161DAO {
     Set<String> vNotFoundAcFiscal = new HashSet<>();
 
     while (rstCupom.next()) {
-      ProgressBar.setStatus("Exportando Cupons Eletrónicos");
+      ProgressBar.setStatus("Exportando Cupons Eletronicos");
 
       if (rstCupom.getString("modelo").equals(ModeloNotaFiscal.CFE.getModelo())) {
         FortesCPEVO oCPE = new FortesCPEVO();
@@ -3237,11 +3241,13 @@ public class Fortes161DAO {
           oPNC.campo18 = "1";
           oPNC.campo19 = (rstProduto.getDouble("valorcofins") > 0.0D && this.oCAB.campo9.equals("S")) ? FormatDecimal2(rstProduto.getDouble("valorcofins")).replace(".", "").replace(",", ".") : "";
           oPNC.campo20 = "";
-          oPNC.campo21 = (Numero.round(baseCalculoPisCofins * rstProduto.getDouble("valorcofins") / 100.0D, 2) > 0.0D && this.oCAB.campo9.equals("S")) ? FormatDecimal2(Numero.round(baseCalculoPisCofins * rstProduto.getDouble("valorcofins") / 100.0D, 2)).replace(".", "").replace(",", ".") : "";
+          double pisBase = Numero.round(baseCalculoPisCofins * rstProduto.getDouble("valorpis") / 100.0D, 2);
+          double cofinsBase = Numero.round(baseCalculoPisCofins * rstProduto.getDouble("valorcofins") / 100.0D, 2);
+          oPNC.campo21 = (cofinsBase > 0.0D && this.oCAB.campo9.equals("S")) ? FormatDecimal2(cofinsBase).replace(".", "").replace(",", ".") : "";
           oPNC.campo22 = "1";
           oPNC.campo23 = (rstProduto.getDouble("valorpis") > 0.0D && this.oCAB.campo9.equals("S")) ? FormatDecimal2(rstProduto.getDouble("valorpis")).replace(".", "").replace(",", ".") : "";
           oPNC.campo24 = "";
-          oPNC.campo25 = (Numero.round(baseCalculoPisCofins * rstProduto.getDouble("valorpis") / 100.0D, 2) > 0.0D && this.oCAB.campo9.equals("S")) ? FormatDecimal2(Numero.round(baseCalculoPisCofins * rstProduto.getDouble("valorpis") / 100.0D, 2)).replace(".", "").replace(",", ".") : "";
+          oPNC.campo25 = (pisBase > 0.0D && this.oCAB.campo9.equals("S")) ? FormatDecimal2(pisBase).replace(".", "").replace(",", ".") : "";
           oPNC.campo26 = FormatDecimal2(rstProduto.getDouble("valortotal")).replace(".", "").replace(",", ".");
           oPNC.campo27 = FormatDecimal2(rstProduto.getDouble("valordesconto")).replace(".", "").replace(",", ".");
           oPNC.campo28 = "";
