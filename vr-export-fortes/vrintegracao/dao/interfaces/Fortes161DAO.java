@@ -1118,7 +1118,7 @@ public class Fortes161DAO {
         
         sql.append(" ei.valordescontofiscal, ei.valorseguro, ei.valoroutras, te.descricao as tipoembalagem,  tst.percentualmva, tst.percentualmvasimples, ROUND(ei.valortotal, 2) AS totalpiscofins,");
         sql.append(" (COALESCE(aorigem.porcentagem,0) + COALESCE(aorigem.porcentagemfcp, 0)) AS aliq_orig_perc, (COALESCE(adestino.porcentagem,0) + COALESCE(adestino.porcentagemfcp, 0)) AS aliq_dest_perc, a.porcentagemfcp, p.tiponaturezareceita, e.id_tipoentrada, ten. contabilidadepadrao, e.id_tiposaida, e.valorfcp,");
-        sql.append(" COALESCE(ad.porcentagemfcp, 0) AS porcentagemfcpst, e.valorfcpst");
+        sql.append(" COALESCE(ad.porcentagemfcp, 0) AS porcentagemfcpst, e.valorfcpst, aorigem.csosn as origem_csosn");
         sql.append(" FROM escrita AS e");
         sql.append(" INNER JOIN escritaitem AS ei ON e.id = ei.id_escrita");
         sql.append(" INNER JOIN aliquota AS a ON a.id = ei.id_aliquota");
@@ -1346,7 +1346,18 @@ public class Fortes161DAO {
           oPNM.campo47 = "";
           oPNM.campo48 = "";
           oPNM.campo49 = "";
-          oPNM.campo50 = "";
+          
+          switch (oFornecedor.idTipoEmpresa) {
+            case 8:
+            case 9:
+            case 10:
+            case 11:
+              oPNM.campo50 = Format.number(rstProduto.getInt("origem_csosn"), 3);
+              break;
+            default:
+              oPNM.campo50 = "";
+          }
+
           oPNM.campo51 = "1";
           oPNM.campo52 = "0.00";
           oPNM.campo54 = "0.00";
@@ -1938,7 +1949,7 @@ public class Fortes161DAO {
         sql.append(" CASE WHEN tpc.valorpis <> 0 THEN ROUND((ei.valorbasecalculo + ei.valorisento + ei.valoroutras + (CASE WHEN e.aplicaicmsipi = FALSE THEN ei.valoripi ELSE 0 END) - ei.valordesconto), 2) ELSE 0 END AS valorbasepiscofins,");
         sql.append(" ei.valorfrete, ei.valordesconto, ei.valoroutras, ei.valoroutrasdespesas, te.descricao AS tipoembalagem, tst.percentualmva, ROUND(ei.valortotal, 2) AS totalpiscofins,");
         sql.append(" (COALESCE(aorigem.porcentagem, 0) + COALESCE(aorigem.porcentagemfcp, 0)) AS aliq_orig_perc, (COALESCE(adestino.porcentagem, 0) + COALESCE(adestino.porcentagemfcp, 0)) AS aliq_dest_perc,");
-        sql.append(" tn.notaprodutor, e.id_tiposaida, tnn.contabilidadepadrao, tnn.contabilidadepadrao, a.porcentagemfcp");
+        sql.append(" tn.notaprodutor, e.id_tiposaida, tnn.contabilidadepadrao, tnn.contabilidadepadrao, a.porcentagemfcp, aorigem.csosn as origem_csosn");
         sql.append(" FROM escrita AS e");
         sql.append(" INNER JOIN escritaitem AS ei ON e.id = ei.id_escrita");
         sql.append(" INNER JOIN aliquota AS a ON a.id = ei.id_aliquota");
@@ -2099,7 +2110,7 @@ public class Fortes161DAO {
             case 9:
             case 10:
             case 11:
-              oPNM.campo50 = Format.number(rstProduto.getInt("csosn"), 3);
+              oPNM.campo50 = Format.number(rstProduto.getInt("origem_csosn"), 3);
               break;
             default:
               oPNM.campo50 = "";
