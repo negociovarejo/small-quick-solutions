@@ -62,7 +62,7 @@ public class PrinterDao {
 
     private List<String> readFile(PrintingType type)
     {
-        String resource = "/br/com/negocio/varejo/tag/emitter/resources/";
+        String resource = "resources/";
         
         switch (type) {
             case WHOLESALE_CLUB_RETAIL:
@@ -73,7 +73,7 @@ public class PrinterDao {
                 break;
         }
         
-        File f = new File(getClass().getResource(resource).getPath());
+        File f = new File(resource);
         List<String> file = new LinkedList<>();
 
         try (FileReader fr = new FileReader(f);

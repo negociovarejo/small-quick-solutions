@@ -6,12 +6,14 @@ import br.com.negocio.varejo.tag.emitter.database.VRDatabaseTemplate;
 import br.com.negocio.varejo.tag.emitter.database.RowMapper;
 import br.com.negocio.varejo.tag.emitter.models.Eancode;
 import br.com.negocio.varejo.tag.emitter.utilities.NumberUtil;
+import br.com.negocio.varejo.tag.emitter.utilities.VRProperties;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Properties;
 
 /**
  *
@@ -20,22 +22,38 @@ import java.util.Map;
 public class ProductDao {
     
     private final VRDatabaseTemplate template;
+    private final long storeId;
     
     public ProductDao()
     {
         this.template = new VRDatabaseTemplate();
+        Properties properties = VRProperties.getProperties();
+        
+        if (properties != null) {
+            storeId = Long.parseLong(properties.getProperty("system.numeroloja"));
+        } else {
+            storeId = 0;
+        }
     }
     
     public List<Product> findAllByTerm(String term)
-    {
-        long storeId = 1;
-        
+    { 
         String sql = "select"
                 + " p.id,"
                 + " p.descricaocompleta,"
                 + " pc.precovenda,"
                 + " string_agg(pa.codigobarras || ',' || (case when pad.desconto is null then 0 else pad.desconto end), '|') as automacao,"
-                + " (select desconto from promocaodesconto spd inner join promocao sp on sp.id = spd.id_promocao where spd.id_produto = p.id and sp.datatermino >= current_date) as promocao "
+                + " ("
+                + "     select"
+                + "         (case when sp.id_tipopercentualvalor = 0 then ((spd.desconto / 100) * pc.precovenda) else spd.desconto end)"
+                + "     from"
+                + "         promocaodesconto spd"
+                + "         inner join promocao sp on sp.id = spd.id_promocao"
+                + "     where"
+                + "         spd.id_produto = p.id"
+                + "         and sp.id_loja = :store_id"
+                + "         and sp.datatermino >= (select dp.data from dataprocessamento dp where dp.id_loja = :store_id)"
+                + " ) as promocao "
                 + "from"
                 + " produto p"
                 + " inner join produtocomplemento pc on pc.id_produto = p.id"
@@ -67,14 +85,22 @@ public class ProductDao {
     
     public Product findByIdOrEancode(String code)
     {
-        long storeId = 1;
-        
         String sql = "select"
                 + " p.id,"
                 + " p.descricaocompleta,"
                 + " pc.precovenda,"
                 + " string_agg(pa.codigobarras || ',' || (case when pad.desconto is null then 0 else pad.desconto end), '|') as automacao,"
-                + " (select desconto from promocaodesconto spd inner join promocao sp on sp.id = spd.id_promocao where spd.id_produto = p.id and sp.datatermino >= current_date) as promocao "
+                + " ("
+                + "     select"
+                + "         (case when sp.id_tipopercentualvalor = 0 then ((spd.desconto / 100) * pc.precovenda) else spd.desconto end)"
+                + "     from"
+                + "         promocaodesconto spd"
+                + "         inner join promocao sp on sp.id = spd.id_promocao"
+                + "     where"
+                + "         spd.id_produto = p.id"
+                + "         and sp.id_loja = :store_id"
+                + "         and sp.datatermino >= (select dp.data from dataprocessamento dp where dp.id_loja = :store_id)"
+                + " ) as promocao "
                 + "from"
                 + " produto p"
                 + " inner join produtocomplemento pc on pc.id_produto = p.id "
@@ -124,8 +150,7 @@ public class ProductDao {
             
             product.setDescription(rs.getString("descricaocompleta"));
             product.setPrice1(rs.getDouble("precovenda"));
-            double percentage = (100 - rs.getDouble("promocao")) / 100;
-            product.setPrice2(product.getPrice1() * percentage);
+            product.setPrice2(product.getPrice1() - rs.getDouble("promocao"));
 
             return product;
         }

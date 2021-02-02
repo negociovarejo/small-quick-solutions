@@ -2,8 +2,7 @@
 package br.com.negocio.varejo.tag.emitter.database;
 
 import br.com.negocio.varejo.tag.emitter.utilities.MessageUtil;
-import java.io.FileInputStream;
-import java.io.IOException;
+import br.com.negocio.varejo.tag.emitter.utilities.VRProperties;
 import java.sql.Connection;
 import java.sql.DriverManager;
 import java.sql.ResultSet;
@@ -103,21 +102,11 @@ public class VRDatabaseTemplate {
         return builder.toString();
     }
 
-    private static Properties getProperties()
-    {
-        try {
-            Properties properties = new Properties();
-            properties.load(new FileInputStream("/vr/vr.properties"));
-            return properties;
-        } catch (IOException e) {
-            MessageUtil.showException(null, e);
-        }
-        return null;
-    }
+    
 
     private Connection getConnection() throws ClassNotFoundException, SQLException
     {
-        Properties properties = getProperties();
+        Properties properties = VRProperties.getProperties();
 
         if (properties != null) {
             String host = properties.getProperty("database.ip");

@@ -37,8 +37,7 @@ public class MainForm extends javax.swing.JFrame {
      */
     @SuppressWarnings("unchecked")
     // <editor-fold defaultstate="collapsed" desc="Generated Code">//GEN-BEGIN:initComponents
-    private void initComponents()
-    {
+    private void initComponents() {
 
         desktop = new NVDesktopPane();
         paneCompanyName = new javax.swing.JPanel();
@@ -112,7 +111,7 @@ public class MainForm extends javax.swing.JFrame {
 
         lblVersion.setFont(lblVersion.getFont().deriveFont(lblVersion.getFont().getSize()-3f));
         lblVersion.setHorizontalAlignment(javax.swing.SwingConstants.CENTER);
-        lblVersion.setText("VERSÃO 1.0.0");
+        lblVersion.setText("VERSÃO 1.1.0");
 
         javax.swing.GroupLayout paneVersionLayout = new javax.swing.GroupLayout(paneVersion);
         paneVersion.setLayout(paneVersionLayout);
@@ -157,10 +156,8 @@ public class MainForm extends javax.swing.JFrame {
         menuQuery.setText("Consulta");
 
         mniProduct.setText("Produtos");
-        mniProduct.addActionListener(new java.awt.event.ActionListener()
-        {
-            public void actionPerformed(java.awt.event.ActionEvent evt)
-            {
+        mniProduct.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
                 mniProductActionPerformed(evt);
             }
         });
@@ -171,10 +168,8 @@ public class MainForm extends javax.swing.JFrame {
         menuTagEmission.setText("Emissao");
 
         mniTagEmission.setText("Etiqueta");
-        mniTagEmission.addActionListener(new java.awt.event.ActionListener()
-        {
-            public void actionPerformed(java.awt.event.ActionEvent evt)
-            {
+        mniTagEmission.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
                 mniTagEmissionActionPerformed(evt);
             }
         });
@@ -185,10 +180,8 @@ public class MainForm extends javax.swing.JFrame {
         menuHelp.setText("Ajuda");
 
         mniAbout.setText("Sobre");
-        mniAbout.addActionListener(new java.awt.event.ActionListener()
-        {
-            public void actionPerformed(java.awt.event.ActionEvent evt)
-            {
+        mniAbout.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
                 mniAboutActionPerformed(evt);
             }
         });
