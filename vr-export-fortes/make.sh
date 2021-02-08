@@ -1,26 +1,24 @@
 #!/bin/sh
-declare -a files=(
-  "vrintegracao/vo/interfaces/fortes/FortesPARVO.java"
-  "vrintegracao/vo/interfaces/fortes/FortesNFMVO.java"
-  "vrintegracao/vo/interfaces/fortes/FortesPNMVO.java"
-  "vrintegracao/vo/interfaces/fortes/FortesPCEVO.java"
-  "vrintegracao/vo/interfaces/fortes/FortesINMVO.java"
-  "vrintegracao/vo/interfaces/fortes/FortesNVCVO.java"
-  "vrintegracao/vo/interfaces/fortes/FortesPNCVO.java"
-  "vrintegracao/vo/interfaces/fortes/FortesIVCVO.java"
-  "vrintegracao/vo/interfaces/fortes/FortesIIVVO.java"
-  "vrintegracao/vo/interfaces/fortes/FortesCTCVO.java"
-  "vrintegracao/dao/interfaces/Fortes158DAO.java"
-  "vrintegracao/dao/interfaces/Fortes161DAO.java"
-  "fortesplus/gui/MainForm.java"
-  "fortesplus/FortesPlus.java"
-)
+files="${files} vrintegracao/vo/interfaces/fortes/FortesPARVO.java"
+files="${files} vrintegracao/vo/interfaces/fortes/FortesNFMVO.java"
+files="${files} vrintegracao/vo/interfaces/fortes/FortesPNMVO.java"
+files="${files} vrintegracao/vo/interfaces/fortes/FortesPCEVO.java"
+files="${files} vrintegracao/vo/interfaces/fortes/FortesINMVO.java"
+files="${files} vrintegracao/vo/interfaces/fortes/FortesNVCVO.java"
+files="${files} vrintegracao/vo/interfaces/fortes/FortesPNCVO.java"
+files="${files} vrintegracao/vo/interfaces/fortes/FortesIVCVO.java"
+files="${files} vrintegracao/vo/interfaces/fortes/FortesIIVVO.java"
+files="${files} vrintegracao/vo/interfaces/fortes/FortesCTCVO.java"
+files="${files} vrintegracao/dao/interfaces/Fortes158DAO.java"
+files="${files} vrintegracao/dao/interfaces/Fortes161DAO.java"
+files="${files} fortesplus/gui/MainForm.java"
+files="${files} fortesplus/FortesPlus.java"
 
 printf "\033[0;35m"
 
 printf "Compiling files...\n"
 
-javac ${files[@]}
+javac ${files}
 
 if [ "$1" = "build" ]
 then
@@ -38,9 +36,9 @@ then
   
   printf "Deleting source code from output...\n"
   
-  rm -R ${files[@]}
+  rm -R ${files}
 
-  jar cvfm fortes-plus-1.3.3.jar META-INF/MANIFEST.MF *
+  jar cvfm fortes-plus-1.3.4.jar META-INF/MANIFEST.MF *
 
   cd ..
 fi

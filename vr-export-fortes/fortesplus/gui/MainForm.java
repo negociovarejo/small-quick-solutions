@@ -76,7 +76,7 @@ public class MainForm extends JFrame {
 
   public MainForm() throws Exception
   {
-    setTitle("Fortes Plus 1.3.3");
+    setTitle("Fortes Plus 1.3.4");
     setSize(460, 280);
     setLocationRelativeTo(null);
     setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
