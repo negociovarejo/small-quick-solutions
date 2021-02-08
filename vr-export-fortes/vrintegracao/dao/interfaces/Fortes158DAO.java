@@ -1527,7 +1527,8 @@ public class Fortes158DAO {
 
           i_exportacao.qtdRegistro++;
           i_arquivo.write(oPNM.getStringLayout158());
-        } 
+        }
+
         sql = new StringBuilder();
         sql.append("SELECT SUM(ei.valortotal + ei.valorfrete - ei.valordesconto) AS valortotal, es.sigla AS uf, ei.cfop, SUM(ei.valorbasecalculo) AS basecalculoicms, (a.porcentagem + COALESCE(a.porcentagemfcp, 0)) AS aliquotaicms, SUM(ei.valoricms + COALESCE(ei.valorfcp, 0)) AS valoricms,");
         sql.append("SUM(ei.valorisento) AS valorisento, SUM(ei.valoroutras) AS valoroutras, SUM(ei.valorfrete) AS valorfrete, COALESCE(ei.id_tipoorigemmercadoria, p.id_tipoorigemmercadoriaentrada) AS id_tipoorigemmercadoria, ei.situacaotributaria, tpc.cst, te.id_tipocrt,");
@@ -1694,6 +1695,7 @@ public class Fortes158DAO {
     sql.append("SUM(ei.valorbasecalculo + ei.valorisento + ei.valoroutras) AS valortotal, e.serie, e.chavenfe, e.especie, e.data, e.id_situacaonfe,");
     sql.append("e.valorfrete, e.valoroutrasdespesas, e.valoripi, e.valorbasesubstituicao, (e.valoricmssubstituicao + COALESCE(e.valorfcpst, 0)) AS valoricmssubstituicao, e.valordesconto, COUNT(ei.id) AS qtditem,");
     sql.append("e.id_tipofretenotafiscal, e.observacao,");
+    
     if (oFornecedor.idTipoEmpresa == TipoEmpresa.LUCRO_PRESUMIDO.getId()) {
       sql.append("SUM(CASE WHEN tpc.valorpispresumido <> 0 THEN ROUND((ei.valorbasecalculo + ei.valorisento + ei.valoroutras + (CASE WHEN e.aplicaicmsipi = FALSE THEN ei.valoripi ELSE 0 END) - ei.valordesconto), 2) ELSE 0 END) AS valorbasepiscofins,");
       sql.append("SUM(ROUND(((ei.valorbasecalculo + ei.valorisento + ei.valoroutras + (CASE WHEN e.aplicaicmsipi = FALSE THEN ei.valoripi ELSE 0 END) - ei.valordesconto) * ((100 - tpc.reduzidocreditopresumido) / 100)) * tpc.valorpispresumido / 100, 2)) AS valorpis,");
@@ -1702,7 +1704,8 @@ public class Fortes158DAO {
         sql.append("SUM(CASE WHEN tpc.valorpis <> 0 THEN ROUND((ei.valorbasecalculo + ei.valorisento + ei.valoroutras + (CASE WHEN e.aplicaicmsipi = FALSE THEN ei.valoripi ELSE 0 END) - ei.valordesconto), 2) ELSE 0 END) AS valorbasepiscofins,");
         sql.append("SUM(ROUND(((ei.valorbasecalculo + ei.valorisento + ei.valoroutras + (CASE WHEN e.aplicaicmsipi = FALSE THEN ei.valoripi ELSE 0 END) - ei.valordesconto) * ((100 - tpc.reduzidocredito) / 100)) * tpc.valorpis / 100, 2)) AS valorpis,");
       sql.append("SUM(ROUND(((ei.valorbasecalculo + ei.valorisento + ei.valoroutras + (CASE WHEN e.aplicaicmsipi = FALSE THEN ei.valoripi ELSE 0 END) - ei.valordesconto) * ((100 - tpc.reduzidocredito) / 100)) * tpc.valorcofins / 100, 2)) AS valorcofins");
-    } 
+    }
+
     sql.append(" , estabelecimentote.id_tipocrt AS id_tipocrt_loja, e.modelo, e.valorfcpst,");
     sql.append(" e.valortotalbruto, e.valordescontofiscal, e.id_indicadorpagamento, e.valorcontabil, e.id_clienteeventual");
     sql.append(" FROM escrita AS e");
