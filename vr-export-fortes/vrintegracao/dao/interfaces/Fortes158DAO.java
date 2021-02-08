@@ -1181,7 +1181,6 @@ public class Fortes158DAO {
           oPNM.campo7 = rstProduto.getString("tipoembalagem");
           oPNM.campo8 = FormatDecimal2(rstProduto.getDouble("quantidade")).replace(".", "").replace(",", ".");
           
-          ////////////////////////////////////////////////////////
           if (rst.getDouble("valoroutrasdespesas") > 0) {
             oPNM.campo9 = FormatDecimal2(rstProduto.getDouble("valortotal") + rstProduto.getDouble("valordescontofiscal")).replace(".", "").replace(",", ".");
           } else {
@@ -1211,7 +1210,6 @@ public class Fortes158DAO {
               if ("1.102,2.102".contains(rstProduto.getString("cfop"))) {
                 oPNM.campo12 = FormatDecimal2(0.0D).replace(".", "").replace(",", ".");
               } else {
-                //////////////////////////////////////////////////////////
                 if (rst.getDouble("valoroutrasdespesas") > 0) {
                   oPNM.campo12 = FormatDecimal2(rstProduto.getDouble("valortotal")).replace(".", "").replace(",", ".");
                 } else {
@@ -1221,7 +1219,6 @@ public class Fortes158DAO {
             } else if ("1.556,2.556,1.551,2.551,1.910,2.910".contains(rstProduto.getString("cfop"))) {
               oPNM.campo12 = FormatDecimal2(0.0D).replace(".", "").replace(",", ".");
             } else {
-              //////////////////////////////////////////////////////////////
               if (rst.getDouble("valoroutrasdespesas") > 0) {
                 oPNM.campo12 = FormatDecimal2(rstProduto.getDouble("valortotal")).replace(".", "").replace(",", ".");
               } else {
@@ -1266,7 +1263,6 @@ public class Fortes158DAO {
           oPNM.campo22 = "0.00";
           oPNM.campo23 = "0.00";
 
-          //////////////////////////////////////////////////////// 
           if (rst.getDouble("valoroutrasdespesas") > 0) {
             oPNM.campo24 = FormatDecimal2(rstProduto.getDouble("valortotal")).replace(".", "").replace(",", ".");
           } else {
@@ -1330,7 +1326,6 @@ public class Fortes158DAO {
           oPNM.campo42 = "0.00";
           oPNM.campo43 = FormatDecimal2(rstProduto.getDouble("valordescontofiscal")).replace(".", "").replace(",", ".");
           
-          //////////////////////////////////////////////////////// 
           if (rst.getDouble("valoroutrasdespesas") > 0) {
             oPNM.campo44 = tfdd;
           } else {
