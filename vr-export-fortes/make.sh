@@ -38,7 +38,7 @@ then
   
   rm -R ${files}
 
-  jar cvfm fortes-plus-1.3.4.jar META-INF/MANIFEST.MF *
+  jar cvfm fortes-plus-1.3.5.jar META-INF/MANIFEST.MF *
 
   cd ..
 fi

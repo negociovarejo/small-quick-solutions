@@ -1476,22 +1476,24 @@ public class Fortes161DAO {
           }
 
           if (rst.getInt("id_tipoentradasaida") == TipoEntradaSaida.ENTRADA.getId() && rst.getObject("id_notasaida") == null) {
-            if (!"30,60".contains(oPNM.campo6) && rst.getString("especie").equals("NFE")) {
-              oPNM.campo86 = FormatDecimal2(rstProduto.getDouble("valorfcp") / rstProduto.getDouble("base") * 100.0D).replace(".", "").replace(",", ".");
-              oPNM.campo87 = FormatDecimal2(rstProduto.getDouble("valorfcp")).replace(".", "").replace(",", ".");
-            } else {
-              oPNM.campo86 = "0.00";
-              oPNM.campo87 = "0.00";
-            }
+            if (rst.getString("especie").equals("NFE")) {
+              if (!"30,60".contains(oPNM.campo6)) {
+                oPNM.campo86 = FormatDecimal2(rstProduto.getDouble("valorfcp") / rstProduto.getDouble("base") * 100.0D).replace(".", "").replace(",", ".");
+                oPNM.campo87 = FormatDecimal2(rstProduto.getDouble("valorfcp")).replace(".", "").replace(",", ".");
+              } else {
+                oPNM.campo86 = "0.00";
+                oPNM.campo87 = "0.00";
+              }
 
-            if (!"10,30,60,70,90".contains(oPNM.campo6)) {
-              oPNM.campo88 = "0.00";
-              oPNM.campo89 = "0.00";
-              oPNM.campo90 = "0.00";
-            } else {
-              oPNM.campo88 = FormatDecimal2(rstProduto.getDouble("valorbasesubstituicao")).replace(".", "").replace(",", ".");
-              oPNM.campo89 = FormatDecimal2(rstProduto.getDouble("porcentagemfcpst")).replace(".", "").replace(",", ".");
-              oPNM.campo90 = FormatDecimal2(rstProduto.getDouble("valorfcpst")).replace(".", "").replace(",", ".");
+              if (!"10,30,60,70,90".contains(oPNM.campo6)) {
+                oPNM.campo88 = "0.00";
+                oPNM.campo89 = "0.00";
+                oPNM.campo90 = "0.00";
+              } else {
+                oPNM.campo88 = FormatDecimal2(rstProduto.getDouble("valorbasesubstituicao")).replace(".", "").replace(",", ".");
+                oPNM.campo89 = FormatDecimal2(rstProduto.getDouble("porcentagemfcpst")).replace(".", "").replace(",", ".");
+                oPNM.campo90 = FormatDecimal2(rstProduto.getDouble("valorfcpst")).replace(".", "").replace(",", ".");
+              }
             } 
           }
 
@@ -2243,7 +2245,7 @@ public class Fortes161DAO {
           }
 
           i_exportacao.qtdRegistro++;
-          i_arquivo.write(oPNM.getStringLayout158());
+          i_arquivo.write(oPNM.getStringLayout160());
         }
 
         sql = new StringBuilder();
