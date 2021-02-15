@@ -1477,22 +1477,22 @@ public class Fortes161DAO {
 
           if (rst.getInt("id_tipoentradasaida") == TipoEntradaSaida.ENTRADA.getId() && rst.getObject("id_notasaida") == null) {
             if (rst.getString("especie").equals("NFE")) {
-              if (!"30,60".contains(oPNM.campo6)) {
-                oPNM.campo86 = FormatDecimal2(rstProduto.getDouble("valorfcp") / rstProduto.getDouble("base") * 100.0D).replace(".", "").replace(",", ".");
-                oPNM.campo87 = FormatDecimal2(rstProduto.getDouble("valorfcp")).replace(".", "").replace(",", ".");
-              } else {
+              if (!oPNM.campo6.isEmpty() && "30,60".contains(oPNM.campo6)) {
                 oPNM.campo86 = "0.00";
                 oPNM.campo87 = "0.00";
+              } else {
+                oPNM.campo86 = FormatDecimal2(rstProduto.getDouble("valorfcp") / rstProduto.getDouble("base") * 100.0D).replace(".", "").replace(",", ".");
+                oPNM.campo87 = FormatDecimal2(rstProduto.getDouble("valorfcp")).replace(".", "").replace(",", ".");
               }
 
-              if (!"10,30,60,70,90".contains(oPNM.campo6)) {
-                oPNM.campo88 = "0.00";
-                oPNM.campo89 = "0.00";
-                oPNM.campo90 = "0.00";
-              } else {
+              if (!oPNM.campo6.isEmpty() && "10,30,60,70,90".contains(oPNM.campo6)) {
                 oPNM.campo88 = FormatDecimal2(rstProduto.getDouble("valorbasesubstituicao")).replace(".", "").replace(",", ".");
                 oPNM.campo89 = FormatDecimal2(rstProduto.getDouble("porcentagemfcpst")).replace(".", "").replace(",", ".");
                 oPNM.campo90 = FormatDecimal2(rstProduto.getDouble("valorfcpst")).replace(".", "").replace(",", ".");
+              } else {
+                oPNM.campo88 = "0.00";
+                oPNM.campo89 = "0.00";
+                oPNM.campo90 = "0.00";
               }
             } 
           }
@@ -2861,13 +2861,15 @@ public class Fortes161DAO {
           ) {
             oPCE.campo10 = Format.number(rstProduto.getInt("id_tipoorigemmercadoria"), 1);
             oPCE.campo11 = Format.number(rstProduto.getInt("csosn"), 3);
+            oPCE.campo12 = "";
+            oPCE.campo13 = "";
           } else {
             oPCE.campo10 = "";
             oPCE.campo11 = "";
+            oPCE.campo12 = Format.number(rstProduto.getInt("id_tipoorigemmercadoria"), 1);
+            oPCE.campo13 = Format.number(rstProduto.getInt("situacaotributaria"), 2);
           }
 
-          oPCE.campo12 = Format.number(rstProduto.getInt("id_tipoorigemmercadoria"), 1);
-          oPCE.campo13 = Format.number(rstProduto.getInt("situacaotributaria"), 2);
           oPCE.campo14 = FormatDecimal2(rstProduto.getDouble("valorbasecalculo")).replace(".", "").replace(",", ".");
           oPCE.campo15 = FormatDecimal2(rstProduto.getDouble("porcentagemfinal")).replace(".", "").replace(",", ".");
           
@@ -2880,26 +2882,11 @@ public class Fortes161DAO {
             oPCE.campo16 = "";
           }
 
-          if (
-            oFornecedor.idTipoEmpresa == TipoEmpresa.LUCRO_REAL.getId() ||
-            oFornecedor.idTipoEmpresa == TipoEmpresa.LUCRO_PRESUMIDO.getId()
-          ) {
-            oPCE.campo23 = Format.number(rstProduto.getInt("cst"), 2);
-          } else {
-            oPCE.campo23 = "";
-          }
-
           if (parametroExcluirIcmsDaBase) {
             baseCalculoPisCofins = rstProduto.getDouble("basecalculo") - rstProduto.getDouble("valoricms");
           } else {
             baseCalculoPisCofins = rstProduto.getDouble("basecalculo");
           }
-        
-          // if (!"01,05,09,50,75,72".contains(oPCE.campo16)) {
-          //   oPCE.campo17 = "0.00";
-          // } else {
-          //   oPCE.campo17 = FormatDecimal2(baseCalculoPisCofins).replace(".", "").replace(",", ".");
-          // }
 
           if (!oPCE.campo16.equals("49")) {
             oPCE.campo17 = FormatDecimal2(rstProduto.getDouble("valortotal") - rstProduto.getDouble("valordesconto") + rstProduto.getDouble("valoracrescimo")).replace(".", "").replace(",", ".");
@@ -2915,11 +2902,14 @@ public class Fortes161DAO {
             vNotFoundAcFiscal.add(rstProduto.getString("tiponaturezareceita"));
           }
 
-          // if (!"01,05,09,50,75,72".contains(oPCE.campo23)) {
-          //   oPCE.campo24 = "0.00";
-          // } else {
-          //   oPCE.campo24 = FormatDecimal2(rstProduto.getDouble("basecalculo")).replace(".", "").replace(",", ".");
-          // }
+          if (
+            oFornecedor.idTipoEmpresa == TipoEmpresa.LUCRO_REAL.getId() ||
+            oFornecedor.idTipoEmpresa == TipoEmpresa.LUCRO_PRESUMIDO.getId()
+          ) {
+            oPCE.campo23 = Format.number(rstProduto.getInt("cst"), 2);
+          } else {
+            oPCE.campo23 = "";
+          }
 
           if (!oPCE.campo23.equals("49")) {
             oPCE.campo24 = FormatDecimal2(rstProduto.getDouble("valortotal") - rstProduto.getDouble("valordesconto") + rstProduto.getDouble("valoracrescimo")).replace(".", "").replace(",", ".");
@@ -2928,7 +2918,14 @@ public class Fortes161DAO {
           oPCE.campo25 = "1";
           oPCE.campo26 = (rstProduto.getDouble("valorpis") > 0.0D && this.oCAB.campo9.equals("S")) ? FormatDecimal2(rstProduto.getDouble("valorpis")).replace(".", "").replace(",", ".") : "";
           oPCE.campo27 = "";
-          oPCE.campo28 = (Numero.round(baseCalculoPisCofins * rstProduto.getDouble("valorpis") / 100.0D, 2) > 0.0D && this.oCAB.campo9.equals("S")) ? FormatDecimal2(Numero.round(baseCalculoPisCofins * rstProduto.getDouble("valorpis") / 100.0D, 2)).replace(".", "").replace(",", ".") : "";
+
+          if (
+            oFornecedor.idTipoEmpresa == TipoEmpresa.LUCRO_REAL.getId() ||
+            oFornecedor.idTipoEmpresa == TipoEmpresa.LUCRO_PRESUMIDO.getId()
+          ) {
+            oPCE.campo28 = (Numero.round(baseCalculoPisCofins * rstProduto.getDouble("valorpis") / 100.0D, 2) > 0.0D && this.oCAB.campo9.equals("S")) ? FormatDecimal2(Numero.round(baseCalculoPisCofins * rstProduto.getDouble("valorpis") / 100.0D, 2)).replace(".", "").replace(",", ".") : "";
+          }
+
           oPCE.campo29 = oPCE.campo22;
           
           if (mapTipoSaidaContaContabil.get(rstCupom.getInt("id_tiposaida")) == null) {
