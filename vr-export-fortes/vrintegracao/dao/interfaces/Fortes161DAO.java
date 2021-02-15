@@ -1120,7 +1120,7 @@ public class Fortes161DAO {
         
         sql.append(" ei.valordescontofiscal, ei.valorseguro, ei.valoroutras, te.descricao as tipoembalagem,  tst.percentualmva, tst.percentualmvasimples, ROUND(ei.valortotal, 2) AS totalpiscofins,");
         sql.append(" (COALESCE(aorigem.porcentagem,0) + COALESCE(aorigem.porcentagemfcp, 0)) AS aliq_orig_perc, (COALESCE(adestino.porcentagem,0) + COALESCE(adestino.porcentagemfcp, 0)) AS aliq_dest_perc, a.porcentagemfcp, p.tiponaturezareceita, e.id_tipoentrada, ten. contabilidadepadrao, e.id_tiposaida, e.valorfcp,");
-        sql.append(" COALESCE(ad.porcentagemfcp, 0) AS porcentagemfcpst, e.valorfcpst, aorigem.csosn as origem_csosn");
+        sql.append(" COALESCE(ad.porcentagemfcp, 0) AS porcentagemfcpst, e.valorfcpst, a.csosn");
         sql.append(" FROM escrita AS e");
         sql.append(" INNER JOIN escritaitem AS ei ON e.id = ei.id_escrita");
         sql.append(" INNER JOIN aliquota AS a ON a.id = ei.id_aliquota");
@@ -1348,7 +1348,7 @@ public class Fortes161DAO {
             case 9:
             case 10:
             case 11:
-              oPNM.campo50 = Format.number(rstProduto.getInt("origem_csosn"), 3);
+              oPNM.campo50 = Format.number(rstProduto.getInt("csosn"), 3);
               break;
             default:
               oPNM.campo50 = "";
@@ -1947,7 +1947,7 @@ public class Fortes161DAO {
         sql.append(" CASE WHEN tpc.valorpis <> 0 THEN ROUND((ei.valorbasecalculo + ei.valorisento + ei.valoroutras + (CASE WHEN e.aplicaicmsipi = FALSE THEN ei.valoripi ELSE 0 END) - ei.valordesconto), 2) ELSE 0 END AS valorbasepiscofins,");
         sql.append(" ei.valorfrete, ei.valordesconto, ei.valoroutras, ei.valoroutrasdespesas, te.descricao AS tipoembalagem, tst.percentualmva, ROUND(ei.valortotal, 2) AS totalpiscofins,");
         sql.append(" (COALESCE(aorigem.porcentagem, 0) + COALESCE(aorigem.porcentagemfcp, 0)) AS aliq_orig_perc, (COALESCE(adestino.porcentagem, 0) + COALESCE(adestino.porcentagemfcp, 0)) AS aliq_dest_perc,");
-        sql.append(" tn.notaprodutor, e.id_tiposaida, tnn.contabilidadepadrao, tnn.contabilidadepadrao, a.porcentagemfcp, aorigem.csosn as origem_csosn");
+        sql.append(" tn.notaprodutor, e.id_tiposaida, tnn.contabilidadepadrao, tnn.contabilidadepadrao, a.porcentagemfcp, a.csosn");
         sql.append(" FROM escrita AS e");
         sql.append(" INNER JOIN escritaitem AS ei ON e.id = ei.id_escrita");
         sql.append(" INNER JOIN aliquota AS a ON a.id = ei.id_aliquota");
@@ -2084,22 +2084,17 @@ public class Fortes161DAO {
           oPNM.campo42 = "0.00";
           oPNM.campo43 = FormatDecimal2(rstProduto.getDouble("valordesconto")).replace(".", "").replace(",", ".");
           oPNM.campo44 = FormatDecimal2(rstProduto.getDouble("valortotal") + rstProduto.getDouble("valorfrete") - rstProduto.getDouble("valordesconto")).replace(".", "").replace(",", ".");
-          if (oPNM.campo37.equals("49")) {
-            oPNM.campo45 = "";
-            oPNM.campo46 = "";
-            oPNM.campo47 = "";
-          } else {
+          
+          if (!oPNM.campo37.equals("49")) {
             int[] arrayCstNaturezaReceita = { 2, 3, 4, 5, 6, 7, 8, 9 };
+            
             if (ArrayUtils.contains(arrayCstNaturezaReceita, rstProduto.getInt("cstpiscofins"))) {
               oPNM.campo45 = getCodigoACFiscal(rstProduto.getInt("tiponaturezareceita"), rstProduto.getInt("cstpiscofins"));
               oPNM.campo46 = getCodigoACFiscal(rstProduto.getInt("tiponaturezareceita"), rstProduto.getInt("cstpiscofins"));
               oPNM.campo47 = (verificaProdepe(rstProduto.getInt("id")) == true) ? getCodigoACFiscal(rstProduto.getInt("tiponaturezareceita"), rstProduto.getInt("cstpiscofins")) : "";
-            } else {
-              oPNM.campo45 = "";
-              oPNM.campo46 = "";
-              oPNM.campo47 = "";
             } 
-          } 
+          }
+
           oPNM.campo48 = "";
           oPNM.campo49 = "";
 
@@ -2108,7 +2103,9 @@ public class Fortes161DAO {
             case 9:
             case 10:
             case 11:
-              oPNM.campo50 = Format.number(rstProduto.getInt("origem_csosn"), 3);
+              oPNM.campo45 = "";
+              oPNM.campo46 = "";
+              oPNM.campo50 = Format.number(rstProduto.getInt("csosn"), 3);
               break;
             default:
               oPNM.campo50 = "";
@@ -2895,20 +2892,22 @@ public class Fortes161DAO {
           oPCE.campo18 = "1";
           oPCE.campo19 = (rstProduto.getDouble("valorcofins") > 0.0D && this.oCAB.campo9.equals("S")) ? FormatDecimal2(rstProduto.getDouble("valorcofins")).replace(".", "").replace(",", ".") : "";
           oPCE.campo20 = "";
-          oPCE.campo21 = (Numero.round(baseCalculoPisCofins * rstProduto.getDouble("valorcofins") / 100.0D, 2) > 0.0D && this.oCAB.campo9.equals("S")) ? FormatDecimal2(Numero.round(baseCalculoPisCofins * rstProduto.getDouble("valorcofins") / 100.0D, 2)).replace(".", "").replace(",", ".") : "";
-          oPCE.campo22 = Format.number(rstProduto.getInt("codigoacfiscal"), 3);
-
-          if (Integer.parseInt(oPCE.campo22) == 0 && rstProduto.getString("tiponaturezareceita") != null) {
-            vNotFoundAcFiscal.add(rstProduto.getString("tiponaturezareceita"));
-          }
 
           if (
             oFornecedor.idTipoEmpresa == TipoEmpresa.LUCRO_REAL.getId() ||
             oFornecedor.idTipoEmpresa == TipoEmpresa.LUCRO_PRESUMIDO.getId()
           ) {
+            oPCE.campo21 = (Numero.round(baseCalculoPisCofins * rstProduto.getDouble("valorcofins") / 100.0D, 2) > 0.0D && this.oCAB.campo9.equals("S")) ? FormatDecimal2(Numero.round(baseCalculoPisCofins * rstProduto.getDouble("valorcofins") / 100.0D, 2)).replace(".", "").replace(",", ".") : "";
+            oPCE.campo22 = Format.number(rstProduto.getInt("codigoacfiscal"), 3);
             oPCE.campo23 = Format.number(rstProduto.getInt("cst"), 2);
           } else {
+            oPCE.campo21 = "";
+            oPCE.campo22 = "";
             oPCE.campo23 = "";
+          }
+          
+          if (!oPCE.campo22.isEmpty() && Integer.parseInt(oPCE.campo22) == 0 && rstProduto.getString("tiponaturezareceita") != null) {
+            vNotFoundAcFiscal.add(rstProduto.getString("tiponaturezareceita"));
           }
 
           if (!oPCE.campo23.equals("49")) {
@@ -2924,10 +2923,9 @@ public class Fortes161DAO {
             oFornecedor.idTipoEmpresa == TipoEmpresa.LUCRO_PRESUMIDO.getId()
           ) {
             oPCE.campo28 = (Numero.round(baseCalculoPisCofins * rstProduto.getDouble("valorpis") / 100.0D, 2) > 0.0D && this.oCAB.campo9.equals("S")) ? FormatDecimal2(Numero.round(baseCalculoPisCofins * rstProduto.getDouble("valorpis") / 100.0D, 2)).replace(".", "").replace(",", ".") : "";
+            oPCE.campo29 = oPCE.campo22;
           }
 
-          oPCE.campo29 = oPCE.campo22;
-          
           if (mapTipoSaidaContaContabil.get(rstCupom.getInt("id_tiposaida")) == null) {
             mapTipoSaidaContaContabil.put(rstCupom.getInt("id_tiposaida"), this.oParametroContabilidadeDAO.carregarContaContabilTiposaida(rstProduto.getInt("id_tiposaida")));
           }
