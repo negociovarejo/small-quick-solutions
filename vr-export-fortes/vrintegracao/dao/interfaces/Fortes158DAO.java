@@ -1158,7 +1158,7 @@ public class Fortes158DAO {
         } 
         sql.append("tst.percentualmva, tst.percentualmvasimples, aorigem.porcentagem, aorigem.porcentagemfcp, adestino.porcentagemfcp, ");
         sql.append("adestino.porcentagem, p.tiponaturezareceita, e.id_tipoentrada, ");
-        sql.append("ten.contabilidadepadrao, e.id_tiposaida, e.valorfcp, ad.porcentagemfcp, e.valorfcpst, aorigem.csosn");
+        sql.append("ten.contabilidadepadrao, e.id_tiposaida, e.valorfcp, ad.porcentagemfcp, e.valorfcpst, a.csosn");
         rstProduto = stmProduto.executeQuery(sql.toString());
         while (rstProduto.next()) {
           FortesPNMVO oPNM = new FortesPNMVO();
