@@ -959,11 +959,13 @@ public class Fortes161DAO {
       oNFM.campo1 = "NFM";
       oNFM.campo2 = Format.number(this.oFortesDAO.getCodigoEstabelecimento(i_exportacao.idLoja), 4);
       oNFM.campo3 = "E";
+      
       if (rst.getString("modelo").equals("01")) {
         oNFM.campo4 = "NF1";
       } else {
         oNFM.campo4 = rst.getString("especie");
-      } 
+      }
+
       oNFM.campo5 = "N";
       oNFM.campo6 = "";
       oNFM.campo7 = rst.getString("serie");
@@ -2871,33 +2873,26 @@ public class Fortes161DAO {
 
           oPCE.campo14 = FormatDecimal2(rstProduto.getDouble("valorbasecalculo")).replace(".", "").replace(",", ".");
           oPCE.campo15 = FormatDecimal2(rstProduto.getDouble("porcentagemfinal")).replace(".", "").replace(",", ".");
-          
-          if (parametroExcluirIcmsDaBase) {
-            baseCalculoPisCofins = rstProduto.getDouble("basecalculo") - rstProduto.getDouble("valoricms");
-          } else {
-            baseCalculoPisCofins = rstProduto.getDouble("basecalculo");
-          }
-          
+
           if (
             oFornecedor.idTipoEmpresa == TipoEmpresa.LUCRO_REAL.getId() ||
             oFornecedor.idTipoEmpresa == TipoEmpresa.LUCRO_PRESUMIDO.getId()
           ) {
             oPCE.campo16 = Format.number(rstProduto.getInt("cst"), 2);
-          } else {
-            oPCE.campo16 = "";
-          }
 
-          if (!oPCE.campo16.equals("49")) {
-            oPCE.campo17 = FormatDecimal2(rstProduto.getDouble("valortotal") - rstProduto.getDouble("valordesconto") + rstProduto.getDouble("valoracrescimo")).replace(".", "").replace(",", ".");
-          }
-          
-          if (
-            oFornecedor.idTipoEmpresa == TipoEmpresa.LUCRO_REAL.getId() ||
-            oFornecedor.idTipoEmpresa == TipoEmpresa.LUCRO_PRESUMIDO.getId()
-          ) {
+            if (!oPCE.campo16.equals("49")) {
+              oPCE.campo17 = FormatDecimal2(rstProduto.getDouble("valortotal") - rstProduto.getDouble("valordesconto") + rstProduto.getDouble("valoracrescimo")).replace(".", "").replace(",", ".");
+            }
+            
             oPCE.campo18 = "1";
             oPCE.campo19 = (rstProduto.getDouble("valorcofins") > 0.0D && this.oCAB.campo9.equals("S")) ? FormatDecimal2(rstProduto.getDouble("valorcofins")).replace(".", "").replace(",", ".") : "";
             oPCE.campo20 = "";
+
+            if (parametroExcluirIcmsDaBase) {
+              baseCalculoPisCofins = rstProduto.getDouble("basecalculo") - rstProduto.getDouble("valoricms");
+            } else {
+              baseCalculoPisCofins = rstProduto.getDouble("basecalculo");
+            }
 
             oPCE.campo21 = (Numero.round(baseCalculoPisCofins * rstProduto.getDouble("valorcofins") / 100.0D, 2) > 0.0D && this.oCAB.campo9.equals("S")) ? FormatDecimal2(Numero.round(baseCalculoPisCofins * rstProduto.getDouble("valorcofins") / 100.0D, 2)).replace(".", "").replace(",", ".") : "";
             oPCE.campo22 = Format.number(rstProduto.getInt("codigoacfiscal"), 3);
@@ -2918,6 +2913,8 @@ public class Fortes161DAO {
             oPCE.campo28 = (Numero.round(baseCalculoPisCofins * rstProduto.getDouble("valorpis") / 100.0D, 2) > 0.0D && this.oCAB.campo9.equals("S")) ? FormatDecimal2(Numero.round(baseCalculoPisCofins * rstProduto.getDouble("valorpis") / 100.0D, 2)).replace(".", "").replace(",", ".") : "";
             oPCE.campo29 = oPCE.campo22;
           } else {
+            oPCE.campo16 = "";
+            oPCE.campo17 = "";
             oPCE.campo18 = "";
             oPCE.campo19 = "";
             oPCE.campo20 = "";
