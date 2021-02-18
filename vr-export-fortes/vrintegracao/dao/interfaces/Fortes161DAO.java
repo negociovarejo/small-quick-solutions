@@ -1126,7 +1126,7 @@ public class Fortes161DAO {
           sql.append(" 0 as valorfretefiscal, ");
         }
         
-        sql.append(" ei.valordescontofiscal, ei.valorseguro, ei.valoroutras, te.descricao as tipoembalagem,  tst.percentualmva, tst.percentualmvasimples, ROUND(ei.valortotal, 2) AS totalpiscofins,");
+        sql.append(" ei.valordesconto, ei.valordescontofiscal, ei.valorseguro, ei.valoroutras, te.descricao as tipoembalagem,  tst.percentualmva, tst.percentualmvasimples, ROUND(ei.valortotal, 2) AS totalpiscofins,");
         sql.append(" (COALESCE(aorigem.porcentagem,0) + COALESCE(aorigem.porcentagemfcp, 0)) AS aliq_orig_perc, (COALESCE(adestino.porcentagem,0) + COALESCE(adestino.porcentagemfcp, 0)) AS aliq_dest_perc, a.porcentagemfcp, p.tiponaturezareceita, e.id_tipoentrada, ten. contabilidadepadrao, e.id_tiposaida, e.valorfcp,");
         sql.append(" COALESCE(ad.porcentagemfcp, 0) AS porcentagemfcpst, e.valorfcpst, a.csosn");
         sql.append(" FROM escrita AS e");
