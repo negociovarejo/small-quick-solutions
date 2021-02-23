@@ -1126,7 +1126,7 @@ public class Fortes158DAO {
           sql.append(" 0 as valorfretefiscal, ");
         }
         
-        sql.append(" ei.valordesconto, ei.valordescontofiscal, ei.valorseguro, ei.valoroutras, te.descricao as tipoembalagem,  tst.percentualmva, tst.percentualmvasimples, ROUND(ei.valortotal, 2) AS totalpiscofins,");
+        sql.append(" ei.valordesconto, ei.valordescontofiscal, ei.valorseguro, ei.valorfrete, ei.valoroutras, te.descricao as tipoembalagem,  tst.percentualmva, tst.percentualmvasimples, ROUND(ei.valortotal, 2) AS totalpiscofins,");
         sql.append(" (COALESCE(aorigem.porcentagem,0) + COALESCE(aorigem.porcentagemfcp, 0)) AS aliq_orig_perc, (COALESCE(adestino.porcentagem,0) + COALESCE(adestino.porcentagemfcp, 0)) AS aliq_dest_perc, a.porcentagemfcp, p.tiponaturezareceita, e.id_tipoentrada, ten. contabilidadepadrao, e.id_tiposaida, e.valorfcp,");
         sql.append(" COALESCE(ad.porcentagemfcp, 0) AS porcentagemfcpst, e.valorfcpst, a.csosn");
         sql.append(" FROM escrita AS e");
@@ -1158,7 +1158,7 @@ public class Fortes158DAO {
           sql.append(" ei.valorfretefiscal,");
         }
 
-        sql.append(" ei.valordescontofiscal, ei.valoroutras, ei.valorseguro, ");
+        sql.append(" ei.valordescontofiscal, ei.valoroutras, ei.valorseguro, ei.valorfrete, ");
         if (oFornecedor.idTipoEmpresa == TipoEmpresa.LUCRO_PRESUMIDO.getId()) {
           sql.append(" tpc.valorpispresumido, tpc.valorcofinspresumido, ");
         } else {
@@ -1872,7 +1872,7 @@ public class Fortes158DAO {
       oNFM.campo29 = FormatDecimal2(rst.getDouble("valoroutrasdespesas")).replace(".", "").replace(",", ".");
       oNFM.campo30 = "";
       oNFM.campo31 = "";
-      oNFM.campo32 = FormatDecimal2(rst.getDouble("valoripi")).replace(".", "").replace(",", ".");
+      oNFM.campo32 = (rst.getInt("id_situacaonfe") == SituacaoNfe.CANCELADA.getId() || rst.getInt("id_situacaonfe") == SituacaoNfe.INUTILIZADA.getId()) ? "" : FormatDecimal2(rst.getDouble("valoripi")).replace(".", "").replace(",", ".");
       oNFM.campo33 = "0.00";
       oNFM.campo34 = "0.00";
       oNFM.campo35 = FormatDecimal2(rst.getDouble("valordescontofiscal")).replace(".", "").replace(",", ".");
