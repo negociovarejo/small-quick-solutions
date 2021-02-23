@@ -1,15 +1,77 @@
 package fortesplus;
 
+import java.sql.ResultSet;
 import java.util.Locale;
 import java.text.DecimalFormat;
 import java.text.DecimalFormatSymbols;
 
+import vrframework.classe.Conexao;
+import vrframework.classe.VRStatement;
+
 public class Functions {
+
+  private static String MasterVersion = null;
+
   private Functions()
   {
   }
 
-  public static String FormatDecimal(double i_valor, int decimals)
+  private static String GetMasterVersion()
+  {
+    if (MasterVersion == null) {
+      try {
+        Conexao.begin();
+        VRStatement stm = VRStatement.createStatement();
+        ResultSet res = stm.executeQuery("select versao from versao where id_programa = 0");
+        
+        if (res.next()) {
+          MasterVersion = res.getString("versao");
+        }
+      } catch (Exception e) {
+        e.printStackTrace();
+      }
+    }
+
+    return MasterVersion;
+  }
+
+  private static int[] GetVersionNumbers(String ver)
+  {
+    if (ver == null) {
+      return null;
+    }
+
+    String[] tokens = ver.split("\\.");
+    int[] versions = new int[tokens.length];
+    
+    for (int i = 0; i < tokens.length; ++i) {
+      versions[i] = Integer.parseInt(tokens[i]);
+    }
+    
+    return versions;
+  }
+  
+  public static int MasterVersionComparedWith(String version)
+  {
+    int[] a = GetVersionNumbers(GetMasterVersion());
+    int[] b = GetVersionNumbers(version);
+    
+    if (a == null || a.length != 3 || b == null || b.length != 3) {
+      throw new IllegalArgumentException("Invalid version param given!");
+    }
+            
+    for (int i = 0; i < a.length; ++i) {
+      if (a[i] > b[i]) {
+        return 1;
+      } else if (a[i] < b[i]) {
+        return -1;
+      }
+    }
+    
+    return 0;
+  }
+
+  private static String FormatDecimal(double i_valor, int decimals)
 	{    
     if (Double.isNaN(i_valor)) {
       return "0,00";

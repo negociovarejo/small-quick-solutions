@@ -81,6 +81,7 @@ import vrintegracao.vo.interfaces.fortes.FortesUNDVO;
 
 import static fortesplus.Functions.FormatDecimal2R;
 import static fortesplus.Functions.FormatDecimal3R;
+import static fortesplus.Functions.MasterVersionComparedWith;
 
 public class Fortes161DAO {
   private final FortesDAO oFortesDAO = (FortesDAO)VRInstance.criar(FortesDAO.class);
@@ -1075,7 +1076,7 @@ public class Fortes161DAO {
           sql.append(" CASE WHEN (tpc.valorpis <> 0 OR tpc.cst = 73) THEN ROUND((ei.valorbasecalculo + ei.valorisento + ei.valoroutras + (CASE WHEN e.aplicaicmsipi = FALSE THEN ei.valoripi ELSE 0 END) - ei.valordesconto), 2) ELSE 0 END AS valorbasepiscofins,");
         } 
 
-        if (!Global.getVersaoRelease().equals("4.0.0")) {
+        if (MasterVersionComparedWith("4.0.0") > 0) {
           sql.append(" ei.valorfretefiscal, ");
         } else {
           sql.append(" 0 as valorfretefiscal, ");
@@ -1109,7 +1110,7 @@ public class Fortes161DAO {
         } 
         sql.append(" te.descricao, ei.valorbasecalculo,  ei.valorisento, ei.valoroutras, e.aplicaicmsipi, ei.valordesconto,");
 
-        if (!Global.getVersaoRelease().equals("4.0.0")) {
+        if (MasterVersionComparedWith("4.0.0") > 0) {
           sql.append(" ei.valorfretefiscal,");
         }
 
