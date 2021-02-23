@@ -13,6 +13,7 @@ files="${files} vrintegracao/dao/interfaces/Fortes158DAO.java"
 files="${files} vrintegracao/dao/interfaces/Fortes161DAO.java"
 files="${files} fortesplus/gui/MainForm.java"
 files="${files} fortesplus/FortesPlus.java"
+files="${files} fortesplus/Functions.java"
 
 printf "\033[0;35m"
 

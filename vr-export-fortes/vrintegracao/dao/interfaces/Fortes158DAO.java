@@ -6,10 +6,6 @@ import java.util.Set;
 import java.util.Map;
 import java.util.HashSet;
 import java.util.HashMap;
-import java.util.Locale;
-import java.math.RoundingMode;
-import java.text.DecimalFormat;
-import java.text.DecimalFormatSymbols;
 import org.apache.commons.lang3.ArrayUtils;
 import vrframework.classe.DataHora;
 import vrframework.classe.Format;
@@ -83,56 +79,17 @@ import vrintegracao.vo.interfaces.fortes.FortesSNMVO;
 import vrintegracao.vo.interfaces.fortes.FortesTRAVO;
 import vrintegracao.vo.interfaces.fortes.FortesUNDVO;
 
+import static fortesplus.Functions.FormatDecimal2R;
+import static fortesplus.Functions.FormatDecimal3R;
+
 public class Fortes158DAO {
   private final FortesDAO oFortesDAO = (FortesDAO)VRInstance.criar(FortesDAO.class);
 
   private final ParametroContabilidadeDAO oParametroContabilidadeDAO = (ParametroContabilidadeDAO)VRInstance.criar(ParametroContabilidadeDAO.class);
   public FortesCABVO oCAB = null;
-
-  public static String FormatDecimal2(double i_valor)
-	{
-    return FormatDecimal(i_valor, 2);
-	}
-
-  public static String FormatDecimal3(double i_valor)
-	{
-    return FormatDecimal(i_valor, 3);
-	}
-
-  public static String FormatDecimal(double i_valor, int decimals)
-	{    
-    if (Double.isNaN(i_valor)) {
-      return "0,00";
-    }
-
-    String format = "#.";
-    for (int i = 0; i < decimals; ++i) {
-      format += "#";
-    }
-
-    DecimalFormat df2 = new DecimalFormat(format, new DecimalFormatSymbols(Locale.US));
-		String value = df2.format(i_valor);
-		
-		if (value.contains(".")) {
-			String sub = value.substring(value.indexOf("."));
-			
-			while (sub.length() < decimals + 1) {
-				sub += "0";
-			}
-			
-			value = value.substring(0, value.indexOf(".")) + sub;
-		} else {
-			value += ".";
-
-      for (int i = 0; i < decimals; ++i) {
-        value += "0";
-      }
-		}
-		
-		return value.replace(".", ",");
-	}
   
-  public void exportar(ExportarFortesVO i_exportacao, List<Integer> i_loja, int i_idFormulario, int i_idTipoOperacao) throws Exception {
+  public void exportar(ExportarFortesVO i_exportacao, List<Integer> i_loja, int i_idFormulario, int i_idTipoOperacao) throws Exception
+  {
     ProgressBar.setStatus("Exportando Cabecalho");
     for (Integer idLoja : i_loja) {
       Arquivo arquivo = new Arquivo(i_exportacao.caminho + "Fortes_loja" + idLoja + ".fs", "w", "windows-1252");
@@ -162,9 +119,7 @@ public class Fortes158DAO {
         exportarProduto(i_exportacao, arquivo);
       } 
       if (i_exportacao.notaServico) {
-        exportarNotaServico(i_exportacao, arquivo); 
-        // exportarComunicacao(i_exportacao, arquivo); 
-        // exportarTelaComunicacao(i_exportacao, arquivo); 
+        exportarNotaServico(i_exportacao, arquivo);
       }
 
       if (i_exportacao.notaEntrada)
@@ -554,7 +509,7 @@ public class Fortes158DAO {
       } 
       oPRO.campo11 = "";
       oPRO.campo12 = rst.getString("codigobarras");
-      oPRO.campo13 = FormatDecimal2(rst.getDouble("reduzido")).replace(".", "").replace(",", ".");
+      oPRO.campo13 = FormatDecimal2R(rst.getDouble("reduzido"));
       oPRO.campo14 = "";
       oPRO.campo15 = Format.number(rst.getInt("csticms"), 3);
       oPRO.campo16 = "";
@@ -578,7 +533,7 @@ public class Fortes158DAO {
       oPRO.campo34 = "";
       oPRO.campo35 = "4";
       oPRO.campo36 = "6";
-      oPRO.campo37 = FormatDecimal2(rst.getDouble("porcentagemfinal")).replace(".", "").replace(",", ".");
+      oPRO.campo37 = FormatDecimal2R(rst.getDouble("porcentagemfinal"));
       oPRO.campo38 = "N";
       oPRO.campo39 = "";
       oPRO.campo40 = "";
@@ -661,22 +616,22 @@ public class Fortes158DAO {
       oESI.campo6 = "";
       oESI.campo7 = "N";
       oESI.campo8 = Format.number(rst.getInt("numeronota"), 15);
-      oESI.campo9 = FormatDecimal2(rst.getDouble("valorbruto")).replace(".", "").replace(",", ".");
+      oESI.campo9 = FormatDecimal2R(rst.getDouble("valorbruto"));
       oESI.campo10 = Format.data(Format.dataGUI(rst.getDate("dataemissao")), "dd/MM/yyyy", "yyyyMMdd");
       oESI.campo11 = "";
-      oESI.campo12 = FormatDecimal2(this.oFortesDAO.getValorImpostoNotaDespesa(rst.getInt("id_notadespesa"), TipoImpostoDespesa.CSRF_COFINS.getId())).replace(".", "").replace(",", ".");
-      oESI.campo13 = FormatDecimal2(this.oFortesDAO.getValorImpostoNotaDespesa(rst.getInt("id_notadespesa"), TipoImpostoDespesa.CSRF_PIS.getId())).replace(".", "").replace(",", ".");
-      oESI.campo14 = FormatDecimal2(this.oFortesDAO.getValorImpostoNotaDespesa(rst.getInt("id_notadespesa"), TipoImpostoDespesa.CSRF_CSLL.getId())).replace(".", "").replace(",", ".");
-      oESI.campo15 = FormatDecimal2(this.oFortesDAO.getValorImpostoNotaDespesa(rst.getInt("id_notadespesa"), TipoImpostoDespesa.IRRF.getId())).replace(".", "").replace(",", ".");
-      oESI.campo16 = FormatDecimal2(this.oFortesDAO.getValorImpostoNotaDespesa(rst.getInt("id_notadespesa"), TipoImpostoDespesa.INSS.getId())).replace(".", "").replace(",", ".");
+      oESI.campo12 = FormatDecimal2R(this.oFortesDAO.getValorImpostoNotaDespesa(rst.getInt("id_notadespesa"), TipoImpostoDespesa.CSRF_COFINS.getId()));
+      oESI.campo13 = FormatDecimal2R(this.oFortesDAO.getValorImpostoNotaDespesa(rst.getInt("id_notadespesa"), TipoImpostoDespesa.CSRF_PIS.getId()));
+      oESI.campo14 = FormatDecimal2R(this.oFortesDAO.getValorImpostoNotaDespesa(rst.getInt("id_notadespesa"), TipoImpostoDespesa.CSRF_CSLL.getId()));
+      oESI.campo15 = FormatDecimal2R(this.oFortesDAO.getValorImpostoNotaDespesa(rst.getInt("id_notadespesa"), TipoImpostoDespesa.IRRF.getId()));
+      oESI.campo16 = FormatDecimal2R(this.oFortesDAO.getValorImpostoNotaDespesa(rst.getInt("id_notadespesa"), TipoImpostoDespesa.INSS.getId()));
       oESI.campo17 = "N/I";
       oESI.campo18 = "N";
       oESI.campo19 = rst.getString("observacao").replace("\n", " ").replace("|", " ");
       oESI.campo20 = rst.getString("chavenfe");
-      oESI.campo21 = FormatDecimal2(rst.getDouble("valorbruto")).replace(".", "").replace(",", ".");
-      oESI.campo22 = FormatDecimal2(rst.getDouble("valordesconto")).replace(".", "").replace(",", ".");
+      oESI.campo21 = FormatDecimal2R(rst.getDouble("valorbruto"));
+      oESI.campo22 = FormatDecimal2R(rst.getDouble("valordesconto"));
       oESI.campo23 = "";
-      oESI.campo24 = FormatDecimal2(rst.getDouble("valorbruto") - rst.getDouble("valordesconto")).replace(".", "").replace(",", ".");
+      oESI.campo24 = FormatDecimal2R(rst.getDouble("valorbruto") - rst.getDouble("valordesconto"));
       if (rst.getBoolean("contabilidadepadrao")) {
         int idContaContabilDebito = this.oParametroContabilidadeDAO.carregarContaContabilPadrao();
         oESI.campo25 = Format.number(idContaContabilDebito, 15);
@@ -688,19 +643,19 @@ public class Fortes158DAO {
       i_arquivo.write(oESI.getStringLayout140());
       FortesIESVO oIES = new FortesIESVO();
       oIES.campo1 = "IES";
-      oIES.campo2 = FormatDecimal2(rst.getDouble("valorbruto")).replace(".", "").replace(",", ".");
+      oIES.campo2 = FormatDecimal2R(rst.getDouble("valorbruto"));
       oIES.campo3 = "N";
       oIES.campo4 = "01";
-      oIES.campo5 = FormatDecimal2(rst.getDouble("valorbruto")).replace(".", "").replace(",", ".");
+      oIES.campo5 = FormatDecimal2R(rst.getDouble("valorbruto"));
       oIES.campo6 = "0.00";
       oIES.campo7 = "";
       oIES.campo8 = "03";
       oIES.campo9 = "";
       oIES.campo10 = "0.00";
       oIES.campo11 = "";
-      oIES.campo12 = FormatDecimal2(rst.getDouble("valordesconto")).replace(".", "").replace(",", ".");
-      oIES.campo13 = FormatDecimal2(rst.getDouble("valorisento")).replace(".", "").replace(",", ".");
-      oIES.campo14 = FormatDecimal2(rst.getDouble("valorbruto") - rst.getDouble("valordesconto") - rst.getDouble("valorisento")).replace(".", "").replace(",", ".");
+      oIES.campo12 = FormatDecimal2R(rst.getDouble("valordesconto"));
+      oIES.campo13 = FormatDecimal2R(rst.getDouble("valorisento"));
+      oIES.campo14 = FormatDecimal2R(rst.getDouble("valorbruto") - rst.getDouble("valordesconto") - rst.getDouble("valorisento"));
       if (rst.getBoolean("contabilidadepadrao")) {
         int idContaContabilDebito = this.oParametroContabilidadeDAO.carregarContaContabilPadrao();
         oIES.campo15 = Format.number(idContaContabilDebito, 15);
@@ -713,7 +668,7 @@ public class Fortes158DAO {
       FortesOVEVO oOVE = new FortesOVEVO();
       oOVE.campo1 = "OVE";
       oOVE.campo2 = "DINHEIRO";
-      oOVE.campo3 = FormatDecimal2(rst.getDouble("valorbruto")).replace(".", "").replace(",", ".");
+      oOVE.campo3 = FormatDecimal2R(rst.getDouble("valorbruto"));
       i_exportacao.qtdRegistro++;
       i_arquivo.write(oOVE.getString());
     } 
@@ -764,12 +719,12 @@ public class Fortes158DAO {
       oNsc.campo11 = Format.data(Format.dataGUI(rst.getDate("data")), "dd/MM/yyyy", "yyyyMMdd");
       oNsc.campo12 = Format.number(rst.getString("id_fornecedor"), 9);
       oNsc.campo13 = rst.getString("cfop").replace(".", "").replace(",", "");
-      oNsc.campo14 = FormatDecimal2(rst.getDouble("valortotal")).replace(".", "").replace(",", ".");
-      oNsc.campo15 = FormatDecimal2(rst.getDouble("valorbasecalculo")).replace(".", "").replace(",", ".");
-      oNsc.campo16 = FormatDecimal2(rst.getDouble("porcentagem")).replace(".", "").replace(",", ".");
-      oNsc.campo17 = FormatDecimal2(rst.getDouble("valoricms")).replace(".", "").replace(",", ".");
-      oNsc.campo18 = FormatDecimal2(rst.getDouble("valorisento")).replace(".", "").replace(",", ".");
-      oNsc.campo19 = FormatDecimal2(rst.getDouble("valoroutras")).replace(".", "").replace(",", ".");
+      oNsc.campo14 = FormatDecimal2R(rst.getDouble("valortotal"));
+      oNsc.campo15 = FormatDecimal2R(rst.getDouble("valorbasecalculo"));
+      oNsc.campo16 = FormatDecimal2R(rst.getDouble("porcentagem"));
+      oNsc.campo17 = FormatDecimal2R(rst.getDouble("valoricms"));
+      oNsc.campo18 = FormatDecimal2R(rst.getDouble("valorisento"));
+      oNsc.campo19 = FormatDecimal2R(rst.getDouble("valoroutras"));
       oNsc.campo21 = Format.number(rst.getInt("qtditem"), 4);
       oNsc.campo35 = rst.getString("observacao");
         
@@ -852,12 +807,12 @@ public class Fortes158DAO {
       oNsc.campo11 = Format.data(Format.dataGUI(rst.getDate("data")), "dd/MM/yyyy", "yyyyMMdd");
       oNsc.campo12 = Format.number(rst.getString("id_fornecedor"), 9);
       oNsc.campo13 = rst.getString("cfop").replace(".", "").replace(",", "");
-      oNsc.campo14 = FormatDecimal2(rst.getDouble("valortotal")).replace(".", "").replace(",", ".");
-      oNsc.campo15 = FormatDecimal2(rst.getDouble("valorbasecalculo")).replace(".", "").replace(",", ".");
-      oNsc.campo16 = FormatDecimal2(rst.getDouble("porcentagem")).replace(".", "").replace(",", ".");
-      oNsc.campo17 = FormatDecimal2(rst.getDouble("valoricms")).replace(".", "").replace(",", ".");
-      oNsc.campo18 = FormatDecimal2(rst.getDouble("valorisento")).replace(".", "").replace(",", ".");
-      oNsc.campo19 = FormatDecimal2(rst.getDouble("valoroutras")).replace(".", "").replace(",", ".");
+      oNsc.campo14 = FormatDecimal2R(rst.getDouble("valortotal"));
+      oNsc.campo15 = FormatDecimal2R(rst.getDouble("valorbasecalculo"));
+      oNsc.campo16 = FormatDecimal2R(rst.getDouble("porcentagem"));
+      oNsc.campo17 = FormatDecimal2R(rst.getDouble("valoricms"));
+      oNsc.campo18 = FormatDecimal2R(rst.getDouble("valorisento"));
+      oNsc.campo19 = FormatDecimal2R(rst.getDouble("valoroutras"));
       oNsc.campo21 = Format.number(rst.getInt("qtditem"), 4);
       oNsc.campo35 = rst.getString("observacao");
         
@@ -1000,28 +955,28 @@ public class Fortes158DAO {
       oNFM.campo25 = "";
 
       if (rst.getInt("id_situacaonfe") != SituacaoNfe.CANCELADA.getId()) {
-        oNFM.campo26 = FormatDecimal2(rst.getDouble("valortotalbruto") + rst.getDouble("valordescontofiscal")).replace(".", "").replace(",", ".");
+        oNFM.campo26 = FormatDecimal2R(rst.getDouble("valortotalbruto") + rst.getDouble("valordescontofiscal"));
       } else {
         oNFM.campo26 = "";
       }
 
-      oNFM.campo27 = FormatDecimal2(rst.getDouble("valorfrete")).replace(".", "").replace(",", ".");
+      oNFM.campo27 = FormatDecimal2R(rst.getDouble("valorfrete"));
       oNFM.campo28 = "";
-      oNFM.campo29 = FormatDecimal2(rst.getDouble("valoroutrasdespesas")).replace(".", "").replace(",", ".");
+      oNFM.campo29 = FormatDecimal2R(rst.getDouble("valoroutrasdespesas"));
       oNFM.campo30 = "";
       oNFM.campo31 = "";
-      oNFM.campo32 = (rst.getInt("id_situacaonfe") == SituacaoNfe.CANCELADA.getId() || rst.getInt("id_situacaonfe") == SituacaoNfe.INUTILIZADA.getId()) ? "" : FormatDecimal2(rst.getDouble("valoripi")).replace(".", "").replace(",", ".");
-      oNFM.campo33 = FormatDecimal2(rst.getDouble("valoricmssubstituicao")).replace(".", "").replace(",", ".");
+      oNFM.campo32 = (rst.getInt("id_situacaonfe") == SituacaoNfe.CANCELADA.getId() || rst.getInt("id_situacaonfe") == SituacaoNfe.INUTILIZADA.getId()) ? "" : FormatDecimal2R(rst.getDouble("valoripi"));
+      oNFM.campo33 = FormatDecimal2R(rst.getDouble("valoricmssubstituicao"));
       oNFM.campo34 = "0.00";
-      oNFM.campo35 = FormatDecimal2(rst.getDouble("valordescontofiscal")).replace(".", "").replace(",", ".");
+      oNFM.campo35 = FormatDecimal2R(rst.getDouble("valordescontofiscal"));
       oNFM.campo36 = (rst.getInt("id_situacaonfe") != SituacaoNfe.CANCELADA.getId()) ? rst.getString("valorcontabil") : "";
       oNFM.campo37 = Format.number(rst.getInt("qtditem"), 10);
       oNFM.campo38 = "";
       oNFM.campo39 = "";
       oNFM.campo40 = "";
       if (rst.getInt("id_situacaonfe") != SituacaoNfe.CANCELADA.getId() && rst.getInt("id_situacaonfe") != SituacaoNfe.INUTILIZADA.getId()) {
-        oNFM.campo41 = FormatDecimal2(rst.getDouble("valoricmssubstituicao")).replace(".", "").replace(",", ".");
-        oNFM.campo42 = FormatDecimal2(rst.getDouble("valorbasesubstituicao")).replace(".", "").replace(",", ".");
+        oNFM.campo41 = FormatDecimal2R(rst.getDouble("valoricmssubstituicao"));
+        oNFM.campo42 = FormatDecimal2R(rst.getDouble("valorbasesubstituicao"));
         oNFM.campo43 = "0.00";
         oNFM.campo44 = "";
         oNFM.campo45 = "";
@@ -1058,8 +1013,8 @@ public class Fortes158DAO {
           oNFM.campo52 = "";
           oNFM.campo53 = "";
         } else {
-          oNFM.campo52 = FormatDecimal2(rst.getDouble("valorbasepiscofins")).replace(".", "").replace(",", ".");
-          oNFM.campo53 = FormatDecimal2(rst.getDouble("valorbasepiscofins")).replace(".", "").replace(",", ".");
+          oNFM.campo52 = FormatDecimal2R(rst.getDouble("valorbasepiscofins"));
+          oNFM.campo53 = FormatDecimal2R(rst.getDouble("valorbasepiscofins"));
         } 
         oNFM.campo54 = "";
         oNFM.campo55 = "";
@@ -1067,8 +1022,8 @@ public class Fortes158DAO {
         oNFM.campo57 = "";
         oNFM.campo58 = "";
         oNFM.campo59 = "";
-        oNFM.campo60 = FormatDecimal2(rst.getDouble("valorcofins")).replace(".", "").replace(",", ".");
-        oNFM.campo61 = FormatDecimal2(rst.getDouble("valorpis")).replace(".", "").replace(",", ".");
+        oNFM.campo60 = FormatDecimal2R(rst.getDouble("valorcofins"));
+        oNFM.campo61 = FormatDecimal2R(rst.getDouble("valorpis"));
         oNFM.campo62 = "0.00";
         oNFM.campo63 = "0.00";
         oNFM.campo64 = "";
@@ -1098,7 +1053,7 @@ public class Fortes158DAO {
       oNFM.campo87 = "";
       oNFM.campo88 = "";
       oNFM.campo89 = Format.data(Format.dataGUI(rst.getDate("dataemissao")), "dd/MM/yyyy", "yyyyMMdd");
-      oNFM.campo90 = FormatDecimal2(rst.getDouble("valorfcpst")).replace(".", "").replace(",", ".");
+      oNFM.campo90 = FormatDecimal2R(rst.getDouble("valorfcpst"));
       oNFM.campo91 = "N";
       
       i_exportacao.qtdRegistro++;
@@ -1187,15 +1142,15 @@ public class Fortes158DAO {
           }
 
           oPNM.campo7 = rstProduto.getString("tipoembalagem");
-          oPNM.campo8 = FormatDecimal2(rstProduto.getDouble("quantidade")).replace(".", "").replace(",", ".");
+          oPNM.campo8 = FormatDecimal2R(rstProduto.getDouble("quantidade"));
           
           if (rst.getDouble("valoroutrasdespesas") > 0) {
-            oPNM.campo9 = FormatDecimal2(rstProduto.getDouble("valortotal") + rstProduto.getDouble("valordescontofiscal")).replace(".", "").replace(",", ".");
+            oPNM.campo9 = FormatDecimal2R(rstProduto.getDouble("valortotal") + rstProduto.getDouble("valordescontofiscal"));
           } else {
-            oPNM.campo9 = FormatDecimal2(rstProduto.getDouble("valortotal") + rstProduto.getDouble("valordescontofiscal") - rstProduto.getDouble("valoroutrasdespesasfiscal")).replace(".", "").replace(",", ".");
+            oPNM.campo9 = FormatDecimal2R(rstProduto.getDouble("valortotal") + rstProduto.getDouble("valordescontofiscal") - rstProduto.getDouble("valoroutrasdespesasfiscal"));
           }
 
-          oPNM.campo10 = FormatDecimal2(rstProduto.getDouble("valoripi")).replace(".", "").replace(",", ".");
+          oPNM.campo10 = FormatDecimal2R(rstProduto.getDouble("valoripi"));
           if (((AliquotaDAO) VRInstance.criar(AliquotaDAO.class)).isIsento(rstProduto.getInt("situacaotributaria"))) {
             oPNM.campo11 = "2";
             oPNM.campo17 = "";
@@ -1216,31 +1171,31 @@ public class Fortes158DAO {
           if (rstProduto.getBoolean("geraicms") && rstProduto.getInt("situacaotributaria") != SituacaoTributaria.ISENTO_ICMS_ST.getId()) {
             if (rstProduto.getInt("situacaotributaria") == SituacaoTributaria.ISENTO.getId()) {
               if ("1.102,2.102".contains(rstProduto.getString("cfop"))) {
-                oPNM.campo12 = FormatDecimal2(0.0D).replace(".", "").replace(",", ".");
+                oPNM.campo12 = FormatDecimal2R(0.0D);
               } else {
                 if (rst.getDouble("valoroutrasdespesas") > 0) {
-                  oPNM.campo12 = FormatDecimal2(rstProduto.getDouble("valortotal")).replace(".", "").replace(",", ".");
+                  oPNM.campo12 = FormatDecimal2R(rstProduto.getDouble("valortotal"));
                 } else {
-                  oPNM.campo12 = FormatDecimal2(rstProduto.getDouble("valortotal") - rstProduto.getDouble("valoroutrasdespesasfiscal")).replace(".", "").replace(",", ".");
+                  oPNM.campo12 = FormatDecimal2R(rstProduto.getDouble("valortotal") - rstProduto.getDouble("valoroutrasdespesasfiscal"));
                 }
               } 
             } else if ("1.556,2.556,1.551,2.551,1.910,2.910".contains(rstProduto.getString("cfop"))) {
-              oPNM.campo12 = FormatDecimal2(0.0D).replace(".", "").replace(",", ".");
+              oPNM.campo12 = FormatDecimal2R(0.0D);
             } else {
               if (rst.getDouble("valoroutrasdespesas") > 0) {
-                oPNM.campo12 = FormatDecimal2(rstProduto.getDouble("valortotal")).replace(".", "").replace(",", ".");
+                oPNM.campo12 = FormatDecimal2R(rstProduto.getDouble("valortotal"));
               } else {
-                oPNM.campo12 = FormatDecimal2(rstProduto.getDouble("valortotal") - rstProduto.getDouble("valoroutrasdespesasfiscal")).replace(".", "").replace(",", ".");
+                oPNM.campo12 = FormatDecimal2R(rstProduto.getDouble("valortotal") - rstProduto.getDouble("valoroutrasdespesasfiscal"));
               }
             } 
-            oPNM.campo13 = FormatDecimal2(rstProduto.getDouble("porcentagem")).replace(".", "").replace(",", ".");
+            oPNM.campo13 = FormatDecimal2R(rstProduto.getDouble("porcentagem"));
           } else {
-            oPNM.campo12 = FormatDecimal2(0.0D).replace(".", "").replace(",", ".");
-            oPNM.campo13 = FormatDecimal2(0.0D).replace(".", "").replace(",", ".");
+            oPNM.campo12 = FormatDecimal2R(0.0D);
+            oPNM.campo13 = FormatDecimal2R(0.0D);
           } 
           if (rstProduto.getInt("situacaotributaria") == SituacaoTributaria.SUBSTITUIDO.getId()) {
-            oPNM.campo14 = FormatDecimal2(rstProduto.getDouble("valorbasesubstituicao")).replace(".", "").replace(",", ".");
-            oPNM.campo15 = FormatDecimal2(rstProduto.getDouble("valoricmssubstituicao")).replace(".", "").replace(",", ".");
+            oPNM.campo14 = FormatDecimal2R(rstProduto.getDouble("valorbasesubstituicao"));
+            oPNM.campo15 = FormatDecimal2R(rstProduto.getDouble("valoricmssubstituicao"));
             oPNM.campo16 = "0";
             oPNM.campo18 = "0.00";
             oPNM.campo20 = "0.00";
@@ -1256,34 +1211,34 @@ public class Fortes158DAO {
             oPNM.campo18 = rstProduto.getString("valortotal");
             oPNM.campo20 = rstProduto.getString("valortotal");
             if (rst.getInt("id_tipocrt") == 1 && rstProduto.getBoolean("utilizatabelasubstituicaotributaria")) {
-              oPNM.campo21 = FormatDecimal2(rstProduto.getDouble("percentualmva") + rstProduto.getDouble("percentualmvasimples")).replace(".", "").replace(",", ".");
+              oPNM.campo21 = FormatDecimal2R(rstProduto.getDouble("percentualmva") + rstProduto.getDouble("percentualmvasimples"));
             } else {
-              oPNM.campo21 = FormatDecimal2(rstProduto.getDouble("percentualmva")).replace(".", "").replace(",", ".");
+              oPNM.campo21 = FormatDecimal2R(rstProduto.getDouble("percentualmva"));
             } 
           } else {
             oPNM.campo14 = "0.00";
             oPNM.campo15 = "0.00";
             oPNM.campo16 = "0";
             oPNM.campo18 = "0.00";
-            oPNM.campo20 = FormatDecimal2(rstProduto.getDouble("valorbasesubstituicao")).replace(".", "").replace(",", ".");
-            oPNM.campo21 = FormatDecimal2(rstProduto.getDouble("percentualmva")).replace(".", "").replace(",", ".");
+            oPNM.campo20 = FormatDecimal2R(rstProduto.getDouble("valorbasesubstituicao"));
+            oPNM.campo21 = FormatDecimal2R(rstProduto.getDouble("percentualmva"));
           } 
           oPNM.campo22 = "0.00";
           oPNM.campo23 = "0.00";
 
           if (rst.getDouble("valoroutrasdespesas") > 0) {
-            oPNM.campo24 = FormatDecimal2(rstProduto.getDouble("valortotal")).replace(".", "").replace(",", ".");
+            oPNM.campo24 = FormatDecimal2R(rstProduto.getDouble("valortotal"));
           } else {
-            oPNM.campo24 = FormatDecimal2(rstProduto.getDouble("valortotal") - rstProduto.getDouble("valoroutrasdespesasfiscal")).replace(".", "").replace(",", ".");
+            oPNM.campo24 = FormatDecimal2R(rstProduto.getDouble("valortotal") - rstProduto.getDouble("valoroutrasdespesasfiscal"));
           }
           
           oPNM.campo25 = "0.00";
-          oPNM.campo26 = FormatDecimal2(rstProduto.getDouble("porcentagem")).replace(".", "").replace(",", ".");
+          oPNM.campo26 = FormatDecimal2R(rstProduto.getDouble("porcentagem"));
           oPNM.campo27 = "0.00";
           oPNM.campo28 = "0.00";
           oPNM.campo29 = "0.00";
           oPNM.campo30 = "0.00";
-          oPNM.campo31 = FormatDecimal2(rstProduto.getDouble("porcentagem")).replace(".", "").replace(",", ".");
+          oPNM.campo31 = FormatDecimal2R(rstProduto.getDouble("porcentagem"));
           oPNM.campo32 = "";
           oPNM.campo33 = "";
           oPNM.campo34 = "";
@@ -1317,13 +1272,13 @@ public class Fortes158DAO {
             valueOff = rstProduto.getDouble("valordescontofiscal");
           }
 
-          String netValue = FormatDecimal2(
+          String netValue = FormatDecimal2R(
             rstProduto.getDouble("valortotal") +
             rstProduto.getDouble("valorfretefiscal") +
             rstProduto.getDouble("valorseguro") +
             rstProduto.getDouble("valoroutrasdespesasfiscal") -
             valueOff
-          ).replace(".", "").replace(",", ".");
+          );
           
           switch (oPNM.campo37) {
             case "09":
@@ -1345,20 +1300,20 @@ public class Fortes158DAO {
               oPNM.campo40 = netValue;
           }
       
-          oPNM.campo41 = FormatDecimal2(rstProduto.getDouble("valorfretefiscal")).replace(".", "").replace(",", ".");
+          oPNM.campo41 = FormatDecimal2R(rstProduto.getDouble("valorfretefiscal"));
           
           oPNM.campo42 = "0.00";
-          oPNM.campo43 = FormatDecimal2(valueOff).replace(".", "").replace(",", ".");
+          oPNM.campo43 = FormatDecimal2R(valueOff);
           
           if (rst.getDouble("valoroutrasdespesas") > 0) {
             oPNM.campo44 = netValue;
           } else {
-            oPNM.campo44 = FormatDecimal2(
+            oPNM.campo44 = FormatDecimal2R(
               rstProduto.getDouble("valortotal") +
               rstProduto.getDouble("valorfrete") +
               rstProduto.getDouble("valorseguro") -
               valueOff
-            ).replace(".", "").replace(",", ".");
+            );
           }
           
           oPNM.campo45 = "";
@@ -1390,13 +1345,13 @@ public class Fortes158DAO {
             .getString("cfop").startsWith("3.")) {
             int[] arrayAliquotaPisCofins = { 3, 4, 6, 73 };
             if (ArrayUtils.contains(arrayAliquotaPisCofins, rstProduto.getInt("cstpiscofins"))) {
-              oPNM.campo52 = Format.decimal4(rstProduto.getDouble("aliquotacofins")).replace(".", "").replace(",", ".");
-              oPNM.campo56 = Format.decimal4(rstProduto.getDouble("aliquotapis")).replace(".", "").replace(",", ".");
+              oPNM.campo52 = Format.decimal4(rstProduto.getDouble("aliquotacofins"));
+              oPNM.campo56 = Format.decimal4(rstProduto.getDouble("aliquotapis"));
             } 
             int[] arrayValorPisCofins = { 4, 6, 73 };
             if (ArrayUtils.contains(arrayValorPisCofins, rstProduto.getInt("cstpiscofins"))) {
-              oPNM.campo54 = FormatDecimal2(rstProduto.getDouble("valorcofins") * rstProduto.getDouble("aliquotacofins") / 100.0D).replace(".", "").replace(",", ".");
-              oPNM.campo58 = FormatDecimal2(rstProduto.getDouble("valorpis") * rstProduto.getDouble("valorpis") / 100.0D).replace(".", "").replace(",", ".");
+              oPNM.campo54 = FormatDecimal2R(rstProduto.getDouble("valorcofins") * rstProduto.getDouble("aliquotacofins") / 100.0D);
+              oPNM.campo58 = FormatDecimal2R(rstProduto.getDouble("valorpis") * rstProduto.getDouble("valorpis") / 100.0D);
             } 
           } 
           oPNM.campo53 = "";
@@ -1405,7 +1360,7 @@ public class Fortes158DAO {
           oPNM.campo59 = "";
           oPNM.campo60 = "";
           oPNM.campo61 = "";
-          oPNM.campo62 = FormatDecimal2(rstProduto.getDouble("valoroutrasdespesasfiscal")).replace(".", "").replace(",", ".");
+          oPNM.campo62 = FormatDecimal2R(rstProduto.getDouble("valoroutrasdespesasfiscal"));
           String conta = "";
           if (rstProduto.getBoolean("contabilidadepadrao")) {
             int idContaContabilDebito = this.oParametroContabilidadeDAO.carregarContaContabilPadrao();
@@ -1447,11 +1402,11 @@ public class Fortes158DAO {
           oPNM.campo75 = "";
           oPNM.campo76 = "";
           if (i_exportacao.tipoData == TipoData.EMISSAO.getId()) {
-            oPNM.campo77 = FormatDecimal2(rstProduto.getDouble("valortotal")).replace(".", "").replace(",", ".");
+            oPNM.campo77 = FormatDecimal2R(rstProduto.getDouble("valortotal"));
             if (rstProduto.getDouble("valortotal") > 0.0D && rstProduto.getDouble("porcentagemfcp") >= 2.0D)
-              oPNM.campo78 = FormatDecimal2(rstProduto.getDouble("porcentagemfcp")).replace(".", "").replace(",", "."); 
-            oPNM.campo79 = FormatDecimal2(rstProduto.getDouble("aliq_orig_perc")).replace(".", "").replace(",", ".");
-            oPNM.campo80 = FormatDecimal2(rstProduto.getDouble("aliq_dest_perc")).replace(".", "").replace(",", ".");
+              oPNM.campo78 = FormatDecimal2R(rstProduto.getDouble("porcentagemfcp")); 
+            oPNM.campo79 = FormatDecimal2R(rstProduto.getDouble("aliq_orig_perc"));
+            oPNM.campo80 = FormatDecimal2R(rstProduto.getDouble("aliq_dest_perc"));
           } 
           if (rst.getInt("estadoFornecedor") != ((FornecedorDAO)VRInstance.criar(FornecedorDAO.class)).getIdEstadoPadrao(i_exportacao.idLoja) && rstProduto.getBoolean("utilizatabelasubstituicaotributaria")) {
             oPNM.campo6 = "60";
@@ -1486,7 +1441,7 @@ public class Fortes158DAO {
           oPNM.campo82 = "";
           ParametroDAO oParametroDAO = (ParametroDAO)VRInstance.criar(ParametroDAO.class);
           if (oParametroDAO.get(i_exportacao.idLoja, 511).getBoolean())
-            oPNM.campo83 = FormatDecimal2(rstProduto.getDouble("icms")).replace(".", "").replace(",", "."); 
+            oPNM.campo83 = FormatDecimal2R(rstProduto.getDouble("icms")); 
           oPNM.campo84 = "";
 
           if (
@@ -1495,7 +1450,7 @@ public class Fortes158DAO {
             oPNM.campo5.equals("S") &&
             (oPNM.campo6.isEmpty() || !"30,60".contains(oPNM.campo6))
           ) {
-            oPNM.campo85 = FormatDecimal2(rstProduto.getDouble("base")).replace(".", "").replace(",", ".");
+            oPNM.campo85 = FormatDecimal2R(rstProduto.getDouble("base"));
           } else {
             oPNM.campo85 = "";
           }
@@ -1506,14 +1461,14 @@ public class Fortes158DAO {
                 oPNM.campo86 = "0.00";
                 oPNM.campo87 = "0.00";
               } else {
-                oPNM.campo86 = FormatDecimal2(rstProduto.getDouble("valorfcp") / rstProduto.getDouble("base") * 100.0D).replace(".", "").replace(",", ".");
-                oPNM.campo87 = FormatDecimal2(rstProduto.getDouble("valorfcp")).replace(".", "").replace(",", ".");
+                oPNM.campo86 = FormatDecimal2R(rstProduto.getDouble("valorfcp") / rstProduto.getDouble("base") * 100.0D);
+                oPNM.campo87 = FormatDecimal2R(rstProduto.getDouble("valorfcp"));
               }
 
               if (!oPNM.campo6.isEmpty() && "10,30,60,70,90".contains(oPNM.campo6)) {
-                oPNM.campo88 = FormatDecimal2(rstProduto.getDouble("valorbasesubstituicao")).replace(".", "").replace(",", ".");
-                oPNM.campo89 = FormatDecimal2(rstProduto.getDouble("porcentagemfcpst")).replace(".", "").replace(",", ".");
-                oPNM.campo90 = FormatDecimal2(rstProduto.getDouble("valorfcpst")).replace(".", "").replace(",", ".");
+                oPNM.campo88 = FormatDecimal2R(rstProduto.getDouble("valorbasesubstituicao"));
+                oPNM.campo89 = FormatDecimal2R(rstProduto.getDouble("porcentagemfcpst"));
+                oPNM.campo90 = FormatDecimal2R(rstProduto.getDouble("valorfcpst"));
               } else {
                 oPNM.campo88 = "0.00";
                 oPNM.campo89 = "0.00";
@@ -1554,7 +1509,7 @@ public class Fortes158DAO {
           oPNM.campo119 = "";
 
           if (rstProduto.getInt("situacaotributaria") == 51 && rstProduto.getDouble("valorbasecalculo") > 0) {
-            oPNM.campo120 = FormatDecimal2(rstProduto.getDouble("porcentagem")).replace(".", "").replace(",", ".");
+            oPNM.campo120 = FormatDecimal2R(rstProduto.getDouble("porcentagem"));
           }
 
           i_exportacao.qtdRegistro++;
@@ -1582,7 +1537,7 @@ public class Fortes158DAO {
         while (rstImposto.next()) {
           FortesINMVO oINM = new FortesINMVO();
           oINM.campo1 = "INM";
-          oINM.campo2 = FormatDecimal2(rstImposto.getDouble("valortotaloperacao")).replace(".", "").replace(",", ".");
+          oINM.campo2 = FormatDecimal2R(rstImposto.getDouble("valortotaloperacao"));
           oINM.campo3 = rstImposto.getString("uf");
           oINM.campo4 = rstImposto.getString("cfop").replace(".", "").replace(",", ".");
           oINM.campo5 = "";
@@ -1590,7 +1545,7 @@ public class Fortes158DAO {
           oINM.campo7 = "";
           oINM.campo8 = "";
           oINM.campo9 = "";
-          oINM.campo10 = FormatDecimal2(rstImposto.getDouble("valortotal")).replace(".", "").replace(",", ".");
+          oINM.campo10 = FormatDecimal2R(rstImposto.getDouble("valortotal"));
           oINM.campo11 = "";
           oINM.campo12 = "";
           oINM.campo13 = "";
@@ -1636,20 +1591,20 @@ public class Fortes158DAO {
               oINM.campo32 = "";
               oINM.campo33 = "";
             } else {
-              oINM.campo28 = FormatDecimal2(rstImposto.getDouble("basecalculoicms")).replace(".", "").replace(",", ".");
-              oINM.campo29 = FormatDecimal2(rstImposto.getDouble("valorfcp") / rstImposto.getDouble("basecalculoicms") * 100.0D).replace(".", "").replace(",", ".");
-              oINM.campo30 = FormatDecimal2(rstImposto.getDouble("valorfcp")).replace(".", "").replace(",", ".");
-              oINM.campo31 = FormatDecimal2(rstImposto.getDouble("valorbasesubstituicao")).replace(".", "").replace(",", ".");
+              oINM.campo28 = FormatDecimal2R(rstImposto.getDouble("basecalculoicms"));
+              oINM.campo29 = FormatDecimal2R(rstImposto.getDouble("valorfcp") / rstImposto.getDouble("basecalculoicms") * 100.0D);
+              oINM.campo30 = FormatDecimal2R(rstImposto.getDouble("valorfcp"));
+              oINM.campo31 = FormatDecimal2R(rstImposto.getDouble("valorbasesubstituicao"));
               
               if (!oINM.campo20.equals("00")) {
-                oINM.campo32 = FormatDecimal2(rstImposto.getDouble("porcentagemfcp")).replace(".", "").replace(",", ".");
+                oINM.campo32 = FormatDecimal2R(rstImposto.getDouble("porcentagemfcp"));
               }
 
-              oINM.campo33 = FormatDecimal2(rstImposto.getDouble("valorfcpst")).replace(".", "").replace(",", ".");
+              oINM.campo33 = FormatDecimal2R(rstImposto.getDouble("valorfcpst"));
             }
           
           if (rstImposto.getInt("situacaotributaria") == 51 && rstImposto.getDouble("basecalculoicms") > 0) {
-            oINM.campo34 = FormatDecimal2(rstImposto.getDouble("aliquotaicms")).replace(".", "").replace(",", ".");
+            oINM.campo34 = FormatDecimal2R(rstImposto.getDouble("aliquotaicms"));
           }
 
           i_exportacao.qtdRegistro++;
@@ -1670,22 +1625,22 @@ public class Fortes158DAO {
           FortesSNMVO oSNM = new FortesSNMVO();
           oSNM.campo1 = "SNM";
           oSNM.campo2 = "1";
-          oSNM.campo3 = FormatDecimal2(rstST.getDouble("valortotal")).replace(".", "").replace(",", ".");
+          oSNM.campo3 = FormatDecimal2R(rstST.getDouble("valortotal"));
           oSNM.campo4 = "0.00";
-          oSNM.campo5 = FormatDecimal2(rstST.getDouble("valortotal")).replace(".", "").replace(",", ".");
+          oSNM.campo5 = FormatDecimal2R(rstST.getDouble("valortotal"));
           switch (rstST.getInt("situacaotributaria")) {
             case 30:
               if (rst.getInt("id_tipocrt") == 1 && rstST.getBoolean("utilizatabelasubstituicaotributaria")) {
-                oSNM.campo6 = FormatDecimal2(rstST.getDouble("percentualmva") + rstST.getDouble("percentualmvasimples")).replace(".", "").replace(",", ".");
+                oSNM.campo6 = FormatDecimal2R(rstST.getDouble("percentualmva") + rstST.getDouble("percentualmvasimples"));
                 break;
               } 
-              oSNM.campo6 = FormatDecimal2(rstST.getDouble("percentualmva")).replace(".", "").replace(",", ".");
+              oSNM.campo6 = FormatDecimal2R(rstST.getDouble("percentualmva"));
               break;
             case 60:
-              oSNM.campo6 = FormatDecimal2(0.0D).replace(".", "").replace(",", ".");
+              oSNM.campo6 = FormatDecimal2R(0.0D);
               break;
             default:
-              oSNM.campo6 = FormatDecimal2(rstST.getDouble("percentualmva")).replace(".", "").replace(",", ".");
+              oSNM.campo6 = FormatDecimal2R(rstST.getDouble("percentualmva"));
               break;
           } 
 
@@ -1823,23 +1778,23 @@ public class Fortes158DAO {
             oNFM.campo15 = Format.number(rst.getInt("id_fornecedor"), 9);
           }
 
-          oNFM.campo26 = FormatDecimal2(rst.getDouble("valorcontabil") + rst.getDouble("valordesconto")).replace(".", "").replace(",", ".");
+          oNFM.campo26 = FormatDecimal2R(rst.getDouble("valorcontabil") + rst.getDouble("valordesconto"));
         } else {
           if (rst.getInt("id_fornecedorprodutorrural") > 0) {
             oNFM.campo15 = Format.number(rst.getInt("id_fornecedorprodutorrural"), 9);
-            oNFM.campo26 = FormatDecimal2(rst.getDouble("valorcontabil")).replace(".", "").replace(",", ".");
+            oNFM.campo26 = FormatDecimal2R(rst.getDouble("valorcontabil"));
           } else {
             oNFM.campo15 = Format.number(rst.getInt("id_fornecedor"), 9);
 
             if ("1.102,1.403".contains(rst.getString("cfop"))) {
-              oNFM.campo26 = FormatDecimal2(rst.getDouble("valortotalbruto")).replace(".", "").replace(",", ".");
+              oNFM.campo26 = FormatDecimal2R(rst.getDouble("valortotalbruto"));
             } else {
-              oNFM.campo26 = FormatDecimal2(rst.getDouble("valorcontabil")).replace(".", "").replace(",", ".");
+              oNFM.campo26 = FormatDecimal2R(rst.getDouble("valorcontabil"));
             }
           }
         }
         
-        oNFM.campo36 = FormatDecimal2(rst.getDouble("valorcontabil")).replace(".", "").replace(",", ".");
+        oNFM.campo36 = FormatDecimal2R(rst.getDouble("valorcontabil"));
         oNFM.campo37 = Format.number(rst.getInt("qtditem"), 10);
         if (rst.getInt("id_tipofretenotafiscal") == TipoFreteNotaFiscal.DESTINATARIO.getId()) {
           oNFM.campo48 = "D";
@@ -1852,11 +1807,11 @@ public class Fortes158DAO {
           oNFM.campo52 = "";
           oNFM.campo53 = "";
         } else {
-          oNFM.campo52 = FormatDecimal2(rst.getDouble("valorbasepiscofins")).replace(".", "").replace(",", ".");
-          oNFM.campo53 = FormatDecimal2(rst.getDouble("valorbasepiscofins")).replace(".", "").replace(",", ".");
+          oNFM.campo52 = FormatDecimal2R(rst.getDouble("valorbasepiscofins"));
+          oNFM.campo53 = FormatDecimal2R(rst.getDouble("valorbasepiscofins"));
         } 
-        oNFM.campo60 = FormatDecimal2(rst.getDouble("valorcofins")).replace(".", "").replace(",", ".");
-        oNFM.campo61 = FormatDecimal2(rst.getDouble("valorpis")).replace(".", "").replace(",", ".");
+        oNFM.campo60 = FormatDecimal2R(rst.getDouble("valorcofins"));
+        oNFM.campo61 = FormatDecimal2R(rst.getDouble("valorpis"));
       } 
       oNFM.campo16 = "";
       oNFM.campo17 = "";
@@ -1868,20 +1823,20 @@ public class Fortes158DAO {
       oNFM.campo23 = "";
       oNFM.campo24 = "";
       oNFM.campo25 = "";
-      oNFM.campo27 = FormatDecimal2(rst.getDouble("valorfrete")).replace(".", "").replace(",", ".");
-      oNFM.campo29 = FormatDecimal2(rst.getDouble("valoroutrasdespesas")).replace(".", "").replace(",", ".");
+      oNFM.campo27 = FormatDecimal2R(rst.getDouble("valorfrete"));
+      oNFM.campo29 = FormatDecimal2R(rst.getDouble("valoroutrasdespesas"));
       oNFM.campo30 = "";
       oNFM.campo31 = "";
-      oNFM.campo32 = (rst.getInt("id_situacaonfe") == SituacaoNfe.CANCELADA.getId() || rst.getInt("id_situacaonfe") == SituacaoNfe.INUTILIZADA.getId()) ? "" : FormatDecimal2(rst.getDouble("valoripi")).replace(".", "").replace(",", ".");
+      oNFM.campo32 = (rst.getInt("id_situacaonfe") == SituacaoNfe.CANCELADA.getId() || rst.getInt("id_situacaonfe") == SituacaoNfe.INUTILIZADA.getId()) ? "" : FormatDecimal2R(rst.getDouble("valoripi"));
       oNFM.campo33 = "0.00";
       oNFM.campo34 = "0.00";
-      oNFM.campo35 = FormatDecimal2(rst.getDouble("valordescontofiscal")).replace(".", "").replace(",", ".");
+      oNFM.campo35 = FormatDecimal2R(rst.getDouble("valordescontofiscal"));
       oNFM.campo38 = "";
       oNFM.campo39 = "";
       oNFM.campo40 = "";
       if (rst.getInt("id_situacaonfe") != SituacaoNfe.CANCELADA.getId() && rst.getInt("id_situacaonfe") != SituacaoNfe.INUTILIZADA.getId()) {
-        oNFM.campo41 = FormatDecimal2(rst.getDouble("valoricmssubstituicao")).replace(".", "").replace(",", ".");
-        oNFM.campo42 = FormatDecimal2(rst.getDouble("valorbasesubstituicao")).replace(".", "").replace(",", ".");
+        oNFM.campo41 = FormatDecimal2R(rst.getDouble("valoricmssubstituicao"));
+        oNFM.campo42 = FormatDecimal2R(rst.getDouble("valorbasesubstituicao"));
         oNFM.campo43 = "0.00";
         oNFM.campo44 = "";
         oNFM.campo45 = "";
@@ -1946,7 +1901,7 @@ public class Fortes158DAO {
       oNFM.campo87 = "";
       oNFM.campo88 = "";
       oNFM.campo89 = Format.data(Format.dataGUI(rst.getDate("dataemissao")), "dd/MM/yyyy", "yyyyMMdd");
-      oNFM.campo90 = FormatDecimal2(rst.getDouble("valorfcpst")).replace(".", "").replace(",", ".");
+      oNFM.campo90 = FormatDecimal2R(rst.getDouble("valorfcpst"));
       oNFM.campo91 = "N";
 
       i_exportacao.qtdRegistro++;
@@ -2012,9 +1967,9 @@ public class Fortes158DAO {
           }
 
           oPNM.campo7 = rstProduto.getString("tipoembalagem");
-          oPNM.campo8 = FormatDecimal2(rstProduto.getDouble("quantidade")).replace(".", "").replace(",", ".");
-          oPNM.campo9 = FormatDecimal2(rstProduto.getDouble("valortotal")).replace(".", "").replace(",", ".");
-          oPNM.campo10 = FormatDecimal2(rstProduto.getDouble("valoripi")).replace(".", "").replace(",", ".");
+          oPNM.campo8 = FormatDecimal2R(rstProduto.getDouble("quantidade"));
+          oPNM.campo9 = FormatDecimal2R(rstProduto.getDouble("valortotal"));
+          oPNM.campo10 = FormatDecimal2R(rstProduto.getDouble("valoripi"));
           
           if (((AliquotaDAO)VRInstance.criar(AliquotaDAO.class)).isIsento(rstProduto.getInt("situacaotributaria"))) {
             oPNM.campo11 = "2";
@@ -2035,19 +1990,19 @@ public class Fortes158DAO {
           } else if (rstProduto.getInt("situacaotributaria") == SituacaoTributaria.ISENTO_ICMS_ST.getId()) {
             oPNM.campo11 = "3";
             oPNM.campo17 = "1";
-            oPNM.campo19 = FormatDecimal2(rstProduto.getDouble("percentualmva")).replace(".", "").replace(",", ".");
+            oPNM.campo19 = FormatDecimal2R(rstProduto.getDouble("percentualmva"));
           } else {
             oPNM.campo11 = "1";
             oPNM.campo17 = "";
             oPNM.campo19 = "0.00";
           } 
           if (((AliquotaDAO)VRInstance.criar(AliquotaDAO.class)).isSubstituido(rstProduto.getInt("situacaotributaria")) || ((AliquotaDAO)VRInstance.criar(AliquotaDAO.class)).isIsento(rstProduto.getInt("situacaotributaria"))) {
-            oPNM.campo12 = FormatDecimal2(0.0D).replace(".", "").replace(",", ".");
+            oPNM.campo12 = FormatDecimal2R(0.0D);
           } else {
-            oPNM.campo12 = FormatDecimal2(rstProduto.getDouble("base")).replace(".", "").replace(",", ".");
+            oPNM.campo12 = FormatDecimal2R(rstProduto.getDouble("base"));
           }
 
-          oPNM.campo13 = FormatDecimal2(rstProduto.getDouble("porcentagem")).replace(".", "").replace(",", ".");
+          oPNM.campo13 = FormatDecimal2R(rstProduto.getDouble("porcentagem"));
           oPNM.campo14 = "";
           oPNM.campo15 = "";
           oPNM.campo16 = "0";
@@ -2092,12 +2047,12 @@ public class Fortes158DAO {
             oPNM.campo38 = Format.number(this.oFortesDAO.converteCstPisCofins(rstProduto.getInt("cstpiscofins")), 2);
           } 
 
-          String netValue = FormatDecimal2(
+          String netValue = FormatDecimal2R(
               rstProduto.getDouble("valortotal") +
               rstProduto.getDouble("valoroutrasdespesas") +
               rstProduto.getDouble("valorfrete") -
               rstProduto.getDouble("valordesconto")
-          ).replace(".", "").replace(",", ".");
+          );
           
           if (oPNM.campo37.equals("07") || oPNM.campo37.equals("49")) {
             oPNM.campo39 = "";
@@ -2111,9 +2066,9 @@ public class Fortes158DAO {
             oPNM.campo40 = netValue;
           }
 
-          oPNM.campo41 = FormatDecimal2(rstProduto.getDouble("valorfrete")).replace(".", "").replace(",", ".");
+          oPNM.campo41 = FormatDecimal2R(rstProduto.getDouble("valorfrete"));
           oPNM.campo42 = "0.00";
-          oPNM.campo43 = FormatDecimal2(rstProduto.getDouble("valordesconto")).replace(".", "").replace(",", ".");
+          oPNM.campo43 = FormatDecimal2R(rstProduto.getDouble("valordesconto"));
           oPNM.campo44 = netValue;
           
           if (!oPNM.campo37.equals("49")) {
@@ -2153,13 +2108,13 @@ public class Fortes158DAO {
             .getString("cfop").startsWith("3.")) {
             int[] arrayAliquotaPisCofins = { 3, 4, 6, 73 };
             if (ArrayUtils.contains(arrayAliquotaPisCofins, rstProduto.getInt("cstpiscofins"))) {
-              oPNM.campo52 = Format.decimal4(rstProduto.getDouble("aliquotacofins")).replace(".", "").replace(",", ".");
-              oPNM.campo56 = Format.decimal4(rstProduto.getDouble("aliquotapis")).replace(".", "").replace(",", ".");
+              oPNM.campo52 = Format.decimal4(rstProduto.getDouble("aliquotacofins"));
+              oPNM.campo56 = Format.decimal4(rstProduto.getDouble("aliquotapis"));
             } 
             int[] arrayValorPisCofins = { 4, 6, 73 };
             if (ArrayUtils.contains(arrayValorPisCofins, rstProduto.getInt("cstpiscofins"))) {
-              oPNM.campo54 = FormatDecimal2(rstProduto.getDouble("valorcofins") * rstProduto.getDouble("aliquotacofins") / 100.0D).replace(".", "").replace(",", ".");
-              oPNM.campo58 = FormatDecimal2(rstProduto.getDouble("valorpis") * rstProduto.getDouble("valorpis") / 100.0D).replace(".", "").replace(",", ".");
+              oPNM.campo54 = FormatDecimal2R(rstProduto.getDouble("valorcofins") * rstProduto.getDouble("aliquotacofins") / 100.0D);
+              oPNM.campo58 = FormatDecimal2R(rstProduto.getDouble("valorpis") * rstProduto.getDouble("valorpis") / 100.0D);
             } 
           } 
           oPNM.campo53 = "";
@@ -2168,7 +2123,7 @@ public class Fortes158DAO {
           oPNM.campo59 = "";
           oPNM.campo60 = "";
           oPNM.campo61 = "";
-          oPNM.campo62 = FormatDecimal2(rstProduto.getDouble("valoroutrasdespesas")).replace(".", "").replace(",", ".");
+          oPNM.campo62 = FormatDecimal2R(rstProduto.getDouble("valoroutrasdespesas"));
           int idContaContabilCredito = this.oParametroContabilidadeDAO.carregarContaContabilTiposaida(rstProduto.getInt("id_tiposaida"));
           String contaExterna = getContaContabil(idContaContabilCredito);
           oPNM.campo63 = contaExterna;
@@ -2202,11 +2157,11 @@ public class Fortes158DAO {
           oPNM.campo75 = "";
           oPNM.campo76 = "";
           if (i_exportacao.tipoData == TipoData.EMISSAO.getId()) {
-            oPNM.campo77 = FormatDecimal2(rstProduto.getDouble("valortotal")).replace(".", "").replace(",", ".");
+            oPNM.campo77 = FormatDecimal2R(rstProduto.getDouble("valortotal"));
             if (rstProduto.getDouble("valortotal") > 0.0D && rstProduto.getDouble("porcentagemfcp") >= 2.0D)
-              oPNM.campo78 = FormatDecimal2(rstProduto.getDouble("porcentagemfcp")).replace(".", "").replace(",", "."); 
-            oPNM.campo79 = FormatDecimal2(rstProduto.getDouble("aliq_orig_perc")).replace(".", "").replace(",", ".");
-            oPNM.campo80 = FormatDecimal2(rstProduto.getDouble("aliq_dest_perc")).replace(".", "").replace(",", ".");
+              oPNM.campo78 = FormatDecimal2R(rstProduto.getDouble("porcentagemfcp")); 
+            oPNM.campo79 = FormatDecimal2R(rstProduto.getDouble("aliq_orig_perc"));
+            oPNM.campo80 = FormatDecimal2R(rstProduto.getDouble("aliq_dest_perc"));
           } 
           if (rstProduto.getString("cfop").equals("5.401") || rstProduto
             .getString("cfop").equals("5.402") || rstProduto
@@ -2224,7 +2179,7 @@ public class Fortes158DAO {
           oPNM.campo82 = "";
           ParametroDAO oParametroDAO = (ParametroDAO)VRInstance.criar(ParametroDAO.class);
           if (oParametroDAO.get(510, i_exportacao.idLoja).getBoolean())
-            oPNM.campo83 = FormatDecimal2(rstProduto.getDouble("icms")).replace(".", "").replace(",", "."); 
+            oPNM.campo83 = FormatDecimal2R(rstProduto.getDouble("icms")); 
           oPNM.campo85 = "";
           oPNM.campo86 = "";
           oPNM.campo87 = "";
@@ -2270,7 +2225,7 @@ public class Fortes158DAO {
           oPNM.campo119 = "";
 
           if (rstProduto.getInt("situacaotributaria") == 51 && rstProduto.getDouble("valorbasecalculo") > 0) {
-            oPNM.campo120 = FormatDecimal2(rstProduto.getDouble("porcentagem")).replace(".", "").replace(",", ".");
+            oPNM.campo120 = FormatDecimal2R(rstProduto.getDouble("porcentagem"));
           }
 
           i_exportacao.qtdRegistro++;
@@ -2296,15 +2251,15 @@ public class Fortes158DAO {
         while (rstImposto.next()) {
           FortesINMVO oINM = new FortesINMVO();
           oINM.campo1 = "INM";
-          oINM.campo2 = FormatDecimal2(rstImposto.getDouble("valortotaloperacao")).replace(".", "").replace(",", ".");
+          oINM.campo2 = FormatDecimal2R(rstImposto.getDouble("valortotaloperacao"));
           oINM.campo3 = rstImposto.getString("uf");
           oINM.campo4 = rstImposto.getString("cfop").replace(".", "").replace(",", ".");
           oINM.campo5 = "";
-          oINM.campo6 = FormatDecimal2(rstImposto.getDouble("basecalculoicms")).replace(".", "").replace(",", ".");
-          oINM.campo7 = FormatDecimal2(rstImposto.getDouble("aliquotaicms")).replace(".", "").replace(",", ".");
-          oINM.campo8 = FormatDecimal2(rstImposto.getDouble("valoricms")).replace(".", "").replace(",", ".");
-          oINM.campo9 = FormatDecimal2(rstImposto.getDouble("valorisento")).replace(".", "").replace(",", ".");
-          oINM.campo10 = FormatDecimal2(rstImposto.getDouble("valoroutras")).replace(".", "").replace(",", ".");
+          oINM.campo6 = FormatDecimal2R(rstImposto.getDouble("basecalculoicms"));
+          oINM.campo7 = FormatDecimal2R(rstImposto.getDouble("aliquotaicms"));
+          oINM.campo8 = FormatDecimal2R(rstImposto.getDouble("valoricms"));
+          oINM.campo9 = FormatDecimal2R(rstImposto.getDouble("valorisento"));
+          oINM.campo10 = FormatDecimal2R(rstImposto.getDouble("valoroutras"));
           oINM.campo11 = "0.00";
           oINM.campo12 = "0.00";
           oINM.campo13 = "0.00";
@@ -2371,7 +2326,7 @@ public class Fortes158DAO {
           FortesOVNVO oOVN = new FortesOVNVO();
           oOVN.campo1 = "OVN";
           oOVN.campo2 = "DINHEIRO";
-          oOVN.campo3 = FormatDecimal2(rst.getDouble("valortotal")).replace(".", "").replace(",", ".");
+          oOVN.campo3 = FormatDecimal2R(rst.getDouble("valortotal"));
           i_exportacao.qtdRegistro++;
           i_arquivo.write(oOVN.getString());
         } 
@@ -2468,16 +2423,16 @@ public class Fortes158DAO {
       oCtc.campo13 = rst.getString("tipofrete");
       oCtc.campo14 = Format.number(rst.getString("id_fornecedor"), 9);
       oCtc.campo16 = rst.getString("cfop").replace(".", "").replace(",", ".");
-      oCtc.campo17 = FormatDecimal2(rst.getDouble("valorcontabil")).replace(".", "").replace(",", ".");
-      oCtc.campo18 = FormatDecimal2(rst.getDouble("baseicms")).replace(".", "").replace(",", ".");
-      oCtc.campo19 = FormatDecimal2(rst.getDouble("porcentagemfinal")).replace(".", "").replace(",", ".");
-      oCtc.campo20 = FormatDecimal2(rst.getDouble("icms")).replace(".", "").replace(",", ".");
-      oCtc.campo21 = FormatDecimal2(rst.getDouble("valorisento")).replace(".", "").replace(",", ".");
-      oCtc.campo22 = FormatDecimal2(rst.getDouble("valoroutras")).replace(".", "").replace(",", ".");
+      oCtc.campo17 = FormatDecimal2R(rst.getDouble("valorcontabil"));
+      oCtc.campo18 = FormatDecimal2R(rst.getDouble("baseicms"));
+      oCtc.campo19 = FormatDecimal2R(rst.getDouble("porcentagemfinal"));
+      oCtc.campo20 = FormatDecimal2R(rst.getDouble("icms"));
+      oCtc.campo21 = FormatDecimal2R(rst.getDouble("valorisento"));
+      oCtc.campo22 = FormatDecimal2R(rst.getDouble("valoroutras"));
       oCtc.campo23 = (rst.getInt("id_estado") == TipoEstado.CE.getId()) ? rst.getString("uf") : "";
       oCtc.campo24 = (rst.getInt("id_estado") == TipoEstado.CE.getId()) ? rst.getString("id_municipio").substring(2, rst.getString("id_municipio").length()) : "";
-      oCtc.campo39 = FormatDecimal2(rst.getDouble("aliquotaorigem")).replace(".", "").replace(",", ".");
-      oCtc.campo40 = FormatDecimal2(rst.getDouble("aliquotaloja")).replace(".", "").replace(",", ".");
+      oCtc.campo39 = FormatDecimal2R(rst.getDouble("aliquotaorigem"));
+      oCtc.campo40 = FormatDecimal2R(rst.getDouble("aliquotaloja"));
       oCtc.campo53 = (rst.getObject("observacao") != null) ? rst.getString("observacao") : "";
       
       int paymentIndicator = rst.getInt("id_indicadorpagamento");
@@ -2504,7 +2459,7 @@ public class Fortes158DAO {
       oCtc.campo60 = (rst.getObject("cstcumulativo") != null) ? rst.getString("cstcumulativo") : "";
       oCtc.campo61 = "9";
       oCtc.campo62 = (rst.getObject("id_tipobasecalculocredito") != null) ? Format.number(rst.getString("id_tipobasecalculocredito"), 2) : "";
-      oCtc.campo63 = FormatDecimal2(rst.getDouble("basepiscofins")).replace(".", "").replace(",", ".");
+      oCtc.campo63 = FormatDecimal2R(rst.getDouble("basepiscofins"));
       String conta = "";
       if (rst.getObject("id_contacontabilfiscalcredito") != null)
         conta = getContaContabil(rst.getLong("id_contacontabilfiscalcredito")); 
@@ -2524,11 +2479,11 @@ public class Fortes158DAO {
       oCtc.campo71 = (rst.getInt("id_tipocrt") == TipoCrt.SIMPLES_NACIONAL.getId()) ? rst.getString("tipocredito") : "";
       if (i_exportacao.tipoData == TipoData.EMISSAO.getId()) {
         oCtc.campo72 = (rst.getDouble("valortotal") > 0.0D) ? "S" : "N";
-        oCtc.campo73 = FormatDecimal2(rst.getDouble("valortotal")).replace(".", "").replace(",", ".");
+        oCtc.campo73 = FormatDecimal2R(rst.getDouble("valortotal"));
         if (rst.getDouble("valortotal") > 0.0D && rst.getDouble("porcentagemfcp") >= 2.0D)
-          oCtc.campo74 = FormatDecimal2(rst.getDouble("porcentagemfcp")).replace(".", "").replace(",", "."); 
-        oCtc.campo75 = FormatDecimal2(rst.getDouble("aliq_orig_perc")).replace(".", "").replace(",", ".");
-        oCtc.campo76 = FormatDecimal2(rst.getDouble("aliq_dest_perc")).replace(".", "").replace(",", ".");
+          oCtc.campo74 = FormatDecimal2R(rst.getDouble("porcentagemfcp")); 
+        oCtc.campo75 = FormatDecimal2R(rst.getDouble("aliq_orig_perc"));
+        oCtc.campo76 = FormatDecimal2R(rst.getDouble("aliq_dest_perc"));
       } else {
         oCtc.campo72 = "N";
       } 
@@ -2541,9 +2496,9 @@ public class Fortes158DAO {
       oCtc.campo83 = "";
       oCtc.campo84 = "";
       oCtc.campo85 = "";
-      oCtc.campo86 = FormatDecimal2(rst.getDouble("baseinss")).replace(".", "").replace(",", ".");
-      oCtc.campo87 = FormatDecimal2(rst.getDouble("aliquotainss")).replace(".", "").replace(",", ".");
-      oCtc.campo88 = FormatDecimal2(rst.getDouble("inss")).replace(".", "").replace(",", ".");
+      oCtc.campo86 = FormatDecimal2R(rst.getDouble("baseinss"));
+      oCtc.campo87 = FormatDecimal2R(rst.getDouble("aliquotainss"));
+      oCtc.campo88 = FormatDecimal2R(rst.getDouble("inss"));
       oCtc.campo89 = "";
       oCtc.campo90 = "";
       oCtc.campo91 = "";
@@ -2611,7 +2566,7 @@ public class Fortes158DAO {
       oIIV.campo2 = Format.number(this.oFortesDAO.getCodigoEstabelecimento(i_exportacao.idLoja), 4);
       oIIV.campo3 = Format.data(Format.dataGUI(rst.getDate("data")), "dd/MM/yyyy", "yyyyMMdd");
       oIIV.campo4 = String.valueOf(rst.getInt("id_produto"));
-      oIIV.campo5 = FormatDecimal3(rst.getDouble("quantidade")).replace(".", "").replace(",", ".");
+      oIIV.campo5 = FormatDecimal3R(rst.getDouble("quantidade"));
       if (rst.getInt("id_tipoembalagem") == 4) {
         oIIV.campo6 = "KG";
       } else {
@@ -2619,7 +2574,7 @@ public class Fortes158DAO {
       } 
       
       if (rst.getDouble("custosemimposto") > 0) {
-        oIIV.campo7 = FormatDecimal2(rst.getDouble("custosemimposto")).replace(".", "").replace(",", ".");
+        oIIV.campo7 = FormatDecimal2R(rst.getDouble("custosemimposto"));
       } else {
         oIIV.campo7 = "0.01";
       }
@@ -2627,10 +2582,10 @@ public class Fortes158DAO {
       oIIV.campo8 = "01";
       oIIV.campo9 = Format.number(rst.getInt("id_tipoorigemmercadoriaentrada"), 1);
       oIIV.campo10 = Format.number(rst.getInt("situacaotributaria"), 2);
-      oIIV.campo11 = FormatDecimal2(rst.getDouble("basecalculoicms")).replace(".", "").replace(",", ".");
-      oIIV.campo12 = FormatDecimal2(rst.getDouble("porcentagemfinal")).replace(".", "").replace(",", ".");
-      oIIV.campo13 = FormatDecimal2(rst.getDouble("valoricms")).replace(".", "").replace(",", ".");
-      oIIV.campo14 = FormatDecimal2(rst.getDouble("custosemimposto")).replace(".", "").replace(",", ".");
+      oIIV.campo11 = FormatDecimal2R(rst.getDouble("basecalculoicms"));
+      oIIV.campo12 = FormatDecimal2R(rst.getDouble("porcentagemfinal"));
+      oIIV.campo13 = FormatDecimal2R(rst.getDouble("valoricms"));
+      oIIV.campo14 = FormatDecimal2R(rst.getDouble("custosemimposto"));
       int idFornecedor = (((LojaDAO)VRInstance.criar(LojaDAO.class)).carregar(i_exportacao.idLoja)).idFornecedor;
       int tipoEmpresa = (((FornecedorDAO) VRInstance.criar(FornecedorDAO.class)).carregar(idFornecedor)).idTipoEmpresa;
       
@@ -2687,8 +2642,8 @@ public class Fortes158DAO {
       oOCC.campo2 = Format.number(this.oFortesDAO.getCodigoEstabelecimento(i_exportacao.idLoja), 4);
       oOCC.campo3 = Format.data(rst.getString("data"), "yyyy-MM", "MMyyyy");
       oOCC.campo4 = rst.getInt("id_fornecedor") + "";
-      oOCC.campo5 = FormatDecimal2(rst.getDouble("valorcredito")).replace(".", "").replace(",", ".");
-      oOCC.campo6 = FormatDecimal2(rst.getDouble("valordebito")).replace(".", "").replace(",", ".");
+      oOCC.campo5 = FormatDecimal2R(rst.getDouble("valorcredito"));
+      oOCC.campo6 = FormatDecimal2R(rst.getDouble("valordebito"));
       i_exportacao.qtdRegistro++;
       i_arquivo.write(oOCC.getString());
       ProgressBar.next();
@@ -2760,17 +2715,17 @@ public class Fortes158DAO {
           oCPE.campo7 = "2";
         } else {
           oCPE.campo7 = "0";
-          oCPE.campo9 = FormatDecimal2(rstCupom.getDouble("valortotal")).replace(".", "").replace(",", ".");
+          oCPE.campo9 = FormatDecimal2R(rstCupom.getDouble("valortotal"));
         }
 
         oCPE.campo8 = "";
-        oCPE.campo10 = FormatDecimal2(rstCupom.getDouble("valordesconto")).replace(".", "").replace(",", ".");
+        oCPE.campo10 = FormatDecimal2R(rstCupom.getDouble("valordesconto"));
         oCPE.campo11 = "";
-        oCPE.campo12 = FormatDecimal2(rstCupom.getDouble("valoricmssubstituicao")).replace(".", "").replace(",", ".");
-        oCPE.campo13 = FormatDecimal2(rstCupom.getDouble("valoracrescimo")).replace(".", "").replace(",", ".");
+        oCPE.campo12 = FormatDecimal2R(rstCupom.getDouble("valoricmssubstituicao"));
+        oCPE.campo13 = FormatDecimal2R(rstCupom.getDouble("valoracrescimo"));
         oCPE.campo14 = "";
-        oCPE.campo15 = FormatDecimal2(rstCupom.getDouble("receitapiscofins")).replace(".", "").replace(",", ".");
-        oCPE.campo16 = FormatDecimal2(rstCupom.getDouble("receitapiscofins")).replace(".", "").replace(",", ".");
+        oCPE.campo15 = FormatDecimal2R(rstCupom.getDouble("receitapiscofins"));
+        oCPE.campo16 = FormatDecimal2R(rstCupom.getDouble("receitapiscofins"));
         oCPE.campo17 = "";
         oCPE.campo18 = "";
         oCPE.campo19 = "";
@@ -2870,18 +2825,18 @@ public class Fortes158DAO {
           if (rstProduto.getDouble("quantidade") <= 0.0D) {
             oPCE.campo3 = "0.001";
           } else {
-            oPCE.campo3 = FormatDecimal3(rstProduto.getDouble("quantidade")).replace(".", "").replace(",", ".");
+            oPCE.campo3 = FormatDecimal3R(rstProduto.getDouble("quantidade"));
           }
 
           oPCE.campo4 = rstProduto.getString("tipoembalagem");
           oPCE.campo5 = rstProduto.getString("cfop").replace(".", "").replace(",", ".");
-          oPCE.campo6 = FormatDecimal2(rstProduto.getDouble("valortotal")).replace(".", "").replace(",", ".");
-          oPCE.campo7 = FormatDecimal2(rstProduto.getDouble("valordesconto")).replace(".", "").replace(",", ".");
+          oPCE.campo6 = FormatDecimal2R(rstProduto.getDouble("valortotal"));
+          oPCE.campo7 = FormatDecimal2R(rstProduto.getDouble("valordesconto"));
           oPCE.campo8 = "";
 
           double increaseValue = rstProduto.getDouble("valoroutras") > 0 ? rstProduto.getDouble("valoroutras") : rstProduto.getDouble("valorisento");
 
-          oPCE.campo9 = FormatDecimal2(increaseValue >= rstProduto.getDouble("valortotal") ? increaseValue - rstProduto.getDouble("valortotal") : 0.00).replace(".", "").replace(",", ".");
+          oPCE.campo9 = FormatDecimal2R(increaseValue >= rstProduto.getDouble("valortotal") ? increaseValue - rstProduto.getDouble("valortotal") : 0.00);
           
           if (
             oFornecedor.idTipoEmpresa == TipoEmpresa.EPP_SIMPLES.getId() ||
@@ -2899,8 +2854,8 @@ public class Fortes158DAO {
             oPCE.campo13 = Format.number(rstProduto.getInt("situacaotributaria"), 2);
           }
 
-          oPCE.campo14 = FormatDecimal2(rstProduto.getDouble("valorbasecalculo")).replace(".", "").replace(",", ".");
-          oPCE.campo15 = FormatDecimal2(rstProduto.getDouble("porcentagemfinal")).replace(".", "").replace(",", ".");
+          oPCE.campo14 = FormatDecimal2R(rstProduto.getDouble("valorbasecalculo"));
+          oPCE.campo15 = FormatDecimal2R(rstProduto.getDouble("porcentagemfinal"));
 
           if (
             oFornecedor.idTipoEmpresa == TipoEmpresa.LUCRO_REAL.getId() ||
@@ -2909,11 +2864,11 @@ public class Fortes158DAO {
             oPCE.campo16 = Format.number(rstProduto.getInt("cst"), 2);
 
             if (!oPCE.campo16.equals("49")) {
-              oPCE.campo17 = FormatDecimal2(rstProduto.getDouble("valortotal") - rstProduto.getDouble("valordesconto") + rstProduto.getDouble("valoracrescimo")).replace(".", "").replace(",", ".");
+              oPCE.campo17 = FormatDecimal2R(rstProduto.getDouble("valortotal") - rstProduto.getDouble("valordesconto") + rstProduto.getDouble("valoracrescimo"));
             }
 
             oPCE.campo18 = "1";
-            oPCE.campo19 = (rstProduto.getDouble("valorcofins") > 0.0D && this.oCAB.campo9.equals("S")) ? FormatDecimal2(rstProduto.getDouble("valorcofins")).replace(".", "").replace(",", ".") : "";
+            oPCE.campo19 = (rstProduto.getDouble("valorcofins") > 0.0D && this.oCAB.campo9.equals("S")) ? FormatDecimal2R(rstProduto.getDouble("valorcofins")) : "";
             oPCE.campo20 = "";
 
             if (parametroExcluirIcmsDaBase) {
@@ -2922,7 +2877,7 @@ public class Fortes158DAO {
               baseCalculoPisCofins = rstProduto.getDouble("basecalculo");
             }
             
-            oPCE.campo21 = (Numero.round(baseCalculoPisCofins * rstProduto.getDouble("valorcofins") / 100.0D, 2) > 0.0D && this.oCAB.campo9.equals("S")) ? FormatDecimal2(Numero.round(baseCalculoPisCofins * rstProduto.getDouble("valorcofins") / 100.0D, 2)).replace(".", "").replace(",", ".") : "";
+            oPCE.campo21 = (Numero.round(baseCalculoPisCofins * rstProduto.getDouble("valorcofins") / 100.0D, 2) > 0.0D && this.oCAB.campo9.equals("S")) ? FormatDecimal2R(Numero.round(baseCalculoPisCofins * rstProduto.getDouble("valorcofins") / 100.0D, 2)) : "";
             oPCE.campo22 = Format.number(rstProduto.getInt("codigoacfiscal"), 3);
 
             if (!oPCE.campo22.isEmpty() && Integer.parseInt(oPCE.campo22) == 0 && rstProduto.getString("tiponaturezareceita") != null) {
@@ -2932,13 +2887,13 @@ public class Fortes158DAO {
             oPCE.campo23 = Format.number(rstProduto.getInt("cst"), 2);
 
             if (!oPCE.campo23.equals("49")) {
-              oPCE.campo24 = FormatDecimal2(rstProduto.getDouble("valortotal") - rstProduto.getDouble("valordesconto") + rstProduto.getDouble("valoracrescimo")).replace(".", "").replace(",", ".");
+              oPCE.campo24 = FormatDecimal2R(rstProduto.getDouble("valortotal") - rstProduto.getDouble("valordesconto") + rstProduto.getDouble("valoracrescimo"));
             }
 
             oPCE.campo25 = "1";
-            oPCE.campo26 = (rstProduto.getDouble("valorpis") > 0.0D && this.oCAB.campo9.equals("S")) ? FormatDecimal2(rstProduto.getDouble("valorpis")).replace(".", "").replace(",", ".") : "";
+            oPCE.campo26 = (rstProduto.getDouble("valorpis") > 0.0D && this.oCAB.campo9.equals("S")) ? FormatDecimal2R(rstProduto.getDouble("valorpis")) : "";
             oPCE.campo27 = "";
-            oPCE.campo28 = (Numero.round(baseCalculoPisCofins * rstProduto.getDouble("valorpis") / 100.0D, 2) > 0.0D && this.oCAB.campo9.equals("S")) ? FormatDecimal2(Numero.round(baseCalculoPisCofins * rstProduto.getDouble("valorpis") / 100.0D, 2)).replace(".", "").replace(",", ".") : "";
+            oPCE.campo28 = (Numero.round(baseCalculoPisCofins * rstProduto.getDouble("valorpis") / 100.0D, 2) > 0.0D && this.oCAB.campo9.equals("S")) ? FormatDecimal2R(Numero.round(baseCalculoPisCofins * rstProduto.getDouble("valorpis") / 100.0D, 2)) : "";
             oPCE.campo29 = oPCE.campo22;
           } else {
             oPCE.campo16 = "";
@@ -3002,14 +2957,14 @@ public class Fortes158DAO {
           double increaseValue = rstImposto.getDouble("valoroutras") > 0 ? rstImposto.getDouble("valoroutras") : rstImposto.getDouble("valorisento");
           double increaseField = increaseValue >= rstImposto.getDouble("valortotal") ? increaseValue - rstImposto.getDouble("valortotal") : 0.00;
 
-          oCFI.campo2 = FormatDecimal2(rstImposto.getDouble("valor") + increaseField).replace(".", "").replace(",", ".");
+          oCFI.campo2 = FormatDecimal2R(rstImposto.getDouble("valor") + increaseField);
           oCFI.campo3 = oFornecedor.estado;
           oCFI.campo4 = Format.number(rstImposto.getString("cfop").replace(".", ""), 4);
-          oCFI.campo5 = FormatDecimal2(rstImposto.getDouble("valorbasecalculo")).replace(".", "").replace(",", ".");
-          oCFI.campo6 = FormatDecimal2(rstImposto.getDouble("porcentagemfinal")).replace(".", "").replace(",", ".");
-          oCFI.campo7 = FormatDecimal2(rstImposto.getDouble("valoricms")).replace(".", "").replace(",", ".");
-          oCFI.campo8 = FormatDecimal2(rstImposto.getDouble("valor") + increaseField).replace(".", "").replace(",", ".");
-          oCFI.campo9 = FormatDecimal2(rstImposto.getDouble("valor") + increaseField).replace(".", "").replace(",", ".");
+          oCFI.campo5 = FormatDecimal2R(rstImposto.getDouble("valorbasecalculo"));
+          oCFI.campo6 = FormatDecimal2R(rstImposto.getDouble("porcentagemfinal"));
+          oCFI.campo7 = FormatDecimal2R(rstImposto.getDouble("valoricms"));
+          oCFI.campo8 = FormatDecimal2R(rstImposto.getDouble("valor") + increaseField);
+          oCFI.campo9 = FormatDecimal2R(rstImposto.getDouble("valor") + increaseField);
           
           boolean substituicao = aliquotaDao.isSubstituido(rstImposto.getInt("situacaotributaria"));
 
@@ -3091,8 +3046,8 @@ public class Fortes158DAO {
         } else {
           oNVC.campo11 = "0";
           oNVC.campo12 = Format.data(Format.dataGUI(rstCupom.getDate("dataemissao")), "dd/MM/yyyy", "yyyyMMdd");
-          oNVC.campo13 = FormatDecimal2(rstCupom.getDouble("valortotal")).replace(".", "").replace(",", ".");
-          oNVC.campo14 = FormatDecimal2(rstCupom.getDouble("valordesconto")).replace(".", "").replace(",", ".");
+          oNVC.campo13 = FormatDecimal2R(rstCupom.getDouble("valortotal"));
+          oNVC.campo14 = FormatDecimal2R(rstCupom.getDouble("valordesconto"));
           oNVC.campo15 = rstCupom.getString("qtditems");
    
           int paymentIndicator = rstCupom.getInt("id_indicadorpagamento");
@@ -3114,8 +3069,8 @@ public class Fortes158DAO {
           
           oNVC.campo17 = Format.number(rstCupom.getInt("serie"), 3);
           oNVC.campo18 = Format.number(rstCupom.getInt("numeronota"), 6);
-          oNVC.campo19 = FormatDecimal2(rstCupom.getDouble("receitapiscofins")).replace(".", "").replace(",", ".");
-          oNVC.campo20 = FormatDecimal2(rstCupom.getDouble("receitapiscofins")).replace(".", "").replace(",", ".");
+          oNVC.campo19 = FormatDecimal2R(rstCupom.getDouble("receitapiscofins"));
+          oNVC.campo20 = FormatDecimal2R(rstCupom.getDouble("receitapiscofins"));
         }
 
         oNVC.campo21 = "";
@@ -3132,8 +3087,8 @@ public class Fortes158DAO {
         oNVC.campo31 = "";
        
         if (!rstCupom.getBoolean("cancelado")) {
-          oNVC.campo32 = FormatDecimal2(rstCupom.getDouble("valoroutrasdespesas")).replace(".", "").replace(",", ".");
-          oNVC.campo33 = FormatDecimal2(rstCupom.getDouble("valortotal")).replace(".", "").replace(",", ".");
+          oNVC.campo32 = FormatDecimal2R(rstCupom.getDouble("valoroutrasdespesas"));
+          oNVC.campo33 = FormatDecimal2R(rstCupom.getDouble("valortotal"));
         }
         
         if (
@@ -3163,7 +3118,7 @@ public class Fortes158DAO {
         oNVC.campo45 = "";
         oNVC.campo46 = "";
         oNVC.campo47 = "";
-        oNVC.campo48 = FormatDecimal2(rstCupom.getDouble("valoricmsdesonerado")).replace(".", "").replace(",", ".");
+        oNVC.campo48 = FormatDecimal2R(rstCupom.getDouble("valoricmsdesonerado"));
 
         i_exportacao.qtdRegistro++;
         i_arquivo.write(oNVC.getStringLayout158());
@@ -3229,10 +3184,10 @@ public class Fortes158DAO {
           if (rstProduto.getDouble("quantidade") <= 0.0D) {
             oPNC.campo7 = "0.001";
           } else {
-            oPNC.campo7 = FormatDecimal3(rstProduto.getDouble("quantidade")).replace(".", "").replace(",", ".");
+            oPNC.campo7 = FormatDecimal3R(rstProduto.getDouble("quantidade"));
           }
 
-          oPNC.campo8 = FormatDecimal2(rstProduto.getDouble("valortotal")).replace(".", "").replace(",", ".");
+          oPNC.campo8 = FormatDecimal2R(rstProduto.getDouble("valortotal"));
 
           if ("00,10,20,70".contains(oPNC.campo5)) {
             oPNC.campo9 = "1";
@@ -3242,8 +3197,8 @@ public class Fortes158DAO {
             oPNC.campo9 = "3";
           }
 
-          oPNC.campo10 = FormatDecimal2(rstProduto.getDouble("valorbasecalculo")).replace(".", "").replace(",", ".");
-          oPNC.campo11 = FormatDecimal2(rstProduto.getDouble("porcentagemfinal")).replace(".", "").replace(",", ".");
+          oPNC.campo10 = FormatDecimal2R(rstProduto.getDouble("valorbasecalculo"));
+          oPNC.campo11 = FormatDecimal2R(rstProduto.getDouble("porcentagemfinal"));
 
           if (parametroExcluirIcmsDaBase) {
             baseCalculoPisCofins = rstProduto.getDouble("basecalculo") - rstProduto.getDouble("valoricms");
@@ -3266,8 +3221,8 @@ public class Fortes158DAO {
           }
 
           if (!oPNC.campo14.equals("49")) {
-            oPNC.campo12 = FormatDecimal2(rstProduto.getDouble("valortotal") - rstProduto.getDouble("valordesconto") + rstProduto.getDouble("valoracrescimo")).replace(".", "").replace(",", ".");
-            oPNC.campo13 = FormatDecimal2(rstProduto.getDouble("valortotal") - rstProduto.getDouble("valordesconto") + rstProduto.getDouble("valoracrescimo")).replace(".", "").replace(",", ".");
+            oPNC.campo12 = FormatDecimal2R(rstProduto.getDouble("valortotal") - rstProduto.getDouble("valordesconto") + rstProduto.getDouble("valoracrescimo"));
+            oPNC.campo13 = FormatDecimal2R(rstProduto.getDouble("valortotal") - rstProduto.getDouble("valordesconto") + rstProduto.getDouble("valoracrescimo"));
           } else {
             oPNC.campo12 = "";
             oPNC.campo13 = "";
@@ -3276,17 +3231,17 @@ public class Fortes158DAO {
           oPNC.campo16 = Format.number(rstProduto.getInt("codigoacfiscal"), 3);
           oPNC.campo17 = Format.number(rstProduto.getInt("codigoacfiscal"), 3);
           oPNC.campo18 = "1";
-          oPNC.campo19 = (rstProduto.getDouble("valorcofins") > 0.0D && this.oCAB.campo9.equals("S")) ? FormatDecimal2(rstProduto.getDouble("valorcofins")).replace(".", "").replace(",", ".") : "";
+          oPNC.campo19 = (rstProduto.getDouble("valorcofins") > 0.0D && this.oCAB.campo9.equals("S")) ? FormatDecimal2R(rstProduto.getDouble("valorcofins")) : "";
           oPNC.campo20 = "";
           double pisBase = Numero.round(baseCalculoPisCofins * rstProduto.getDouble("valorpis") / 100.0D, 2);
           double cofinsBase = Numero.round(baseCalculoPisCofins * rstProduto.getDouble("valorcofins") / 100.0D, 2);
-          oPNC.campo21 = (cofinsBase > 0.0D && this.oCAB.campo9.equals("S")) ? FormatDecimal2(cofinsBase).replace(".", "").replace(",", ".") : "";
+          oPNC.campo21 = (cofinsBase > 0.0D && this.oCAB.campo9.equals("S")) ? FormatDecimal2R(cofinsBase) : "";
           oPNC.campo22 = "1";
-          oPNC.campo23 = (rstProduto.getDouble("valorpis") > 0.0D && this.oCAB.campo9.equals("S")) ? FormatDecimal2(rstProduto.getDouble("valorpis")).replace(".", "").replace(",", ".") : "";
+          oPNC.campo23 = (rstProduto.getDouble("valorpis") > 0.0D && this.oCAB.campo9.equals("S")) ? FormatDecimal2R(rstProduto.getDouble("valorpis")) : "";
           oPNC.campo24 = "";
-          oPNC.campo25 = (pisBase > 0.0D && this.oCAB.campo9.equals("S")) ? FormatDecimal2(pisBase).replace(".", "").replace(",", ".") : "";
-          oPNC.campo26 = FormatDecimal2(rstProduto.getDouble("valortotal")).replace(".", "").replace(",", ".");
-          oPNC.campo27 = FormatDecimal2(rstProduto.getDouble("valordesconto")).replace(".", "").replace(",", ".");
+          oPNC.campo25 = (pisBase > 0.0D && this.oCAB.campo9.equals("S")) ? FormatDecimal2R(pisBase) : "";
+          oPNC.campo26 = FormatDecimal2R(rstProduto.getDouble("valortotal"));
+          oPNC.campo27 = FormatDecimal2R(rstProduto.getDouble("valordesconto"));
           oPNC.campo28 = "";
           oPNC.campo29 = "";
 
@@ -3308,9 +3263,9 @@ public class Fortes158DAO {
             !"101,102,103,300,400".contains(oPNC.campo31)
           ) {
             if (rstProduto.getDouble("valorfcp") > 0) {
-              oPNC.campo34 = FormatDecimal2(rstProduto.getDouble("valortotal") - rstProduto.getDouble("valordesconto")).replace(".", "").replace(",", ".");
-              oPNC.campo35 = FormatDecimal2(rstProduto.getDouble("porcentagemfcp")).replace(".", "").replace(",", ".");
-              oPNC.campo36 = FormatDecimal2(rstProduto.getDouble("valorfcp")).replace(".", "").replace(",", ".");
+              oPNC.campo34 = FormatDecimal2R(rstProduto.getDouble("valortotal") - rstProduto.getDouble("valordesconto"));
+              oPNC.campo35 = FormatDecimal2R(rstProduto.getDouble("porcentagemfcp"));
+              oPNC.campo36 = FormatDecimal2R(rstProduto.getDouble("valorfcp"));
             }
           }
 
@@ -3320,7 +3275,7 @@ public class Fortes158DAO {
           oPNC.campo40 = "";
           
           if (rstProduto.getDouble("valoricmsdesonerado") > 0) {
-            oPNC.campo41 = FormatDecimal2(rstProduto.getDouble("valoricmsdesonerado")).replace(".", "").replace(",", ".");
+            oPNC.campo41 = FormatDecimal2R(rstProduto.getDouble("valoricmsdesonerado"));
             oPNC.campo42 = rstProduto.getString("idmotivodesoneracao");
           } else {
             oPNC.campo41 = "";
@@ -3360,12 +3315,12 @@ public class Fortes158DAO {
           double increaseValue = rstImposto.getDouble("valoroutras") > 0 ? rstImposto.getDouble("valoroutras") : rstImposto.getDouble("valorisento");
           double increaseField = increaseValue >= rstImposto.getDouble("valortotal") ? increaseValue - rstImposto.getDouble("valortotal") : 0.00;
           
-          oIVC.campo4 = FormatDecimal2(rstImposto.getDouble("valor") + increaseField).replace(".", "").replace(",", ".");
-          oIVC.campo5 = FormatDecimal2(rstImposto.getDouble("valorbasecalculo")).replace(".", "").replace(",", ".");
-          oIVC.campo6 = FormatDecimal2(rstImposto.getDouble("porcentagemfinal")).replace(".", "").replace(",", ".");
-          oIVC.campo7 = FormatDecimal2(rstImposto.getDouble("valoricms")).replace(".", "").replace(",", ".");
-          oIVC.campo8 = FormatDecimal2(rstImposto.getDouble("valorisento")).replace(".", "").replace(",", ".");
-          oIVC.campo9 = FormatDecimal2(rstImposto.getDouble("valoroutras")).replace(".", "").replace(",", ".");
+          oIVC.campo4 = FormatDecimal2R(rstImposto.getDouble("valor") + increaseField);
+          oIVC.campo5 = FormatDecimal2R(rstImposto.getDouble("valorbasecalculo"));
+          oIVC.campo6 = FormatDecimal2R(rstImposto.getDouble("porcentagemfinal"));
+          oIVC.campo7 = FormatDecimal2R(rstImposto.getDouble("valoricms"));
+          oIVC.campo8 = FormatDecimal2R(rstImposto.getDouble("valorisento"));
+          oIVC.campo9 = FormatDecimal2R(rstImposto.getDouble("valoroutras"));
           
           if (
             aliquotaDao.isSubstituido(rstImposto.getInt("situacaotributaria")) &&
@@ -3426,9 +3381,9 @@ public class Fortes158DAO {
             !"101,102,103,300,400".contains(rstImposto.getString("csosn"))
           ) {
             if (rstImposto.getDouble("valorfcp") > 0) {
-              oIVC.campo19 = FormatDecimal2(rstImposto.getDouble("valortotal") - rstImposto.getDouble("valordesconto")).replace(".", "").replace(",", ".");
-              oIVC.campo20 = FormatDecimal2(rstImposto.getDouble("porcentagemfcp")).replace(".", "").replace(",", ".");
-              oIVC.campo21 = FormatDecimal2(rstImposto.getDouble("valorfcp")).replace(".", "").replace(",", ".");
+              oIVC.campo19 = FormatDecimal2R(rstImposto.getDouble("valortotal") - rstImposto.getDouble("valordesconto"));
+              oIVC.campo20 = FormatDecimal2R(rstImposto.getDouble("porcentagemfcp"));
+              oIVC.campo21 = FormatDecimal2R(rstImposto.getDouble("valorfcp"));
             }
           }
 
@@ -3478,7 +3433,7 @@ public class Fortes158DAO {
       oECP.campo2 = codigoEstabelecimento;
       oECP.campo3 = Format.data(Format.dataGUI(rst.getDate("data")), "dd/MM/yyyy", "yyyyMMdd");
       oECP.campo4 = String.valueOf(rst.getInt("id_produto"));
-      oECP.campo5 = Format.decimal3(rst.getInt("estoque")).replace(".", "").replace(",", ".");
+      oECP.campo5 = Format.decimal3(rst.getInt("estoque"));
       oECP.campo6 = rst.getString("tipoembalagem");
       i_exportacao.qtdRegistro++;
       i_arquivo.write(oECP.getStringLayout140());
