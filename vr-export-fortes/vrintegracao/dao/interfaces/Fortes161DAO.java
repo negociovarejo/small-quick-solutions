@@ -635,13 +635,19 @@ public class Fortes161DAO {
       oESI.campo24 = FormatDecimal2R(rst.getDouble("valorbruto") - rst.getDouble("valordesconto"));
       if (rst.getBoolean("contabilidadepadrao")) {
         int idContaContabilDebito = this.oParametroContabilidadeDAO.carregarContaContabilPadrao();
-        oESI.campo25 = Format.number(idContaContabilDebito, 15);
+        oESI.campo25 = (idContaContabilDebito == 0) ? "" : Format.number(idContaContabilDebito, 15);
       } else {
         int idContaContabilDebito = this.oParametroContabilidadeDAO.carregarContaContabil(rst.getInt("id_tipoentrada"));
         oESI.campo25 = (idContaContabilDebito == 0) ? "" : Format.number(idContaContabilDebito, 15);
       } 
+      
+      oESI.campo26 = "";
+      oESI.campo27 = "";
+      oESI.campo28 = "";
+
       i_exportacao.qtdRegistro++;
-      i_arquivo.write(oESI.getStringLayout140());
+      i_arquivo.write(oESI.getStringLayout141());
+      
       FortesIESVO oIES = new FortesIESVO();
       oIES.campo1 = "IES";
       oIES.campo2 = FormatDecimal2R(rst.getDouble("valorbruto"));
@@ -659,13 +665,35 @@ public class Fortes161DAO {
       oIES.campo14 = FormatDecimal2R(rst.getDouble("valorbruto") - rst.getDouble("valordesconto") - rst.getDouble("valorisento"));
       if (rst.getBoolean("contabilidadepadrao")) {
         int idContaContabilDebito = this.oParametroContabilidadeDAO.carregarContaContabilPadrao();
-        oIES.campo15 = Format.number(idContaContabilDebito, 15);
+        oIES.campo15 = (idContaContabilDebito == 0) ? "" : Format.number(idContaContabilDebito, 15);
       } else {
         int idContaContabilDebito = this.oParametroContabilidadeDAO.carregarContaContabil(rst.getInt("id_tipoentrada"));
         oIES.campo15 = (idContaContabilDebito == 0) ? "" : Format.number(idContaContabilDebito, 15);
       } 
+
+      oIES.campo16 = "";
+      oIES.campo17 = "";
+      oIES.campo18 = "";
+      oIES.campo19 = "";
+      oIES.campo20 = "";
+      oIES.campo21 = "";
+      oIES.campo22 = "";
+      oIES.campo23 = "";
+      oIES.campo24 = "";
+      oIES.campo25 = "";
+      oIES.campo26 = "";
+      oIES.campo27 = "";
+      oIES.campo28 = "";
+      oIES.campo29 = "";
+      oIES.campo30 = "";
+      oIES.campo31 = "";
+      oIES.campo32 = "";
+      oIES.campo33 = "";
+      oIES.campo34 = "";
+      oIES.campo35 = "";
+
       i_exportacao.qtdRegistro++;
-      i_arquivo.write(oIES.getStringLayout140());
+      i_arquivo.write(oIES.getStringLayout158());
       FortesOVEVO oOVE = new FortesOVEVO();
       oOVE.campo1 = "OVE";
       oOVE.campo2 = "DINHEIRO";
@@ -1278,7 +1306,7 @@ public class Fortes161DAO {
           }
 
           String netValue = FormatDecimal2R(
-            rstProduto.getDouble("valortotal") +
+            Double.parseDouble(oPNM.campo9) +
             rstProduto.getDouble("valorfretefiscal") +
             rstProduto.getDouble("valorseguro") +
             rstProduto.getDouble("valoroutrasdespesasfiscal") -
@@ -1307,17 +1335,18 @@ public class Fortes161DAO {
       
           oPNM.campo41 = FormatDecimal2R(rstProduto.getDouble("valorfretefiscal"));
 
-          oPNM.campo42 = "0.00";
+          oPNM.campo42 = FormatDecimal2R(rstProduto.getDouble("valorseguro"));
           oPNM.campo43 = FormatDecimal2R(valueOff);
           
           if (rst.getDouble("valoroutrasdespesas") > 0) {
             oPNM.campo44 = netValue;
           } else {
             oPNM.campo44 = FormatDecimal2R(
-              rstProduto.getDouble("valortotal") +
+              Double.parseDouble(oPNM.campo9) +
               rstProduto.getDouble("valorfrete") +
-              rstProduto.getDouble("valorseguro") -
-              valueOff
+              Double.parseDouble(oPNM.campo42) +
+              rstProduto.getDouble("valoroutrasdespesasfiscal") -
+              Double.parseDouble(oPNM.campo43)
             );
           }
           
@@ -1930,7 +1959,7 @@ public class Fortes161DAO {
         sql.append(" tpc.valorpis,tpc.valorcofins,");
         sql.append(" tpc.valorpis AS aliquotapis, tpc.valorcofins AS aliquotacofins, ");
         sql.append(" CASE WHEN tpc.valorpis <> 0 THEN ROUND((ei.valorbasecalculo + ei.valorisento + ei.valoroutras + (CASE WHEN e.aplicaicmsipi = FALSE THEN ei.valoripi ELSE 0 END) - ei.valordesconto), 2) ELSE 0 END AS valorbasepiscofins,");
-        sql.append(" ei.valorfrete, ei.valordesconto, ei.valoroutras, ei.valoroutrasdespesas, te.descricao AS tipoembalagem, tst.percentualmva, ROUND(ei.valortotal, 2) AS totalpiscofins,");
+        sql.append(" ei.valorfrete, ei.valorseguro, ei.valordesconto, ei.valoroutras, ei.valoroutrasdespesas, te.descricao AS tipoembalagem, tst.percentualmva, ROUND(ei.valortotal, 2) AS totalpiscofins,");
         sql.append(" (COALESCE(aorigem.porcentagem, 0) + COALESCE(aorigem.porcentagemfcp, 0)) AS aliq_orig_perc, (COALESCE(adestino.porcentagem, 0) + COALESCE(adestino.porcentagemfcp, 0)) AS aliq_dest_perc,");
         sql.append(" tn.notaprodutor, e.id_tiposaida, tnn.contabilidadepadrao, tnn.contabilidadepadrao, a.porcentagemfcp, a.csosn");
         sql.append(" FROM escrita AS e");
@@ -2054,8 +2083,9 @@ public class Fortes161DAO {
           }
 
           String netValue = FormatDecimal2R(
-              rstProduto.getDouble("valortotal") +
+              Double.parseDouble(oPNM.campo9) +
               rstProduto.getDouble("valoroutrasdespesas") +
+              rstProduto.getDouble("valorseguro") +
               rstProduto.getDouble("valorfrete") -
               rstProduto.getDouble("valordesconto")
           );
@@ -2073,7 +2103,7 @@ public class Fortes161DAO {
           }
 
           oPNM.campo41 = FormatDecimal2R(rstProduto.getDouble("valorfrete"));
-          oPNM.campo42 = "0.00";
+          oPNM.campo42 = FormatDecimal2R(rstProduto.getDouble("valorseguro"));
           oPNM.campo43 = FormatDecimal2R(rstProduto.getDouble("valordesconto"));
           oPNM.campo44 = netValue;
           
