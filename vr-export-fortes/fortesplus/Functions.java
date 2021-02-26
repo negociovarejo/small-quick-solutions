@@ -113,4 +113,15 @@ public class Functions {
 	{
     return FormatDecimal(i_valor, 3).replace(".", "").replace(",", ".");
 	}
+
+  public static boolean ArrayUtilsContains(int[] array, int value)
+  {
+    for (int i = 0; i < array.length; ++i) {
+      if (array[i] == value) {
+        return true;
+      }
+    }
+
+    return false;
+  }
 }
