@@ -1511,7 +1511,7 @@ public class Fortes158DAO {
                 oPNM.campo87 = FormatDecimal2R(rstProduto.getDouble("valorfcp"));
               }
 
-              if (!oPNM.campo6.isEmpty() && !"10,30,60,70,90".contains(oPNM.campo6)) {
+              if (!oPNM.campo6.isEmpty() && !"00,10,30,60,70,90".contains(oPNM.campo6)) {
                 oPNM.campo88 = FormatDecimal2R(rstProduto.getDouble("valorbasesubstituicao"));
                 oPNM.campo89 = FormatDecimal2R(rstProduto.getDouble("porcentagemfcpst"));
                 oPNM.campo90 = FormatDecimal2R(rstProduto.getDouble("valorfcpst"));
