@@ -911,16 +911,20 @@ public class Fortes161DAO {
       sql.append("SUM(ROUND(((ei.valorbasecalculo + ei.valorisento + ei.valoroutras + (CASE WHEN e.aplicaicmsipi = FALSE THEN ei.valoripi ELSE 0 END) - ei.valordesconto) * ((100 - tpc.reduzidocredito) / 100)) * tpc.valorcofins / 100, 2)) AS valorcofins,");
     } 
     sql.append(" f.id_estado AS estadoFornecedor, estabelecimentote.id_tipocrt AS id_tipocrt_loja, e.id_situacaonfe,");
-    sql.append(" e.id_tipoentradasaida, e.id_notasaida, sum(ei.valorfcpst) as valorfcpst, e.id_tiponota, f.id_tipoempresa, ");
+    sql.append(" e.id_tipoentradasaida, e.id_notasaida, SUM(COALESCE(ad.porcentagemfcp, 0) * ei.valorbasesubstituicao) as valorfcpst, e.id_tiponota, f.id_tipoempresa, ");
     sql.append(" e.valortotalbruto, e.valorcontabil, e.valordescontofiscal, e.id_indicadorpagamento");
     sql.append(" FROM escrita AS e");
     sql.append(" INNER JOIN escritaitem AS ei ON ei.id_escrita = e.id");
+    sql.append(" INNER JOIN produto p ON p.id = ei.id_produto");
+    sql.append(" INNER JOIN produtoaliquota pa ON pa.id_produto = p.id AND pa.id_estado = " + oFornecedor.idEstado);
     sql.append(" INNER JOIN fornecedor AS f ON f.id = e.id_fornecedor");
     sql.append(" INNER JOIN tipoempresa AS te ON te.id = f.id_tipoempresa");
     sql.append(" INNER JOIN tipopiscofins AS tpc ON tpc.id = ei.id_tipopiscofins");
     sql.append(" INNER JOIN loja l ON l.id = e.id_loja");
     sql.append(" INNER JOIN fornecedor AS estabelecimento ON estabelecimento.id = l.id_fornecedor");
     sql.append(" INNER JOIN tipoempresa AS estabelecimentote ON estabelecimentote.id = estabelecimento.id_tipoempresa");
+    sql.append(" LEFT JOIN pautafiscal pt ON pt.ncm1 = p.ncm1 AND pt.ncm2 = p.ncm2 AND p.ncm3 = pt.ncm3 AND pt.excecao = pa.excecao AND pt.id_estado = pa.id_estado");
+    sql.append(" LEFT JOIN aliquota ad ON ad.id = pt.id_aliquotadebito");
     sql.append(" WHERE COALESCE(e.id_notaentrada,0) > 0");
     if (i_exportacao.tipoData == TipoData.ENTRADA.getId()) {
       sql.append(" AND e.data BETWEEN  '" + Format.dataBanco(i_exportacao.dataInicio) + "' AND '" + Format.dataBanco(i_exportacao.dataTermino) + "'");
@@ -1086,7 +1090,8 @@ public class Fortes161DAO {
       if (
         rst.getString("especie").equals("NFE") &&
         rst.getInt("id_situacaonfe") != SituacaoNfe.CANCELADA.getId() &&
-        rst.getInt("estadoFornecedor") != 23
+        rst.getInt("estadoFornecedor") != 23 &&
+        rst.getDouble("valorfcpst") > 0
       ) {
         oNFM.campo90 = FormatDecimal2R(rst.getDouble("valorfcpst"));
       }
@@ -1127,7 +1132,7 @@ public class Fortes161DAO {
         sql.append(" LEFT JOIN aliquota AS aorigem ON aorigem.id = ei.id_aliquotainterestadual");
         sql.append(" LEFT JOIN aliquota AS adestino ON adestino.id = ei.id_aliquotadestino");
         sql.append(" INNER JOIN produto AS p ON p.id = ei.id_produto");
-        sql.append(" INNER JOIN produtoaliquota AS pa ON pa.id_produto = p.id AND pa.id_estado = " + ((FornecedorDAO)VRInstance.criar(FornecedorDAO.class)).getIdEstadoPadrao(i_exportacao.idLoja));
+        sql.append(" INNER JOIN produtoaliquota AS pa ON pa.id_produto = p.id AND pa.id_estado = " + oFornecedor.idEstado);
         sql.append(" INNER JOIN tipoembalagem AS te ON te.id = p.id_tipoembalagem");
         sql.append(" INNER JOIN tipopiscofins AS tpc ON tpc.id = ei.id_tipopiscofins");
         sql.append(" INNER JOIN cfop AS c ON c.cfop = ei.cfop");
@@ -1501,21 +1506,21 @@ public class Fortes161DAO {
           if (rst.getInt("id_tipoentradasaida") == TipoEntradaSaida.ENTRADA.getId() && rst.getObject("id_notasaida") == null) {
             if (rst.getString("especie").equals("NFE")) {
               if (!oPNM.campo6.isEmpty() && "30,60".contains(oPNM.campo6)) {
-                oPNM.campo86 = "0.00";
-                oPNM.campo87 = "0.00";
+                oPNM.campo86 = "";
+                oPNM.campo87 = "";
               } else {
                 oPNM.campo86 = FormatDecimal2R(rstProduto.getDouble("valorfcp") / rstProduto.getDouble("base") * 100.0D);
                 oPNM.campo87 = FormatDecimal2R(rstProduto.getDouble("valorfcp"));
               }
 
-              if (!oPNM.campo6.isEmpty() && "10,30,60,70,90".contains(oPNM.campo6)) {
+              if (!oPNM.campo6.isEmpty() && !"10,30,60,70,90".contains(oPNM.campo6)) {
                 oPNM.campo88 = FormatDecimal2R(rstProduto.getDouble("valorbasesubstituicao"));
                 oPNM.campo89 = FormatDecimal2R(rstProduto.getDouble("porcentagemfcpst"));
                 oPNM.campo90 = FormatDecimal2R(rstProduto.getDouble("valorfcpst"));
               } else {
-                oPNM.campo88 = "0.00";
-                oPNM.campo89 = "0.00";
-                oPNM.campo90 = "0.00";
+                oPNM.campo88 = "";
+                oPNM.campo89 = "";
+                oPNM.campo90 = "";
               }
             } 
           }
@@ -1628,15 +1633,12 @@ public class Fortes161DAO {
           
           oINM.campo27 = "";
 
-          if (rst.getInt("id_tipoentradasaida") == TipoEntradaSaida.ENTRADA.getId() && rst.getObject("id_notasaida") == null && rst.getString("modelo").equals("55")) {
-            if ("30,40,60".contains(oINM.campo20)) {
-              oINM.campo28 = "";
-              oINM.campo29 = "";
-              oINM.campo30 = "";
-              oINM.campo31 = "";
-              oINM.campo32 = "";
-              oINM.campo33 = "";
-            } else {
+          if (
+            rst.getInt("id_tipoentradasaida") == TipoEntradaSaida.ENTRADA.getId() &&
+            rst.getObject("id_notasaida") == null &&
+            rst.getString("modelo").equals("55")
+          ) {
+            if (!oINM.campo20.isEmpty() && !"10,30,60,70,90".contains(oINM.campo20)) {
               oINM.campo28 = FormatDecimal2R(rstImposto.getDouble("basecalculoicms"));
               oINM.campo29 = FormatDecimal2R(rstImposto.getDouble("valorfcp") / rstImposto.getDouble("basecalculoicms") * 100.0D);
               oINM.campo30 = FormatDecimal2R(rstImposto.getDouble("valorfcp"));
@@ -1646,7 +1648,14 @@ public class Fortes161DAO {
                 oINM.campo32 = FormatDecimal2R(rstImposto.getDouble("porcentagemfcp"));
               }
 
-              oINM.campo33 = FormatDecimal2R(rstImposto.getDouble("valorfcpst"));
+              oINM.campo33 = FormatDecimal2R(rstImposto.getDouble("valorbasesubstituicao") * rstImposto.getDouble("porcentagemfcp"));
+            } else {
+              oINM.campo28 = "";
+              oINM.campo29 = "";
+              oINM.campo30 = "";
+              oINM.campo31 = "";
+              oINM.campo32 = "";
+              oINM.campo33 = "";
             }
           }
 
@@ -1961,7 +1970,7 @@ public class Fortes161DAO {
           sql.append(" false as geradevolucao,");
         }
 
-        sql.append("ei.id_aliquota, ei.situacaotributaria,a.reduzido,ei.valorbasesubstituicao, (ei.valoricmssubstituicao + COALESCE(ei.valorfcpst, 0)) AS valoricmssubstituicao, ei.tiponaturezareceita, ei.valorbasecalculo, ");
+        sql.append("ei.id_aliquota, ei.situacaotributaria,a.reduzido,ei.valorbasesubstituicao, (ei.valoricmssubstituicao + COALESCE(ei.valorfcpst, 0)) AS valoricmssubstituicao, p.tiponaturezareceita, ei.valorbasecalculo, ");
         sql.append("(a.porcentagem + COALESCE(a.porcentagemfcp, 0)) AS porcentagem,ROUND((ei.valortotal - (ei.valortotal * a.reduzido) / 100),2) AS base,");
         sql.append("ROUND((ei.valortotal - (ei.valortotal * a.reduzido) / 100) * ((a.porcentagem + COALESCE(a.porcentagemfcp, 0)) / 100),2) AS icms, ROUND(ei.valoripi + (ei.valortotal - (ei.valortotal * a.reduzido) / 100),3) AS total,");
         sql.append("CASE WHEN ei.quantidade = 0 THEN 0 ELSE ROUND(ei.valortotal / ei.quantidade,3) end AS valorunitario, tpc.tipocredito, tpc.cst AS cstpiscofins,");
@@ -3190,14 +3199,14 @@ public class Fortes161DAO {
         } else {
           sql.append("  tpc.valorcofins, tpc.valorpis, ");
         } 
-        sql.append("  ei.tiponaturezareceita,  ei.id_tiposaida, ei.valoricms, ei.valoricmsdesonerado, a.idmotivodesoneracao, ");
+        sql.append("  p.tiponaturezareceita,  ei.id_tiposaida, ei.valoricms, ei.valoricmsdesonerado, a.idmotivodesoneracao, ");
         sql.append("  ei.valortotal, ei.valordesconto, ttr.codigoacfiscal, ei.valorfcp, a.porcentagemfcp ");
         sql.append("FROM escritaitem ei");
         sql.append("  INNER JOIN produto p ON ei.id_produto = p.id");
         sql.append("  INNER JOIN tipoembalagem te ON te.id = p.id_tipoembalagem");
         sql.append("  INNER JOIN aliquota a ON ei.id_aliquota = a.id");
         sql.append("  INNER JOIN tipopiscofins tpc ON ei.id_tipopiscofins = tpc.id ");
-        sql.append("  LEFT JOIN tiponaturezareceita ttr ON ttr.codigo = ei.tiponaturezareceita and ttr.cst = tpc.cst ");
+        sql.append("  LEFT JOIN tiponaturezareceita ttr ON ttr.codigo = p.tiponaturezareceita and ttr.cst = tpc.cst ");
         sql.append("WHERE id_escrita = " + rstCupom.getLong("id"));
         sql.append("  AND ei.cancelado = false");
         rstProduto = stmProduto.executeQuery(sql.toString());
