@@ -65,7 +65,6 @@ import vrintegracao.vo.interfaces.fortes.FortesNOPVO;
 import vrintegracao.vo.interfaces.fortes.FortesNVCVO;
 import vrintegracao.vo.interfaces.fortes.FortesOCCVO;
 import vrintegracao.vo.interfaces.fortes.FortesOUMVO;
-import vrintegracao.vo.interfaces.fortes.FortesOVEVO;
 import vrintegracao.vo.interfaces.fortes.FortesOVFVO;
 import vrintegracao.vo.interfaces.fortes.FortesOVNVO;
 import vrintegracao.vo.interfaces.fortes.FortesPARVO;
@@ -694,12 +693,12 @@ public class Fortes158DAO {
       
       i_exportacao.qtdRegistro++;
       i_arquivo.write(oIES.getStringLayout158());
-      FortesOVEVO oOVE = new FortesOVEVO();
-      oOVE.campo1 = "OVE";
-      oOVE.campo2 = "DINHEIRO";
-      oOVE.campo3 = FormatDecimal2R(rst.getDouble("valorbruto"));
-      i_exportacao.qtdRegistro++;
-      i_arquivo.write(oOVE.getString());
+      // FortesOVEVO oOVE = new FortesOVEVO();
+      // oOVE.campo1 = "OVE";
+      // oOVE.campo2 = "DINHEIRO";
+      // oOVE.campo3 = FormatDecimal2R(rst.getDouble("valorbruto"));
+      // i_exportacao.qtdRegistro++;
+      // i_arquivo.write(oOVE.getString());
     } 
     stm.close();
   }
