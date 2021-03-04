@@ -1502,7 +1502,7 @@ public class Fortes158DAO {
 
           if (rst.getInt("id_tipoentradasaida") == TipoEntradaSaida.ENTRADA.getId() && rst.getObject("id_notasaida") == null) {
             if (rst.getString("especie").equals("NFE")) {
-              if (!oPNM.campo6.isEmpty() && "30,60".contains(oPNM.campo6)) {
+              if (!oPNM.campo6.isEmpty() && "00,30,60".contains(oPNM.campo6)) {
                 oPNM.campo86 = "";
                 oPNM.campo87 = "";
               } else {
@@ -1632,7 +1632,7 @@ public class Fortes158DAO {
             rst.getObject("id_notasaida") == null &&
             rst.getString("modelo").equals("55")
           ) {
-            if (!oINM.campo20.isEmpty() && !"10,30,60,70,90".contains(oINM.campo20)) {
+            if (!oINM.campo20.isEmpty() && !"00,10,30,60,70,90".contains(oINM.campo20)) {
               oINM.campo28 = FormatDecimal2R(rstImposto.getDouble("basecalculoicms"));
               oINM.campo29 = FormatDecimal2R(rstImposto.getDouble("valorfcp") / rstImposto.getDouble("basecalculoicms") * 100.0D);
               oINM.campo30 = FormatDecimal2R(rstImposto.getDouble("valorfcp"));
