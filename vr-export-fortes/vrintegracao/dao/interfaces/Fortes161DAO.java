@@ -1281,6 +1281,7 @@ public class Fortes161DAO {
           oPNM.campo35 = "";
           oPNM.campo36 = "";
           String cstPisCofins = "";
+          
           if (oFornecedor.idTipoEmpresa == TipoEmpresa.LUCRO_PRESUMIDO.getId()) {
             oPNM.campo37 = "";
             oPNM.campo38 = "";
@@ -1308,12 +1309,16 @@ public class Fortes161DAO {
             valueOff = rstProduto.getDouble("valordescontofiscal");
           }
 
+          oPNM.campo41 = FormatDecimal2R(rstProduto.getDouble("valorfretefiscal"));
+          oPNM.campo42 = FormatDecimal2R(rstProduto.getDouble("valorseguro"));
+          oPNM.campo43 = FormatDecimal2R(valueOff);
+
           String netValue = FormatDecimal2R(
             Double.parseDouble(oPNM.campo9) +
-            rstProduto.getDouble("valorfretefiscal") +
-            rstProduto.getDouble("valorseguro") +
+            Double.parseDouble(oPNM.campo41) +
+            Double.parseDouble(oPNM.campo42) +
             rstProduto.getDouble("valoroutrasdespesasfiscal") -
-            valueOff
+            Double.parseDouble(oPNM.campo43)
           );
           
           switch (cstPisCofins) {
@@ -1335,23 +1340,8 @@ public class Fortes161DAO {
             default:
               oPNM.campo40 = netValue;
           }
-      
-          oPNM.campo41 = FormatDecimal2R(rstProduto.getDouble("valorfretefiscal"));
-
-          oPNM.campo42 = FormatDecimal2R(rstProduto.getDouble("valorseguro"));
-          oPNM.campo43 = FormatDecimal2R(valueOff);
-          
-          if (rst.getDouble("valoroutrasdespesas") > 0) {
-            oPNM.campo44 = netValue;
-          } else {
-            oPNM.campo44 = FormatDecimal2R(
-              Double.parseDouble(oPNM.campo9) +
-              rstProduto.getDouble("valorfrete") +
-              Double.parseDouble(oPNM.campo42) +
-              rstProduto.getDouble("valoroutrasdespesasfiscal") -
-              Double.parseDouble(oPNM.campo43)
-            );
-          }
+            
+          oPNM.campo44 = netValue;
           
           oPNM.campo45 = "";
           oPNM.campo46 = "";
@@ -1802,9 +1792,23 @@ public class Fortes161DAO {
           oNFM.campo13 = "0";
           break;
       } 
+
+      if (rst.getInt("id_tipoentradasaida") == TipoEntradaSaida.SAIDA.getId()) {
+        if (rst.getInt("id_fornecedorprodutorrural") > 0) {
+          oNFM.campo15 = Format.number(rst.getInt("id_fornecedorprodutorrural"), 9);
+        } else if (rst.getInt("id_clienteeventual") > 0) {
+          oNFM.campo15 = Format.number(rst.getInt("id_clienteeventual"), 9);
+        } else {
+          oNFM.campo15 = Format.number(rst.getInt("id_fornecedor"), 9);
+        }
+      } else if (rst.getInt("id_fornecedorprodutorrural") > 0) {
+        oNFM.campo15 = Format.number(rst.getInt("id_fornecedorprodutorrural"), 9);
+      } else {
+        oNFM.campo15 = Format.number(rst.getInt("id_fornecedor"), 9);
+      }
+
       if (rst.getInt("id_situacaonfe") != 1) {
         oNFM.campo14 = "";
-        oNFM.campo15 = "";
         oNFM.campo26 = "";
         oNFM.campo36 = "";
         oNFM.campo37 = "";
@@ -1817,30 +1821,17 @@ public class Fortes161DAO {
         oNFM.campo14 = Format.data(Format.dataGUI(rst.getDate("data")), "dd/MM/yyyy", "yyyyMMdd");
         
         if (rst.getInt("id_tipoentradasaida") == TipoEntradaSaida.SAIDA.getId()) {
-          if (rst.getInt("id_fornecedorprodutorrural") > 0) {
-            oNFM.campo15 = Format.number(rst.getInt("id_fornecedorprodutorrural"), 9);
-          } else if (rst.getInt("id_clienteeventual") > 0) {
-            oNFM.campo15 = Format.number(rst.getInt("id_clienteeventual"), 9);
-          } else {
-            oNFM.campo15 = Format.number(rst.getInt("id_fornecedor"), 9);
-          }
-
           oNFM.campo26 = FormatDecimal2R(rst.getDouble("valorcontabil") + rst.getDouble("valordesconto"));
         } else {
           if (rst.getInt("id_fornecedorprodutorrural") > 0) {
-            oNFM.campo15 = Format.number(rst.getInt("id_fornecedorprodutorrural"), 9);
             oNFM.campo26 = FormatDecimal2R(rst.getDouble("valorcontabil"));
-          } else {
-            oNFM.campo15 = Format.number(rst.getInt("id_fornecedor"), 9);
-
-            if ("1.102,1.403".contains(rst.getString("cfop"))) {
+          } else  if ("1.102,1.403".contains(rst.getString("cfop"))) {
               oNFM.campo26 = FormatDecimal2R(rst.getDouble("valortotalbruto"));
-            } else {
-              oNFM.campo26 = FormatDecimal2R(rst.getDouble("valorcontabil"));
-            }
+          } else {
+            oNFM.campo26 = FormatDecimal2R(rst.getDouble("valorcontabil"));
           }
         }
-        
+
         oNFM.campo36 = FormatDecimal2R(rst.getDouble("valorcontabil"));
         oNFM.campo37 = Format.number(rst.getInt("qtditem"), 10);
         if (rst.getInt("id_tipofretenotafiscal") == TipoFreteNotaFiscal.DESTINATARIO.getId()) {
