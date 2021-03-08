@@ -1810,6 +1810,10 @@ public class Fortes158DAO {
       }
 
       if (rst.getInt("id_situacaonfe") != 1) {
+        if (rst.getInt("id_situacaonfe") != 2) {
+          oNFM.campo15 = "";  
+        }
+
         oNFM.campo14 = "";
         oNFM.campo26 = "";
         oNFM.campo36 = "";
