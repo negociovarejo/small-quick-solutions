@@ -1717,7 +1717,8 @@ public class Fortes158DAO {
     stmImposto = VRStatement.createStatement();
     ProgressBar.setStatus("Exportando Nota Fiscal (Saida)");
     sql = new StringBuilder();
-    sql.append("SELECT e.id, ei.cfop, COALESCE(e.id_fornecedor, e.id_clienteeventual, 0) AS id_fornecedor, e.id_fornecedorprodutorrural, e.dataemissao, e.numeronota, e.id_tipoentradasaida,");
+    sql.append("SELECT e.id, COALESCE(e.id_fornecedor, e.id_clienteeventual, 0) AS id_fornecedor, e.id_fornecedorprodutorrural, e.dataemissao, e.numeronota, e.id_tipoentradasaida,");
+    // sql.append("SELECT e.id, ei.cfop, COALESCE(e.id_fornecedor, e.id_clienteeventual, 0) AS id_fornecedor, e.id_fornecedorprodutorrural, e.dataemissao, e.numeronota, e.id_tipoentradasaida,");
     sql.append("SUM(ei.valorbasecalculo + ei.valorisento + ei.valoroutras) AS valortotal, e.serie, e.chavenfe, e.especie, e.data, e.id_situacaonfe,");
     sql.append("e.valorfrete, e.valoroutrasdespesas, e.valoripi, e.valorbasesubstituicao, (e.valoricmssubstituicao + COALESCE(e.valorfcpst, 0)) AS valoricmssubstituicao, e.valordesconto, COUNT(ei.id) AS qtditem,");
     sql.append("e.id_tipofretenotafiscal, e.observacao,");
@@ -1750,7 +1751,8 @@ public class Fortes158DAO {
     } 
     sql.append(" AND e.cupomfiscal = FALSE");
     sql.append(" AND e.id_loja = " + i_exportacao.idLoja);
-    sql.append(" GROUP BY e.id, ei.cfop, COALESCE(e.id_fornecedor, e.id_clienteeventual, 0), e.dataemissao, e.id_tipoentradasaida, e.modelo, e.valortotalbruto, e.valordescontofiscal, e.id_indicadorpagamento, e.valorcontabil, ");
+    sql.append(" GROUP BY e.id, COALESCE(e.id_fornecedor, e.id_clienteeventual, 0), e.dataemissao, e.id_tipoentradasaida, e.modelo, e.valortotalbruto, e.valordescontofiscal, e.id_indicadorpagamento, e.valorcontabil, ");
+    // sql.append(" GROUP BY e.id, ei.cfop, COALESCE(e.id_fornecedor, e.id_clienteeventual, 0), e.dataemissao, e.id_tipoentradasaida, e.modelo, e.valortotalbruto, e.valordescontofiscal, e.id_indicadorpagamento, e.valorcontabil, ");
     sql.append(" e.numeronota, e.serie, e.chavenfe, e.especie, e.data, e.valorfrete, e.aplicaicmsipi, e.id_situacaonfe, e.id_fornecedorprodutorrural,");
     sql.append(" e.valoroutrasdespesas, e.valoripi, e.valorbasesubstituicao, (e.valoricmssubstituicao + COALESCE(e.valorfcpst, 0)), e.valordesconto, e.id_tipofretenotafiscal, e.observacao, id_tipocrt_loja, e.valorfcpst, e.id_clienteeventual");
     sql.append(" ORDER BY e.id");
@@ -1829,13 +1831,13 @@ public class Fortes158DAO {
         if (rst.getInt("id_tipoentradasaida") == TipoEntradaSaida.SAIDA.getId()) {
           oNFM.campo26 = FormatDecimal2R(rst.getDouble("valorcontabil") + rst.getDouble("valordesconto"));
         } else {
-          if (rst.getInt("id_fornecedorprodutorrural") > 0) {
+          // if (rst.getInt("id_fornecedorprodutorrural") > 0) {
+          //   oNFM.campo26 = FormatDecimal2R(rst.getDouble("valorcontabil"));
+          // } else if ("1.102,1.403".contains(rst.getString("cfop"))) {
+          //   oNFM.campo26 = FormatDecimal2R(rst.getDouble("valortotalbruto"));
+          // } else {
             oNFM.campo26 = FormatDecimal2R(rst.getDouble("valorcontabil"));
-          } else if ("1.102,1.403".contains(rst.getString("cfop"))) {
-            oNFM.campo26 = FormatDecimal2R(rst.getDouble("valortotalbruto"));
-          } else {
-            oNFM.campo26 = FormatDecimal2R(rst.getDouble("valorcontabil"));
-          }
+          // }
         }
         
         oNFM.campo36 = FormatDecimal2R(rst.getDouble("valorcontabil"));
@@ -1922,7 +1924,8 @@ public class Fortes158DAO {
       oNFM.campo68 = (rst.getInt("id_situacaonfe") != SituacaoNfe.CANCELADA.getId()) ? "0.00" : "";
       oNFM.campo69 = "";
       oNFM.campo70 = "";
-      oNFM.campo71 = Format.number(rst.getString("cfop").replace(".", ""), 8);
+      // oNFM.campo71 = Format.number(rst.getString("cfop").replace(".", ""), 8);
+      oNFM.campo71 = "";
       oNFM.campo72 = "";
       oNFM.campo73 = "";
       oNFM.campo74 = "";
@@ -1990,7 +1993,7 @@ public class Fortes158DAO {
         } 
 
         sql.append(" WHERE ei.id_escrita = " + rst.getLong("id"));
-        sql.append(" AND ei.cfop = '" + rst.getString("cfop") + "'");
+        // sql.append(" AND ei.cfop = '" + rst.getString("cfop") + "'");
         rstProduto = stmProduto.executeQuery(sql.toString());
         while (rstProduto.next()) {
           FortesPNMVO oPNM = new FortesPNMVO();
@@ -2289,7 +2292,7 @@ public class Fortes158DAO {
         sql.append(" INNER JOIN estado AS es ON es.id =  COALESCE(f.id_estado, ce.id_estado)");
         sql.append(" INNER JOIN tipopiscofins AS tpc ON tpc.id = ei.id_tipopiscofins");
         sql.append(" WHERE e.id = " + rst.getLong("id"));
-        sql.append(" AND ei.cfop = '" + rst.getString("cfop") + "'");
+        // sql.append(" AND ei.cfop = '" + rst.getString("cfop") + "'");
         sql.append(" GROUP BY ei.cfop, es.sigla, (a.porcentagem + COALESCE(a.porcentagemfcp, 0)), COALESCE(ei.id_tipoorigemmercadoria, p.id_tipoorigemmercadoria), ei.situacaotributaria, tpc.cst, a.porcentagemfcp, (a.porcentagemfinal + COALESCE(a.porcentagemfcp, 0)), id_uf");
         rstImposto = stmImposto.executeQuery(sql.toString());
         while (rstImposto.next()) {
